@@ -11,6 +11,10 @@ const { data: layout, isPending } = useQuery(
   computed(() => $orpc.apartmentLayouts.getById.queryOptions({ input: { id: id.value } })),
 );
 
+const { data: apartmentsData, isPending: isApartmentsPending } = useQuery(
+  computed(() => $orpc.apartments.listByLayout.queryOptions({ input: { layoutId: id.value } })),
+);
+
 const sunPosition = ref<number>(0);
 
 watch(() => layout.value?.sunPosition, (val) => {
@@ -129,6 +133,63 @@ const sunMutation = useMutation({
               </UButton>
             </div>
           </div>
+        </div>
+      </div>
+      <!-- Apartments Table -->
+      <div class="mt-6">
+        <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
+          <h3 class="mb-4 font-semibold">Квартиры с этой планировкой</h3>
+
+          <UTable
+            :data="apartmentsData ?? []"
+            :columns="[
+              { accessorKey: 'apartmentNumber', header: '№' },
+              { accessorKey: 'floorNumber', header: 'Этаж' },
+              { accessorKey: 'area', header: 'Площадь' },
+              { id: 'price', header: 'Цена' },
+              { id: 'status', header: 'Статус' },
+              { id: 'building', header: 'Корпус' },
+              { id: 'actions', header: '' },
+            ]"
+            :loading="isApartmentsPending"
+          >
+            <template #price-cell="{ row }">
+              {{ Number(row.original.price).toLocaleString('ru-RU') }} ₽
+            </template>
+
+            <template #status-cell="{ row }">
+              <UBadge
+                :color="{ free: 'success', paid_reservation: 'warning', corporate_reservation: 'warning', sold: 'error' }[row.original.status] as any ?? 'neutral'"
+                variant="subtle"
+              >
+                {{ row.original.status.replace(/_/g, ' ') }}
+              </UBadge>
+            </template>
+
+            <template #building-cell="{ row }">
+              <NuxtLink
+                v-if="row.original.building"
+                :to="`/buildings/${row.original.building.id}`"
+                class="text-primary hover:underline"
+              >
+                {{ row.original.building.name }}
+              </NuxtLink>
+              <span v-else class="text-(--ui-text-muted)">—</span>
+            </template>
+
+            <template #actions-cell="{ row }">
+              <UButton
+                :to="`/apartments/${row.original.id}`"
+                variant="ghost"
+                icon="i-tabler-eye"
+                size="sm"
+              />
+            </template>
+          </UTable>
+
+          <p v-if="!isApartmentsPending && !apartmentsData?.length" class="text-sm text-(--ui-text-muted)">
+            Нет квартир с этой планировкой
+          </p>
         </div>
       </div>
     </template>

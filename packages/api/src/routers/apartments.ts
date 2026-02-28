@@ -57,6 +57,16 @@ export const apartmentsRouter = {
       });
     }),
 
+  listByLayout: protectedProcedure
+    .input(z.object({ layoutId: z.string() }))
+    .handler(async ({ input }) => {
+      return db.query.apartments.findMany({
+        where: eq(apartments.apartmentLayoutId, input.layoutId),
+        with: { building: true },
+        orderBy: [asc(apartments.floorNumber), asc(apartments.apartmentNumber)],
+      });
+    }),
+
   listByFloor: protectedProcedure
     .input(z.object({ floorId: z.string() }))
     .handler(async ({ input }) => {
