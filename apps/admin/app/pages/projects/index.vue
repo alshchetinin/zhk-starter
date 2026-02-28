@@ -103,9 +103,15 @@ function formatDate(date: string | Date | null | undefined) {
         <!-- Image / Placeholder -->
         <NuxtLink
           :to="`/projects/${project.id}`"
-          class="flex items-center justify-center w-full sm:w-32 h-24 sm:h-auto rounded-lg bg-(--ui-bg-elevated) shrink-0"
+          class="flex items-center justify-center w-full sm:w-40 h-28 sm:h-auto rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden"
         >
-          <UIcon name="i-tabler-building" class="size-10 text-(--ui-text-muted)" />
+          <img
+            v-if="project.gallery?.length"
+            :src="project.gallery[0]"
+            :alt="project.name"
+            class="h-full w-full object-cover"
+          />
+          <UIcon v-else name="i-tabler-building" class="size-10 text-(--ui-text-muted)" />
         </NuxtLink>
 
         <!-- Content -->

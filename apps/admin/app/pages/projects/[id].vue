@@ -16,6 +16,8 @@ const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> 
   hidden: "neutral",
 };
 
+const isEditPage = computed(() => route.path.endsWith("/edit"));
+
 const tabs = computed(() => [
   { label: "Информация", to: `/projects/${id.value}` },
   { label: "Шахматка", to: `/projects/${id.value}/checkerboard` },
@@ -40,15 +42,16 @@ const activeTab = computed(() => {
     <!-- Breadcrumb -->
     <UBreadcrumb
       :items="[
-        { label: 'Projects', to: '/projects', icon: 'i-tabler-building' },
+        { label: 'Проекты', to: '/projects', icon: 'i-tabler-building' },
         { label: project?.name ?? '...' },
+        ...(isEditPage ? [{ label: 'Редактирование' }] : []),
       ]"
       class="mb-6"
     />
 
     <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
       <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Loading...</span>
+      <span>Загрузка...</span>
     </div>
 
     <template v-else-if="project">
@@ -58,15 +61,25 @@ const activeTab = computed(() => {
         <UBadge :color="statusColors[project.status ?? ''] ?? 'neutral'" variant="subtle">
           {{ project.status }}
         </UBadge>
+        <div v-if="!isEditPage" class="ml-auto">
+          <UButton
+            variant="outline"
+            icon="i-tabler-pencil"
+            class="rounded-xl"
+            :to="`/projects/${id}/edit`"
+          >
+            Редактировать
+          </UButton>
+        </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="flex gap-1 mb-6 border-b border-(--ui-border) overflow-x-auto">
+      <!-- Tabs (hidden on edit page) -->
+      <div v-if="!isEditPage" class="mb-6 flex gap-1 overflow-x-auto border-b border-(--ui-border)">
         <NuxtLink
           v-for="(tab, i) in tabs"
           :key="tab.to"
           :to="tab.to"
-          class="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap"
+          class="-mb-px whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors"
           :class="
             activeTab === i
               ? 'border-(--ui-primary) text-(--ui-primary)'

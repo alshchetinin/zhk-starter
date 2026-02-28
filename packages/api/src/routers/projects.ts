@@ -87,7 +87,14 @@ export const projectsRouter = {
       z.object({
         id: z.string(),
         name: z.string().min(1).optional(),
+        address: z.string().optional(),
+        type: z.string().nullable().optional(),
         status: z.enum(["active", "completed", "planning", "hidden"]).optional(),
+        cityId: z.string().nullable().optional(),
+        location: z.string().nullable().optional(),
+        tags: z.array(z.string()).nullable().optional(),
+        coordinates: z.string().nullable().optional(),
+        gallery: z.array(z.string().url()).nullable().optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -98,9 +105,17 @@ export const projectsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Project not found" });
       }
 
+      const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
-      if (input.name) updates.name = input.name;
-      if (input.status) updates.status = input.status;
+      for (const [key, value] of Object.entries(fields)) {
+        if (value !== undefined) {
+          updates[key] = value;
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        return existing;
+      }
 
       const [updated] = await db
         .update(projects)

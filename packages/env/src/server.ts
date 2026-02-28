@@ -18,6 +18,12 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
+    S3_ACCESS_KEY_ID: z.string().min(1),
+    S3_ACCESS_SECRET: z.string().min(1),
+    S3_BUCKET: z.string().min(1),
+    S3_ENDPOINT: z.string().url(),
+    S3_BASE_URL: z.string().url(),
+    S3_REGION: z.string().min(1),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
