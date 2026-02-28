@@ -53,4 +53,28 @@ export const apartmentLayoutsRouter = {
       }
       return layout;
     }),
+
+  updateSunPosition: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        sunPosition: z.number().int().min(0).max(360),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const existing = await db.query.apartmentLayouts.findFirst({
+        where: eq(apartmentLayouts.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
+      }
+
+      const [updated] = await db
+        .update(apartmentLayouts)
+        .set({ sunPosition: input.sunPosition })
+        .where(eq(apartmentLayouts.id, input.id))
+        .returning();
+
+      return updated;
+    }),
 };

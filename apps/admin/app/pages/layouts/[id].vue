@@ -1,13 +1,40 @@
 <script setup lang="ts">
-import { useQuery } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 
-const { $orpc } = useNuxtApp();
+const { $orpc, $orpcClient } = useNuxtApp();
 const route = useRoute();
+const toast = useToast();
+const queryClient = useQueryClient();
 const id = computed(() => route.params.id as string);
 
 const { data: layout, isPending } = useQuery(
   computed(() => $orpc.apartmentLayouts.getById.queryOptions({ input: { id: id.value } })),
 );
+
+const sunPosition = ref<number>(0);
+
+watch(() => layout.value?.sunPosition, (val) => {
+  sunPosition.value = val ?? 0;
+}, { immediate: true });
+
+const sunMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.apartmentLayouts.updateSunPosition({
+      id: id.value,
+      sunPosition: sunPosition.value,
+    }),
+  onSuccess: () => {
+    toast.add({ title: "Положение солнца сохранено", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
+  },
+  onError: (error: any) => {
+    toast.add({
+      title: "Ошибка сохранения",
+      description: error.message,
+      color: "error",
+    });
+  },
+});
 </script>
 
 <template>
@@ -71,7 +98,7 @@ const { data: layout, isPending } = useQuery(
           </div>
         </div>
 
-        <!-- Right: Tags -->
+        <!-- Right: Tags + Sun Position -->
         <div class="space-y-6">
           <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
             <h3 class="mb-3 font-semibold">Tags</h3>
@@ -86,6 +113,21 @@ const { data: layout, isPending } = useQuery(
               </UBadge>
             </div>
             <p v-else class="text-sm text-(--ui-text-muted)">No tags</p>
+          </div>
+
+          <!-- Sun Position -->
+          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
+            <SunPositionSelector v-model="sunPosition" />
+            <div class="mt-6">
+              <UButton
+                :loading="sunMutation.isPending.value"
+                icon="i-tabler-device-floppy"
+                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+                @click="sunMutation.mutate()"
+              >
+                Сохранить
+              </UButton>
+            </div>
           </div>
         </div>
       </div>
