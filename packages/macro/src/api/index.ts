@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { MacroFlat, MacroPromo, FloorPlans, MacroComplex } from "../types";
+import type { MacroFlat, MacroPromo, FloorPlans, FloorSchemes, MacroComplex } from "../types";
 
 function macroToken(
   domain: string,
@@ -118,6 +118,26 @@ export async function getMacroFloorPlans(
 
   const response = await fetch(url);
   return (await response.json()) as FloorPlans;
+}
+
+export async function getMacroFloorSchemes(
+  floorPlans: FloorPlans,
+): Promise<FloorSchemes[]> {
+  const plans = Object.values(floorPlans).flatMap((plan) => plan);
+  const schemes = plans.filter((plan) => plan.file_ext === "svg");
+
+  return Promise.all(
+    schemes.map(async (scheme) => {
+      const response = await fetch(scheme.file_url);
+      const svgText = await response.text();
+      return {
+        estate_id: scheme.estate_id,
+        entrance: scheme.entrance,
+        floor: scheme.floor,
+        svg_scheme: svgText,
+      };
+    }),
+  );
 }
 
 export async function getMacroPromos(

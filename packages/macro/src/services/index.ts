@@ -2,6 +2,7 @@ import type {
   MacroFlat,
   MacroPromo,
   FloorPlans,
+  FloorSchemes,
   ImportCity,
   ImportTag,
   ImportProject,
@@ -27,6 +28,7 @@ import {
   getRealtyProperties,
   getApartmentLayoutName,
   formatDate,
+  transformFloorScheme,
 } from "../utils";
 
 interface ServiceContext {
@@ -117,6 +119,7 @@ export function createMacroServices(ctx: ServiceContext) {
   function getFloors(
     flats: MacroFlat[],
     floorPlans: FloorPlans,
+    floorSchemes: FloorSchemes[],
   ): ImportFloor[] {
     return getUniqueObjects(flats, (flat) => {
       const planImage = floorPlans[flat.parent_id]?.find(
@@ -131,7 +134,7 @@ export function createMacroServices(ctx: ServiceContext) {
         external_entrance_id: getSectionId(flat),
         external_id: getFloorId(flat),
         floor_number: flat.estate_floor,
-        svg_scheme: null,
+        svg_scheme: transformFloorScheme(flat, floorSchemes),
         floor_image: planImage?.file_url ?? null,
         ...base,
       };
@@ -211,6 +214,7 @@ export function createMacroServices(ctx: ServiceContext) {
   function getNonResidentialFloors(
     realty: MacroFlat[],
     floorPlans: FloorPlans,
+    floorSchemes: FloorSchemes[],
   ): ImportNonResidentialFloor[] {
     return getUniqueObjects(realty, (item) => {
       const planImage = floorPlans[item.parent_id]?.find(
@@ -225,7 +229,7 @@ export function createMacroServices(ctx: ServiceContext) {
         floor_number: item.estate_floor,
         external_project_id: item.complex_id?.toString(),
         external_building_id: item.parent_id?.toString(),
-        svg_scheme: null,
+        svg_scheme: transformFloorScheme(item, floorSchemes),
         floor_image: planImage?.file_url ?? null,
         ...base,
       };

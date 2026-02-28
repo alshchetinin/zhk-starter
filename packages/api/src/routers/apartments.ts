@@ -57,6 +57,16 @@ export const apartmentsRouter = {
       });
     }),
 
+  listByFloor: protectedProcedure
+    .input(z.object({ floorId: z.string() }))
+    .handler(async ({ input }) => {
+      return db.query.apartments.findMany({
+        where: eq(apartments.floorId, input.floorId),
+        columns: { id: true, apartmentNumber: true, status: true },
+        orderBy: [asc(apartments.apartmentNumber)],
+      });
+    }),
+
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
@@ -67,6 +77,7 @@ export const apartmentsRouter = {
           building: true,
           apartmentLayout: true,
           decoration: true,
+          floor: true,
           promotions: { with: { promotion: true } },
         },
       });

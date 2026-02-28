@@ -1,4 +1,4 @@
-import type { MacroFlat, ApartmentStatus } from "../types";
+import type { MacroFlat, ApartmentStatus, FloorSchemes } from "../types";
 
 export function getSectionId(flat: MacroFlat): string {
   return `${flat.geo_house_entrance}-${flat.parent_id}-${flat.complex_id}`;
@@ -47,6 +47,26 @@ export function formatDate(date: string | null): Date | null {
   if (!date) return null;
   const [day, month, year] = date.split(".");
   return new Date(`${month}-${day}-${year}`);
+}
+
+export function transformFloorScheme(
+  flat: MacroFlat,
+  floorSchemes: FloorSchemes[],
+): string | null {
+  const svgText = floorSchemes.find(
+    (scheme) =>
+      scheme.floor === flat.estate_floor?.toString() &&
+      scheme.entrance === flat.geo_house_entrance?.toString() &&
+      scheme.estate_id === flat.parent_id,
+  )?.svg_scheme;
+
+  if (!svgText) return null;
+
+  // Fix xmlns (https → http) without JSDOM to preserve self-closing <path/> tags
+  return svgText.replace(
+    'xmlns="https://www.w3.org/2000/svg"',
+    'xmlns="http://www.w3.org/2000/svg"',
+  );
 }
 
 export function getUniqueObjects<T, R>(

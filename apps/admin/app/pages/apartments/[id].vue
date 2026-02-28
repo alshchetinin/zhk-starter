@@ -2,12 +2,30 @@
 import { useQuery } from "@tanstack/vue-query";
 
 const { $orpc } = useNuxtApp();
+const router = useRouter();
 const route = useRoute();
 const id = computed(() => route.params.id as string);
 
 const { data: apartment, isPending } = useQuery(
   computed(() => $orpc.apartments.getById.queryOptions({ input: { id: id.value } })),
 );
+
+const floorId = computed(() => apartment.value?.floor?.id);
+
+const { data: floorApartments } = useQuery(
+  computed(() => $orpc.apartments.listByFloor.queryOptions({
+    input: { floorId: floorId.value! },
+    enabled: !!floorId.value,
+  })),
+);
+
+const apartmentsByNum = computed(() => {
+  const map = new Map<string, { id: string; status: string }>();
+  for (const a of floorApartments.value ?? []) {
+    map.set(a.apartmentNumber, { id: a.id, status: a.status });
+  }
+  return map;
+});
 
 const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> = {
   free: "success",
@@ -18,6 +36,36 @@ const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> 
 
 function formatPrice(price: string | number) {
   return Number(price).toLocaleString("ru-RU");
+}
+
+const floorPlanSvg = computed(() => {
+  if (!apartment.value?.floor?.svgScheme || !apartment.value.apartmentNumber) return null;
+
+  const svg = apartment.value.floor.svgScheme;
+  const currentNum = apartment.value.apartmentNumber;
+
+  // Mark current apartment and all known apartments
+  let result = svg;
+  for (const [num, info] of apartmentsByNum.value) {
+    const isActive = num === currentNum;
+    const attrs = isActive
+      ? ` data-active="true" data-apt-id="${info.id}" data-status="${info.status}"`
+      : ` data-apt-id="${info.id}" data-status="${info.status}"`;
+    result = result.replace(
+      new RegExp(`(<path[^>]*data-num="${num}"[^>]*)(/?>)`, 'g'),
+      `$1${attrs}$2`,
+    );
+  }
+  return result;
+});
+
+function onFloorPlanClick(event: MouseEvent) {
+  const path = (event.target as Element).closest('path[data-apt-id]');
+  if (!path) return;
+  const aptId = path.getAttribute('data-apt-id');
+  if (aptId && aptId !== id.value) {
+    router.push(`/apartments/${aptId}`);
+  }
 }
 </script>
 
@@ -182,6 +230,27 @@ function formatPrice(price: string | number) {
             </NuxtLink>
           </div>
 
+          <!-- Floor Plan with SVG overlay -->
+          <div v-if="apartment.floor && (apartment.floor.floorImage || apartment.floor.svgScheme)" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
+            <h3 class="mb-3 font-semibold">
+              Floor {{ apartment.floorNumber }}
+            </h3>
+            <div class="relative w-full overflow-hidden rounded-lg bg-(--ui-bg-elevated)">
+              <img
+                v-if="apartment.floor.floorImage"
+                :src="apartment.floor.floorImage"
+                :alt="`Floor ${apartment.floorNumber}`"
+                class="block w-full"
+              />
+              <div
+                v-if="floorPlanSvg"
+                class="floor-svg-overlay absolute inset-0"
+                v-html="floorPlanSvg"
+                @click="onFloorPlanClick"
+              />
+            </div>
+          </div>
+
           <!-- Related Objects -->
           <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
             <h3 class="mb-3 font-semibold">Related</h3>
@@ -215,3 +284,43 @@ function formatPrice(price: string | number) {
     </template>
   </PageContainer>
 </template>
+
+<style scoped>
+.floor-svg-overlay :deep(svg) {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.floor-svg-overlay :deep(path) {
+  fill: transparent;
+  stroke: none;
+  pointer-events: none;
+}
+
+.floor-svg-overlay :deep(path[data-apt-id]) {
+  pointer-events: all;
+  cursor: pointer;
+  fill: rgba(59, 130, 246, 0.15);
+  stroke: rgba(59, 130, 246, 0.6);
+  stroke-width: 2;
+  transition: fill 0.15s, stroke 0.15s;
+}
+
+.floor-svg-overlay :deep(path[data-apt-id]:hover) {
+  fill: rgba(59, 130, 246, 0.4);
+  stroke: rgb(37, 99, 235);
+  stroke-width: 3;
+}
+
+.floor-svg-overlay :deep(path[data-active="true"]) {
+  fill: rgba(234, 88, 12, 0.45);
+  stroke: rgb(234, 88, 12);
+  stroke-width: 3;
+}
+
+.floor-svg-overlay :deep(path[data-active="true"]:hover) {
+  fill: rgba(234, 88, 12, 0.55);
+}
+</style>

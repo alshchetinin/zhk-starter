@@ -1,6 +1,6 @@
 export type { MacroFlat, MacroImage, MacroImageFolder } from "./flat";
 export type { MacroPromo } from "./promo";
-export type { FloorPlan, FloorPlans } from "./floor-plans";
+export type { FloorPlan, FloorPlans, FloorSchemes } from "./floor-plans";
 
 export type MacroHouse = {
   id: number;

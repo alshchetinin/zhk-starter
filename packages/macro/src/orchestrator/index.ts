@@ -2,6 +2,7 @@ import type { ImportData } from "../types";
 import {
   getMacroRealty,
   getMacroFloorPlans,
+  getMacroFloorSchemes,
   getMacroPromos,
 } from "../api";
 import { createMacroServices } from "../services";
@@ -28,6 +29,12 @@ export async function getMacroData(
     domain,
     appSecret,
     apiDomain,
+  );
+
+  const floorSchemes = await getMacroFloorSchemes(floorPlans);
+
+  console.log(
+    `[macro:${integrationId}] Floor schemes: ${floorSchemes.length} SVG files downloaded`,
   );
 
   const livingRealty = await getMacroRealty(
@@ -72,7 +79,7 @@ export async function getMacroData(
   const buildings = services.getBuildings(allRealty);
   const sections = services.getSections(flats);
   const entrances = services.getEntrances(flats);
-  const floors = services.getFloors(flats, floorPlans);
+  const floors = services.getFloors(flats, floorPlans, floorSchemes);
   const apartment_layouts = services.getApartmentLayouts(flats);
   const apartment_layout_tags = services.getApartmentLayoutTags(
     flats,
@@ -83,6 +90,7 @@ export async function getMacroData(
   const non_residential_floors = services.getNonResidentialFloors(
     allNonResidentialRealty,
     floorPlans,
+    floorSchemes,
   );
   const commerce = services.getCommercial(commercialRealty);
   const parking = services.getNonResidentialRealty(parkingRealty);
