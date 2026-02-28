@@ -1,6 +1,12 @@
+<script setup lang="ts">
+import { VueQueryDevtools } from "@tanstack/vue-query-devtools";
+</script>
+
 <template>
-  <div>
-    <h1>ZHK Starter — Admin</h1>
-    <p>Management panel</p>
-  </div>
+  <UApp>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </UApp>
+  <VueQueryDevtools />
 </template>

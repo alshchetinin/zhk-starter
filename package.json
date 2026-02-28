@@ -18,7 +18,7 @@
     "db:watch": "turbo -F @zhk/db db:watch",
     "db:stop": "turbo -F @zhk/db db:stop",
     "db:down": "turbo -F @zhk/db db:down",
-    "db:seed": "pnpm --filter @zhk/db db:seed",
+    "db:seed": "pnpm --filter server db:seed",
     "db:reset": "pnpm db:down && pnpm db:start && sleep 2 && pnpm db:push && pnpm db:seed"
   },
   "dependencies": {

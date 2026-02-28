@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { integrationStatusEnum, integrationTypeEnum } from "./_enums";
 import { tenants } from "./tenants";
 
@@ -15,8 +15,11 @@ export const integrations = pgTable("integrations", {
   domain: text("domain"),
   apiDomain: text("api_domain"),
   appSecret: text("app_secret"),
+  macroType: text("macro_type"),
   feedUrl: text("feed_url"),
+  isActive: boolean("is_active").default(false).notNull(),
   status: integrationStatusEnum("status").default("pending"),
+  lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

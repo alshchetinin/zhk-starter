@@ -12,6 +12,9 @@ export const env = createEnv({
       .min(1)
       .transform((val) => val.split(",").map((s) => s.trim())),
     COOKIE_DOMAIN: z.string().optional(),
+    ADMIN_EMAIL: z.string().email().optional(),
+    ADMIN_PASSWORD: z.string().min(8).optional(),
+    ADMIN_NAME: z.string().min(1).optional(),
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),

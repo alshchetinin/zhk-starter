@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { MacroFlat, MacroPromo, FloorPlans } from "../types";
+import type { MacroFlat, MacroPromo, FloorPlans, MacroComplex } from "../types";
 
 function macroToken(
   domain: string,
@@ -14,6 +14,25 @@ function macroToken(
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function getMacroComplexes(
+  domain: string,
+  appSecret: string,
+  apiDomain: string,
+): Promise<MacroComplex[]> {
+  const { token, time } = macroToken(domain, appSecret);
+  const url = `https://${apiDomain}/estate/group/getComplexes/?token=${token}&domain=${domain}&time=${time}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `MacroCRM getComplexes failed: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const data = (await response.json()) as { complexes: MacroComplex[] };
+  return data.complexes ?? [];
 }
 
 export async function getMacroRealty(
