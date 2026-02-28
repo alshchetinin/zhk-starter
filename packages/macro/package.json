@@ -1,0 +1,17 @@
+{
+  "name": "@zhk/macro",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": { "default": "./src/index.ts" },
+    "./*": { "default": "./src/*.ts" }
+  },
+  "dependencies": {
+    "@zhk/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@zhk/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

@@ -1,0 +1,171 @@
+import { and, eq, inArray } from "drizzle-orm";
+import type { PgTable } from "drizzle-orm/pg-core";
+import { chunkArray } from "../utils";
+import { BATCH_SIZE, JOIN_TABLES } from "../constants";
+import type { ImportTableName } from "../schema-map";
+
+/**
+ * Maps import data keys (snake_case) to Drizzle column names (camelCase).
+ */
+const COLUMN_MAP: Record<string, string> = {
+  external_id: "externalId",
+  integration_id: "integrationId",
+  tenant_id: "tenantId",
+  floor_number: "floorNumber",
+  floors_count: "floorsCount",
+  svg_scheme: "svgScheme",
+  floor_image: "floorImage",
+  rooms_count: "roomsCount",
+  floor_range: "floorRange",
+  price_range: "priceRange",
+  ceiling_height: "ceilingHeight",
+  default_layout_image: "defaultLayoutImage",
+  three_d_layout_image: "threeDLayoutImage",
+  three_d_tour_url: "threeDTourUrl",
+  apartment_number: "apartmentNumber",
+  old_price: "oldPrice",
+  is_published: "isPublished",
+  is_popular: "isPopular",
+  is_studio: "isStudio",
+  is_apartment: "isApartment",
+  monthly_mortgage_payment: "monthlyMortgagePayment",
+  window_view: "windowView",
+  completion_date: "completionDate",
+  date_start: "dateStart",
+  date_end: "dateEnd",
+  layout_image: "layoutImage",
+  commerce_number: "commerceNumber",
+  title_admin: "titleAdmin",
+  masterplan_image: "masterplanImage",
+  masterplan_scheme: "masterplanScheme",
+  sun_position: "sunPosition",
+};
+
+/**
+ * Convert import data (snake_case) to Drizzle values (camelCase).
+ * Also converts Date objects to ISO strings for date columns,
+ * and numbers to strings for numeric columns.
+ */
+function toDbValues(data: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data)) {
+    const dbKey = COLUMN_MAP[key] ?? key;
+
+    // Convert Date to ISO date string for date columns
+    if (value instanceof Date) {
+      result[dbKey] = value.toISOString().split("T")[0];
+    }
+    // Convert numeric values to strings for Drizzle numeric columns
+    else if (
+      typeof value === "number" &&
+      (dbKey === "area" ||
+        dbKey === "price" ||
+        dbKey === "oldPrice" ||
+        dbKey === "ceilingHeight" ||
+        dbKey === "monthlyMortgagePayment")
+    ) {
+      result[dbKey] = String(value);
+    } else {
+      result[dbKey] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Upsert records for a given table.
+ * Finds existing records by (externalId, integrationId),
+ * splits into toInsert and toUpdate, batch processes.
+ */
+export async function upsertRecords(
+  tx: Parameters<Parameters<typeof import("@zhk/db").db.transaction>[0]>[0],
+  tableName: ImportTableName,
+  table: PgTable & Record<string, any>,
+  data: Record<string, unknown>[],
+  integrationId: string,
+): Promise<{ inserted: number; updated: number }> {
+  if (!data.length) return { inserted: 0, updated: 0 };
+
+  const isJoinTable = JOIN_TABLES.includes(tableName);
+
+  if (isJoinTable) {
+    return upsertJoinTable(tx, table, data);
+  }
+
+  // For regular tables, find existing by externalId + integrationId
+  const externalIds = data
+    .map((item) => item.externalId as string)
+    .filter(Boolean);
+
+  const existingMap = new Map<string, string>();
+
+  if (externalIds.length && table.externalId) {
+    for (const chunk of chunkArray(externalIds, BATCH_SIZE)) {
+      const rows = await tx
+        .select({ id: table.id, externalId: table.externalId })
+        .from(table)
+        .where(
+          and(
+            inArray(table.externalId, chunk),
+            eq(table.integrationId, integrationId),
+          ),
+        );
+
+      for (const row of rows) {
+        if (row.externalId) {
+          existingMap.set(row.externalId, row.id);
+        }
+      }
+    }
+  }
+
+  const toInsert: Record<string, unknown>[] = [];
+  const toUpdate: { id: string; values: Record<string, unknown> }[] = [];
+
+  for (const item of data) {
+    const externalId = item.externalId as string;
+    const existingId = externalId ? existingMap.get(externalId) : undefined;
+
+    if (existingId) {
+      const { id: _, createdAt: _c, ...updateValues } = item;
+      toUpdate.push({ id: existingId, values: updateValues });
+    } else {
+      toInsert.push(item);
+    }
+  }
+
+  // Batch insert
+  for (const chunk of chunkArray(toInsert, BATCH_SIZE)) {
+    await tx.insert(table).values(chunk);
+  }
+
+  // Update one by one (each record may have different columns)
+  for (const { id, values } of toUpdate) {
+    await tx.update(table).set(values).where(eq(table.id, id));
+  }
+
+  return { inserted: toInsert.length, updated: toUpdate.length };
+}
+
+/**
+ * Handle join tables (apartment_layout_tags, apartment_promotions).
+ * These have no id or externalId — just delete all and re-insert.
+ */
+async function upsertJoinTable(
+  tx: Parameters<Parameters<typeof import("@zhk/db").db.transaction>[0]>[0],
+  table: PgTable & Record<string, any>,
+  data: Record<string, unknown>[],
+): Promise<{ inserted: number; updated: number }> {
+  // Filter out records where FK resolution failed (null FKs)
+  const validData = data.filter((item) => {
+    return Object.values(item).every((v) => v !== null && v !== undefined);
+  });
+
+  for (const chunk of chunkArray(validData, BATCH_SIZE)) {
+    await tx.insert(table).values(chunk);
+  }
+
+  return { inserted: validData.length, updated: 0 };
+}
+
+export { toDbValues };
