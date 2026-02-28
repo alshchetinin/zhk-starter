@@ -185,6 +185,27 @@ export const projectsRouter = {
 
       return { status: "loading" as const, projectId: input.id };
     }),
+
+  recalculateStats: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, input.id),
+      });
+      if (!project) {
+        throw new ORPCError("NOT_FOUND", { message: "Project not found" });
+      }
+
+      const { recalculateProjectStatistics } = await import(
+        "@zhk/db/queries/statistics"
+      );
+      await recalculateProjectStatistics(input.id);
+
+      return db.query.projects.findFirst({
+        where: eq(projects.id, input.id),
+        with: { city: true, buildings: true },
+      });
+    }),
 };
 
 async function runProjectSync(
@@ -218,6 +239,19 @@ async function runProjectSync(
   );
 
   if (result.success) {
+    try {
+      const { recalculateProjectStatistics } = await import(
+        "@zhk/db/queries/statistics"
+      );
+      await recalculateProjectStatistics(project.id);
+      console.log(`[sync] Project ${project.id} statistics recalculated`);
+    } catch (err) {
+      console.error(
+        `[sync] Statistics recalculation failed for ${project.id}:`,
+        err,
+      );
+    }
+
     await db
       .update(projects)
       .set({
