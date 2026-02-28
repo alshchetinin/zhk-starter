@@ -1,0 +1,23 @@
+name: zhk-starter
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: zhk-starter-postgres
+    environment:
+      POSTGRES_DB: zhk_starter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5441:5432"
+    volumes:
+      - zhk_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  zhk_postgres_data:

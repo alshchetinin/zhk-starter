@@ -1,0 +1,35 @@
+{
+  "name": "zhk-starter",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:server": "turbo -F server dev",
+    "dev:web": "turbo -F zhk-web dev",
+    "dev:admin": "turbo -F zhk-admin dev",
+    "db:push": "turbo -F @zhk/db db:push",
+    "db:studio": "turbo -F @zhk/db db:studio",
+    "db:generate": "turbo -F @zhk/db db:generate",
+    "db:migrate": "turbo -F @zhk/db db:migrate",
+    "db:start": "turbo -F @zhk/db db:start",
+    "db:watch": "turbo -F @zhk/db db:watch",
+    "db:stop": "turbo -F @zhk/db db:stop",
+    "db:down": "turbo -F @zhk/db db:down",
+    "db:seed": "pnpm --filter @zhk/db db:seed",
+    "db:reset": "pnpm db:down && pnpm db:start && sleep 2 && pnpm db:push && pnpm db:seed"
+  },
+  "dependencies": {
+    "@zhk/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@zhk/config": "workspace:*",
+    "turbo": "^2.6.3",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.18.1"
+}

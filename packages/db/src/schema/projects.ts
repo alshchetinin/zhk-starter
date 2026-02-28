@@ -1,0 +1,57 @@
+import { relations } from "drizzle-orm";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { projectStatusEnum } from "./_enums";
+import { tenants } from "./tenants";
+import { integrations } from "./integrations";
+import { cities } from "./cities";
+import { buildings } from "./buildings";
+
+export const projects = pgTable("projects", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tenantId: text("tenant_id")
+    .notNull()
+    .default("default")
+    .references(() => tenants.id),
+  name: text("name").notNull(),
+  address: text("address").notNull(),
+  imageUrl: text("image_url"),
+  type: text("type"),
+  tags: text("tags").array(),
+  status: projectStatusEnum("status").notNull(),
+  coordinates: text("coordinates"),
+  masterplanImage: text("masterplan_image"),
+  masterplanScheme: text("masterplan_scheme"),
+  cityId: text("city_id").references(() => cities.id),
+  externalId: text("external_id"),
+  integrationId: text("integration_id").references(() => integrations.id),
+  freeApartmentsCount: integer("free_apartments_count").default(0),
+  paidReservationCount: integer("paid_reservation_count").default(0),
+  corporateReservationCount: integer("corporate_reservation_count").default(0),
+  soldApartmentsCount: integer("sold_apartments_count").default(0),
+  totalApartmentsCount: integer("total_apartments_count").default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  tenant: one(tenants, {
+    fields: [projects.tenantId],
+    references: [tenants.id],
+  }),
+  city: one(cities, {
+    fields: [projects.cityId],
+    references: [cities.id],
+  }),
+  integration: one(integrations, {
+    fields: [projects.integrationId],
+    references: [integrations.id],
+  }),
+  buildings: many(buildings),
+}));
