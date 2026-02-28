@@ -27,6 +27,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/node": "^22",
     "@zhk/config": "workspace:*",
     "turbo": "^2.6.3",
     "typescript": "catalog:"

@@ -1,0 +1,3 @@
+{
+  "extends": "@zhk/config/tsconfig.base.json"
+}

@@ -11,6 +11,8 @@
     "@zhk/auth": "workspace:*",
     "@zhk/db": "workspace:*",
     "@zhk/env": "workspace:*",
+    "@zhk/macro": "workspace:*",
+    "@zhk/import": "workspace:*",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
