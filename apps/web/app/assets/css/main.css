@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* ================================================
+   THEME TOKENS
+   Tailwind v4 CSS-first configuration.
+   All custom values defined via @theme become
+   available as Tailwind utilities automatically.
+   ================================================ */
+
+@theme {
+  /* --- Typography --- */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Colors: Brand (deep blue, hue 250) --- */
+  --color-brand-50: oklch(0.97 0.01 250);
+  --color-brand-100: oklch(0.93 0.02 250);
+  --color-brand-200: oklch(0.87 0.04 250);
+  --color-brand-300: oklch(0.78 0.07 250);
+  --color-brand-400: oklch(0.68 0.1 250);
+  --color-brand-500: oklch(0.55 0.12 250);
+  --color-brand-600: oklch(0.47 0.12 250);
+  --color-brand-700: oklch(0.4 0.1 250);
+  --color-brand-800: oklch(0.33 0.08 250);
+  --color-brand-900: oklch(0.27 0.06 250);
+  --color-brand-950: oklch(0.2 0.04 250);
+
+  /* --- Colors: Surface (warm gray) --- */
+  --color-surface-50: oklch(0.985 0.002 80);
+  --color-surface-100: oklch(0.97 0.004 80);
+  --color-surface-200: oklch(0.92 0.006 80);
+  --color-surface-300: oklch(0.87 0.008 75);
+  --color-surface-400: oklch(0.71 0.01 75);
+  --color-surface-500: oklch(0.55 0.01 75);
+  --color-surface-600: oklch(0.45 0.01 75);
+  --color-surface-700: oklch(0.37 0.01 75);
+  --color-surface-800: oklch(0.27 0.008 75);
+  --color-surface-900: oklch(0.2 0.006 75);
+  --color-surface-950: oklch(0.14 0.004 75);
+
+  /* --- Colors: Semantic --- */
+  --color-success: oklch(0.6 0.15 145);
+  --color-warning: oklch(0.75 0.15 75);
+  --color-error: oklch(0.6 0.2 25);
+  --color-info: oklch(0.6 0.12 250);
+
+  /* --- Spacing: Section rhythm --- */
+  --spacing-section: 5rem;
+  --spacing-section-sm: 3rem;
+
+  /* --- Border Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  /* --- Container widths --- */
+  --container-3xl: 1440px;
+}
+
+/* ================================================
+   SEMANTIC DESIGN TOKENS
+   Maps to UI roles. Override per-tenant in future.
+   ================================================ */
+
+:root {
+  /* Layout */
+  --web-header-height: 4.5rem;
+  --web-container-max: 1280px;
+  --web-container-padding: 1.5rem;
+
+  /* Text */
+  --web-text-primary: var(--color-surface-900);
+  --web-text-secondary: var(--color-surface-600);
+  --web-text-muted: var(--color-surface-400);
+  --web-text-inverse: white;
+
+  /* Background */
+  --web-bg: white;
+  --web-bg-muted: var(--color-surface-50);
+  --web-bg-subtle: var(--color-surface-100);
+
+  /* Borders */
+  --web-border: var(--color-surface-200);
+  --web-border-hover: var(--color-surface-300);
+
+  /* Interactive */
+  --web-accent: var(--color-brand-600);
+  --web-accent-hover: var(--color-brand-700);
+  --web-accent-light: var(--color-brand-50);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --web-container-padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --web-container-padding: 2.5rem;
+  }
+}
+
+/* ================================================
+   BASE STYLES
+   ================================================ */
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  color: var(--web-text-primary);
+  background-color: var(--web-bg);
+}
+
+/* ================================================
+   UTILITY CLASSES
+   ================================================ */
+
+.container-web {
+  max-width: var(--web-container-max);
+  margin-inline: auto;
+  padding-inline: var(--web-container-padding);
+}
+
+.section {
+  padding-block: var(--spacing-section-sm);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-block: var(--spacing-section);
+  }
+}
