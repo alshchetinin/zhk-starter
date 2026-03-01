@@ -11,8 +11,6 @@ const props = defineProps<{
 
 const currentSlide = ref(0);
 
-const hasMultipleSlides = computed(() => props.images.length > 1);
-
 function next() {
   currentSlide.value = (currentSlide.value + 1) % props.images.length;
 }
@@ -26,20 +24,21 @@ function prev() {
   <div class="relative flex min-h-svh flex-col text-[var(--web-text-inverse)]">
     <!-- Background slideshow -->
     <div class="absolute inset-0 overflow-hidden">
-      <template v-for="(img, i) in images" :key="img">
-        <img
-          v-show="i === currentSlide"
-          :src="img"
-          :alt="title"
-          class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
-          :class="i === currentSlide ? 'opacity-100' : 'opacity-0'"
-        />
-      </template>
+      <img
+        v-for="(img, i) in images"
+        :key="img"
+        :src="img"
+        :alt="title"
+        class="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+        :class="i === currentSlide ? 'opacity-100' : 'opacity-0'"
+        :loading="i > 0 ? 'lazy' : undefined"
+        :fetchpriority="i === 0 ? 'high' : undefined"
+      />
       <div class="absolute inset-0 bg-black/40" />
     </div>
 
     <!-- Slide arrows -->
-    <template v-if="hasMultipleSlides">
+    <template v-if="images.length > 1">
       <button
         class="absolute left-6 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/10 backdrop-blur-sm transition-colors hover:bg-white/20"
         @click="prev"

@@ -8,6 +8,10 @@ defineProps<{
   buttonUrl?: string;
   departments?: Array<{ name: string; phone: string; email?: string }>;
 }>();
+
+function telHref(phone: string) {
+  return `tel:${phone.replace(/\s/g, '')}`;
+}
 </script>
 
 <template>
@@ -22,7 +26,7 @@ defineProps<{
         <div class="flex flex-wrap gap-x-12 gap-y-4">
           <div>
             <div class="text-xs font-medium uppercase tracking-wider text-[var(--web-text-muted)]">Телефон</div>
-            <a :href="`tel:${phone.replace(/\s/g, '')}`" class="mt-1 block text-lg font-semibold text-[var(--web-text-primary)] hover:text-[var(--web-accent)]">
+            <a :href="telHref(phone)" class="mt-1 block text-lg font-semibold text-[var(--web-text-primary)] hover:text-[var(--web-accent)]">
               {{ phone }}
             </a>
           </div>
@@ -59,7 +63,7 @@ defineProps<{
           <div class="min-w-[200px] font-medium text-[var(--web-text-secondary)]">
             {{ dept.name }}
           </div>
-          <a :href="`tel:${dept.phone.replace(/\s/g, '')}`" class="text-[var(--web-text-primary)] hover:text-[var(--web-accent)]">
+          <a :href="telHref(dept.phone)" class="text-[var(--web-text-primary)] hover:text-[var(--web-accent)]">
             {{ dept.phone }}
           </a>
           <a v-if="dept.email" :href="`mailto:${dept.email}`" class="text-[var(--web-text-primary)] hover:text-[var(--web-accent)]">

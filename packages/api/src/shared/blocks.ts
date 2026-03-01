@@ -96,7 +96,7 @@ export const testBlockSchema = baseBlockSchema.extend({
 export const heroBlockDataSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  images: z.array(z.string().url()),
+  images: z.array(z.string().url()).min(1),
   primaryButtonText: z.string().min(1),
   primaryButtonUrl: z.union([z.string().url(), z.literal("")]),
   secondaryButtonText: z.string().optional(),
