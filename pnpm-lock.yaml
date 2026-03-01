@@ -179,6 +179,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@orpc/client':
+        specifier: 'catalog:'
+        version: 1.13.5
+      '@orpc/tanstack-query':
+        specifier: ^1.12.2
+        version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.90.20)
+      '@tanstack/vue-query':
+        specifier: ^5.90.2
+        version: 5.92.9(vue@3.5.29(typescript@5.9.3))
+      '@zhk/api':
+        specifier: workspace:*
+        version: link:../../packages/api
       '@zhk/env':
         specifier: workspace:*
         version: link:../../packages/env

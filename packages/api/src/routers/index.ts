@@ -13,11 +13,13 @@ import { newsRouter } from "./news";
 import { pagesRouter } from "./pages";
 import { documentsRouter } from "./documents";
 import { promotionsRouter } from "./promotions";
+import { publicRouter } from "./public/index";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
     return "OK";
   }),
+  public: publicRouter,
   integration: integrationRouter,
   projects: projectsRouter,
   buildings: buildingsRouter,
