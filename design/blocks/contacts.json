@@ -1,0 +1,23 @@
+{
+  "name": "contacts",
+  "label": "Контакты",
+  "description": "Блок контактов с телефоном, email, адресом, отделами и картой",
+  "icon": "i-tabler-address-book",
+  "fields": [
+    { "name": "title", "type": "string", "label": "Заголовок", "required": true },
+    { "name": "phone", "type": "string", "label": "Телефон", "required": true },
+    { "name": "email", "type": "string", "label": "Email", "required": true },
+    { "name": "address", "type": "string", "label": "Адрес", "required": true },
+    { "name": "buttonText", "type": "string", "label": "Кнопка — текст", "required": false },
+    { "name": "buttonUrl", "type": "url", "label": "Кнопка — ссылка", "required": false },
+    {
+      "name": "departments", "type": "repeater", "label": "Отделы", "required": false,
+      "minItems": 0,
+      "subFields": [
+        { "name": "name", "type": "string", "label": "Название отдела", "required": true },
+        { "name": "phone", "type": "string", "label": "Телефон", "required": true },
+        { "name": "email", "type": "string", "label": "Email", "required": false }
+      ]
+    }
+  ]
+}

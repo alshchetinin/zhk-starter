@@ -33,6 +33,14 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { name: "1" };
     case "test":
       return { name: "" };
+    case "hero":
+      return { title: "", description: undefined, images: [], primaryButtonText: "", primaryButtonUrl: "", secondaryButtonText: undefined, secondaryButtonUrl: undefined };
+    case "about-tabs":
+      return { title: "", description: undefined, tabs: [] };
+    case "about-cards":
+      return { title: "", description: undefined, items: [] };
+    case "contacts":
+      return { title: "", phone: "", email: "", address: "", buttonText: undefined, buttonUrl: undefined, departments: undefined };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

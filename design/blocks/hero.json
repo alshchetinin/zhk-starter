@@ -1,0 +1,15 @@
+{
+  "name": "hero",
+  "label": "Главный баннер",
+  "description": "Fullscreen баннер проекта с фоном-слайдером и CTA",
+  "icon": "i-tabler-photo",
+  "fields": [
+    { "name": "title", "type": "string", "label": "Название проекта", "required": true },
+    { "name": "description", "type": "text", "label": "Описание", "required": false, "description": "Краткое описание под заголовком" },
+    { "name": "images", "type": "images", "label": "Фоновые изображения", "required": true },
+    { "name": "primaryButtonText", "type": "string", "label": "Основная кнопка — текст", "required": true },
+    { "name": "primaryButtonUrl", "type": "url", "label": "Основная кнопка — ссылка", "required": true },
+    { "name": "secondaryButtonText", "type": "string", "label": "Вторая кнопка — текст", "required": false },
+    { "name": "secondaryButtonUrl", "type": "url", "label": "Вторая кнопка — ссылка", "required": false }
+  ]
+}

@@ -8,6 +8,10 @@ import ProjectStatsBlock from "./ProjectStatsBlock.vue";
 import ProjectLocationBlock from "./ProjectLocationBlock.vue";
 import MapBlock from "./MapBlock.vue";
 import TestBlock from "./TestBlock.vue";
+import HeroBlock from "./HeroBlock.vue";
+import AboutTabsBlock from "./AboutTabsBlock.vue";
+import AboutCardsBlock from "./AboutCardsBlock.vue";
+import ContactsBlock from "./ContactsBlock.vue";
 // --- GENERATOR:EDITOR_IMPORT ---
 
 export const blockEditorComponents: Record<string, Component> = {
@@ -20,5 +24,9 @@ export const blockEditorComponents: Record<string, Component> = {
   "project-location": ProjectLocationBlock,
   map: MapBlock,
   test: TestBlock,
+  hero: HeroBlock,
+  "about-tabs": AboutTabsBlock,
+  "about-cards": AboutCardsBlock,
+  contacts: ContactsBlock,
   // --- GENERATOR:EDITOR_COMPONENT ---
 };

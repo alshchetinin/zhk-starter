@@ -1,0 +1,20 @@
+{
+  "name": "about-tabs",
+  "label": "О проекте (табы)",
+  "description": "Секция о проекте с табами: картинка-слайдер, подзаголовок, описание",
+  "icon": "i-tabler-layout-bottombar",
+  "fields": [
+    { "name": "title", "type": "string", "label": "Заголовок", "required": true },
+    { "name": "description", "type": "text", "label": "Вводный текст", "required": false },
+    {
+      "name": "tabs", "type": "repeater", "label": "Табы", "required": true,
+      "minItems": 2,
+      "subFields": [
+        { "name": "label", "type": "string", "label": "Название таба", "required": true },
+        { "name": "image", "type": "image", "label": "Изображение", "required": true },
+        { "name": "subtitle", "type": "string", "label": "Подзаголовок", "required": true },
+        { "name": "text", "type": "text", "label": "Описание", "required": false }
+      ]
+    }
+  ]
+}
