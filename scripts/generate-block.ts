@@ -29,7 +29,22 @@ async function main() {
     .map((f) => {
       const req = f.required ? "" : " [опционально]";
       const desc = f.description ? ` — ${f.description}` : "";
-      return `  ${f.name} (${FIELD_TYPES[f.type]!.label})${req}${desc}`;
+      let line = `  ${f.name} (${FIELD_TYPES[f.type]!.label})${req}${desc}`;
+
+      if (f.type === "repeater" && f.subFields) {
+        const constraints: string[] = [];
+        if (f.minItems !== undefined && f.minItems > 0) constraints.push(`min: ${f.minItems}`);
+        if (f.maxItems !== undefined) constraints.push(`max: ${f.maxItems}`);
+        if (constraints.length) line += ` [${constraints.join(", ")}]`;
+
+        const subLines = f.subFields.map((sf) => {
+          const sReq = sf.required ? "" : " [опц]";
+          return `    ↳ ${sf.name} (${FIELD_TYPES[sf.type]!.label})${sReq}`;
+        });
+        line += "\n" + subLines.join("\n");
+      }
+
+      return line;
     })
     .join("\n");
 

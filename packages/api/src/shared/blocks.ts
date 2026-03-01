@@ -40,6 +40,35 @@ export const featuresBlockSchema = baseBlockSchema.extend({
   data: featuresBlockDataSchema,
 });
 
+// --- Команда block ---
+
+export const teamBlockDataSchema = z.object({
+  items: z.array(z.object({
+    name: z.string().min(1),
+    picture: z.string().url(),
+  })).min(4),
+});
+
+export const teamBlockSchema = baseBlockSchema.extend({
+  type: z.literal("team"),
+  data: teamBlockDataSchema,
+});
+
+// --- Карточки block ---
+
+export const cardV1BlockDataSchema = z.object({
+  items: z.array(z.object({
+    title: z.string().min(1),
+    description: z.string().optional(),
+    image: z.string().url(),
+  })).min(3).max(3),
+});
+
+export const cardV1BlockSchema = baseBlockSchema.extend({
+  type: z.literal("card-v1"),
+  data: cardV1BlockDataSchema,
+});
+
 // --- GENERATOR:BLOCK_SCHEMA ---
 
 // --- Discriminated union of all blocks ---
@@ -47,6 +76,8 @@ export const featuresBlockSchema = baseBlockSchema.extend({
 export const contentBlockSchema = z.discriminatedUnion("type", [
   allFieldsBlockSchema,
   featuresBlockSchema,
+  teamBlockSchema,
+  cardV1BlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
 ]);
 
@@ -77,6 +108,18 @@ export const blockDefinitions: BlockDefinition[] = [
     label: "Перимущества",
     icon: "i-tabler-ghost-3",
     description: "Карточки преимущести",
+  },
+  {
+    type: "team",
+    label: "Команда",
+    icon: "i-tabler-ghost-3",
+    description: "Блок с карточками",
+  },
+  {
+    type: "card-v1",
+    label: "Карточки",
+    icon: "i-tabler-ghost-3",
+    description: "Карточки с описанием и картинкой",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
 ];

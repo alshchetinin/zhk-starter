@@ -1,8 +1,23 @@
 import { FIELD_TYPES } from "../field-types.js";
 import { insertBeforeMarker, readFile, writeFile, toCamelCase } from "../utils.js";
-import type { BlockInfo } from "../prompts.js";
+import type { BlockInfo, FieldInfo } from "../prompts.js";
 
-function resolveZodType(field: { type: string; options?: string[]; required: boolean }): string {
+function resolveZodType(field: FieldInfo): string {
+  // Handle repeater type
+  if (field.type === "repeater" && field.subFields) {
+    const subFieldsCode = field.subFields
+      .map((sf) => `    ${sf.name}: ${resolveZodType(sf)},`)
+      .join("\n");
+    let base = `z.array(z.object({\n${subFieldsCode}\n  }))`;
+    if (field.minItems !== undefined && field.minItems > 0) {
+      base += `.min(${field.minItems})`;
+    }
+    if (field.maxItems !== undefined) {
+      base += `.max(${field.maxItems})`;
+    }
+    return field.required ? base : `${base}.optional()`;
+  }
+
   const ft = FIELD_TYPES[field.type]!;
   const base = typeof ft.zodType === "function" ? ft.zodType(field.options) : ft.zodType;
 

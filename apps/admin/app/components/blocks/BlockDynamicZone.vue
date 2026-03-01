@@ -19,6 +19,10 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { title: "", subtitle: undefined, body: "", note: undefined, content: "", sortOrder: undefined, isVisible: false, link: undefined, cover: null, gallery: undefined, size: "small" };
     case "features":
       return { name: "", picture: null };
+    case "team":
+      return { items: [] };
+    case "card-v1":
+      return { items: [] };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};
