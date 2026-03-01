@@ -4,6 +4,12 @@ export default defineAppConfig({
       primary: "black",
       neutral: "neutral",
     },
+    input: {
+      slots: { root: "w-full" },
+    },
+    textarea: {
+      slots: { root: "w-full" },
+    },
     button: {
       slots: { base: "cursor-pointer" },
     },
@@ -11,7 +17,7 @@ export default defineAppConfig({
       slots: { trigger: "cursor-pointer" },
     },
     select: {
-      slots: { base: "cursor-pointer" },
+      slots: { root: "w-full", base: "cursor-pointer" },
     },
     selectMenu: {
       slots: { base: "cursor-pointer" },

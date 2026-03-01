@@ -22,3 +22,9 @@ export const integrationStatusEnum = pgEnum("integration_status", [
 ]);
 
 export const integrationTypeEnum = pgEnum("integration_type", ["macro"]);
+
+export const newsStatusEnum = pgEnum("news_status", [
+  "draft",
+  "published",
+  "archived",
+]);

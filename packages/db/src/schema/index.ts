@@ -19,3 +19,4 @@ export * from "./storage";
 export * from "./non-residential-floors";
 export * from "./tickets";
 export * from "./auth";
+export * from "./news";

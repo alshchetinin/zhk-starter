@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   compatibilityDate: "latest",
   devtools: { enabled: true },
   devServer: { port: 3002, host: "0.0.0.0" },
-  modules: ["@nuxt/ui"],
+  modules: ["@nuxt/ui", "@vueuse/nuxt"],
   css: ["~/assets/css/main.css"],
   runtimeConfig: {
     public: {
@@ -11,4 +11,7 @@ export default defineNuxtConfig({
     },
   },
   ssr: false,
+  components: [
+    { path: "~/components", pathPrefix: false },
+  ],
 });

@@ -9,6 +9,7 @@ import { apartmentLayoutsRouter } from "./apartment-layouts";
 import { dashboardRouter } from "./dashboard";
 import { uploadsRouter } from "./uploads";
 import { citiesRouter } from "./cities";
+import { newsRouter } from "./news";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
@@ -23,6 +24,7 @@ export const appRouter = {
   dashboard: dashboardRouter,
   uploads: uploadsRouter,
   cities: citiesRouter,
+  news: newsRouter,
 };
 
 export type AppRouter = typeof appRouter;

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
+import type { AllowedImageType } from "~/utils/upload";
+
 const model = defineModel<string[]>({ default: () => [] });
 const props = defineProps<{ projectId: string }>();
 
@@ -6,32 +9,15 @@ const { $orpcClient } = useNuxtApp();
 const toast = useToast();
 
 const uploading = ref(false);
-const isDragging = ref(false);
 const uploadProgress = ref<Record<string, number>>({});
+const dropZoneRef = ref<HTMLLabelElement>();
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"] as const;
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-function uploadToS3(
-  url: string,
-  file: File,
-  onProgress: (pct: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-    });
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed: ${xhr.status}`));
-    });
-    xhr.addEventListener("error", () => reject(new Error("Upload failed")));
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.send(file);
-  });
-}
+const { isOverDropZone } = useDropZone(dropZoneRef, {
+  onDrop: (files) => {
+    if (uploading.value || !files?.length) return;
+    processFiles(Array.from(files));
+  },
+});
 
 async function processFiles(files: File[]) {
   if (!files.length) return;
@@ -40,11 +26,11 @@ async function processFiles(files: File[]) {
   const newUrls: string[] = [];
 
   for (const file of files) {
-    if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type as AllowedImageType)) {
       toast.add({ title: `Неподдерживаемый формат: ${file.name}`, color: "warning" });
       continue;
     }
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_IMAGE_SIZE) {
       toast.add({ title: `Файл слишком большой: ${file.name}`, color: "warning" });
       continue;
     }
@@ -52,14 +38,15 @@ async function processFiles(files: File[]) {
     try {
       const { presignedUrl, publicUrl } = await $orpcClient.uploads.getPresignedUrl({
         fileName: file.name,
-        contentType: file.type as (typeof ALLOWED_TYPES)[number],
+        contentType: file.type as AllowedImageType,
         fileSize: file.size,
         folder: `projects/${props.projectId}/gallery`,
       });
 
-      await uploadToS3(presignedUrl, file, (progress) => {
+      const { promise } = uploadToS3(presignedUrl, file, (progress) => {
         uploadProgress.value[file.name] = progress;
       });
+      await promise;
 
       newUrls.push(publicUrl);
     } catch (error: any) {
@@ -84,23 +71,6 @@ function handleFiles(event: Event) {
   const files = Array.from(input.files ?? []);
   processFiles(files);
   input.value = "";
-}
-
-function onDragOver(event: DragEvent) {
-  event.preventDefault();
-  if (!uploading.value) isDragging.value = true;
-}
-
-function onDragLeave() {
-  isDragging.value = false;
-}
-
-function onDrop(event: DragEvent) {
-  event.preventDefault();
-  isDragging.value = false;
-  if (uploading.value) return;
-  const files = Array.from(event.dataTransfer?.files ?? []);
-  processFiles(files);
 }
 
 function removeImage(index: number) {
@@ -141,15 +111,13 @@ function removeImage(index: number) {
 
     <!-- Upload area with drag & drop -->
     <label
+      ref="dropZoneRef"
       class="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors"
       :class="
-        isDragging
+        isOverDropZone
           ? 'border-(--ui-primary) bg-(--ui-primary)/5'
           : 'border-(--ui-border) hover:border-(--ui-primary)'
       "
-      @dragover="onDragOver"
-      @dragleave="onDragLeave"
-      @drop="onDrop"
     >
       <UIcon
         v-if="!uploading"
@@ -162,9 +130,9 @@ function removeImage(index: number) {
         class="size-8 animate-spin text-(--ui-text-muted)"
       />
       <span class="mt-2 text-sm text-(--ui-text-muted)">
-        {{ uploading ? "Загрузка..." : isDragging ? "Отпустите для загрузки" : "Нажмите или перетащите изображения" }}
+        {{ uploading ? "Загрузка..." : isOverDropZone ? "Отпустите для загрузки" : "Нажмите или перетащите изображения" }}
       </span>
-      <span v-if="!uploading && !isDragging" class="mt-1 text-xs text-(--ui-text-dimmed)">
+      <span v-if="!uploading && !isOverDropZone" class="mt-1 text-xs text-(--ui-text-dimmed)">
         JPEG, PNG, WebP, AVIF до 10 МБ
       </span>
       <input

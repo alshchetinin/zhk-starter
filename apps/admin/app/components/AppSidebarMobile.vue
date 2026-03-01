@@ -1,46 +1,7 @@
 <script setup lang="ts">
-const route = useRoute();
 const { isOpen, close } = useMobileSidebar();
 const { user } = useSession();
-const { $authClient } = useNuxtApp();
-const toast = useToast();
-
-interface NavItem {
-  label: string;
-  icon: string;
-  to: string;
-}
-
-const mainItems: NavItem[] = [
-  { label: "Dashboard", icon: "i-tabler-layout-dashboard", to: "/" },
-];
-
-const realtyItems: NavItem[] = [
-  { label: "Projects", icon: "i-tabler-building", to: "/projects" },
-  { label: "Buildings", icon: "i-tabler-building-skyscraper", to: "/buildings" },
-  { label: "Apartments", icon: "i-tabler-home", to: "/apartments" },
-  { label: "Commerce", icon: "i-tabler-shopping-cart", to: "/commerce" },
-  { label: "Layouts", icon: "i-tabler-layout", to: "/layouts" },
-];
-
-const systemItems: NavItem[] = [
-  { label: "Integrations", icon: "i-tabler-plug", to: "/integrations" },
-];
-
-function isActive(to: string) {
-  if (to === "/") return route.path === "/";
-  return route.path.startsWith(to);
-}
-
-async function handleSignOut() {
-  try {
-    await $authClient.signOut();
-    toast.add({ title: "Signed out", color: "success" });
-    window.location.href = "/";
-  } catch {
-    toast.add({ title: "Error signing out", color: "error" });
-  }
-}
+const { navGroups, isActive, handleSignOut } = useNavigation();
 </script>
 
 <template>
@@ -59,7 +20,7 @@ async function handleSignOut() {
 
     <template #body>
       <div class="flex flex-col h-full p-4">
-        <template v-for="(group, gi) in [mainItems, realtyItems, systemItems]" :key="gi">
+        <template v-for="(group, gi) in navGroups" :key="gi">
           <div v-if="gi > 0" class="h-px bg-(--ui-border) my-3" />
           <nav class="flex flex-col gap-1">
             <NuxtLink

@@ -24,6 +24,7 @@
   "devDependencies": {
     "@tanstack/vue-query-devtools": "^6.1.5",
     "@vue/devtools-api": "^7.7.9",
+    "@vueuse/nuxt": "^14.2.1",
     "@zhk/config": "workspace:*",
     "typescript": "catalog:"
   }
