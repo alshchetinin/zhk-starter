@@ -3,7 +3,15 @@ import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload"
 import type { AllowedImageType } from "~/utils/upload";
 
 const model = defineModel<string[]>({ default: () => [] });
-const props = defineProps<{ projectId: string }>();
+const props = withDefaults(
+  defineProps<{
+    projectId?: string;
+    folder?: string;
+  }>(),
+  {
+    folder: "uploads/gallery",
+  },
+);
 
 const { $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -40,7 +48,7 @@ async function processFiles(files: File[]) {
         fileName: file.name,
         contentType: file.type as AllowedImageType,
         fileSize: file.size,
-        folder: `projects/${props.projectId}/gallery`,
+        folder: props.projectId ? `projects/${props.projectId}/gallery` : props.folder,
       });
 
       const { promise } = uploadToS3(presignedUrl, file, (progress) => {

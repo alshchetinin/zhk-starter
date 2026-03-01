@@ -33,7 +33,7 @@ const toolbarItems = [
 </script>
 
 <template>
-  <UEditor v-model="model.content" class="min-h-[200px]">
+  <UEditor v-model="model.content" class="min-h-[200px] rounded-md border border-(--ui-border)">
     <template #default="{ editor }">
       <UEditorToolbar :editor="editor" :items="toolbarItems" />
     </template>

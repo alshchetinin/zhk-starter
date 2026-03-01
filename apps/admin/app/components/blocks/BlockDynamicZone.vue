@@ -17,6 +17,13 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
   switch (type) {
     case "editor":
       return { content: "" };
+    case "image":
+      return { url: null, alt: "", caption: "" };
+    case "quete":
+      return { text: "", name: "" };
+    case "test-all-fields":
+      return { title: "", description: "", content: "", count: 0, isActive: false, link: "", cover: null, gallery: [], variant: "small" };
+    // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};
   }

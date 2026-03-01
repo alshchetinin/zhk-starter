@@ -1,7 +1,10 @@
 {
   "name": "zhk-starter",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "type": "module",
   "scripts": {
     "dev": "turbo dev",
@@ -19,7 +22,8 @@
     "db:stop": "turbo -F @zhk/db db:stop",
     "db:down": "turbo -F @zhk/db db:down",
     "db:seed": "pnpm --filter server db:seed",
-    "db:reset": "pnpm db:down && pnpm db:start && sleep 2 && pnpm db:push && pnpm db:seed"
+    "db:reset": "pnpm db:down && pnpm db:start && sleep 2 && pnpm db:push && pnpm db:seed",
+    "generate:block": "tsx scripts/generate-block.ts"
   },
   "dependencies": {
     "@zhk/env": "workspace:*",
@@ -27,8 +31,10 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@clack/prompts": "^1.0.1",
     "@types/node": "^22",
     "@zhk/config": "workspace:*",
+    "tsx": "^4.21.0",
     "turbo": "^2.6.3",
     "typescript": "catalog:"
   },
