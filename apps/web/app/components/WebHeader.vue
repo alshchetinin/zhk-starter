@@ -61,12 +61,11 @@ watch(
 
       <!-- CTA + mobile toggle -->
       <div class="flex items-center gap-4">
-        <NuxtLink
-          to="/projects"
-          class="hidden md:inline-flex items-center px-5 py-2.5 bg-[var(--web-accent)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--web-accent-hover)] transition-colors"
-        >
-          Выбрать квартиру
-        </NuxtLink>
+        <UiButton as-child variant="primary" class="hidden md:inline-flex">
+          <NuxtLink to="/projects">
+            Выбрать квартиру
+          </NuxtLink>
+        </UiButton>
 
         <button
           class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg"
@@ -103,12 +102,11 @@ watch(
           >
             {{ item.label }}
           </NuxtLink>
-          <NuxtLink
-            to="/projects"
-            class="mt-2 px-4 py-3 bg-[var(--web-accent)] text-white text-sm font-semibold rounded-lg text-center hover:bg-[var(--web-accent-hover)] transition-colors"
-          >
-            Выбрать квартиру
-          </NuxtLink>
+          <UiButton as-child variant="primary" class="mt-2 w-full justify-center">
+            <NuxtLink to="/projects">
+              Выбрать квартиру
+            </NuxtLink>
+          </UiButton>
         </nav>
       </div>
     </Transition>

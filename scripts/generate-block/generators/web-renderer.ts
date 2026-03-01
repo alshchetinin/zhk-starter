@@ -12,6 +12,7 @@ export function generateWebRenderer(rootDir: string, block: BlockInfo): void {
 
   const tsFields = buildTsFields(block.fields);
   const hasRepeater = block.fields.some((f) => f.type === "repeater");
+  const repeaterHasImage = hasRepeater && block.fields.find((f) => f.type === "repeater")?.subFields?.some((sf) => sf.type === "image");
 
   const scriptLines: string[] = [
     `<script setup lang="ts">`,
@@ -63,10 +64,31 @@ export function generateWebRenderer(rootDir: string, block: BlockInfo): void {
       `          v-for="(item, i) in ${repeater.name}"`,
       `          :key="i"`,
       `          :variants="staggerChild"`,
-      `          class="rounded-xl border border-[var(--web-border)] p-6"`,
       `        >`,
-      `          <!-- TODO: рендеринг элемента repeater -->`,
-      `          <pre class="text-sm">{{ item }}</pre>`,
+    );
+
+    if (repeaterHasImage) {
+      const imageField = repeater.subFields!.find((sf) => sf.type === "image")!;
+      const titleField = repeater.subFields!.find((sf) => sf.name === "title" || sf.name === "name");
+      templateLines.push(
+        `          <UiCard hoverable>`,
+        `            <template #header>`,
+        `              <img :src="item.${imageField.name}" :alt="item.${titleField?.name ?? imageField.name}" :loading="i > 0 ? 'lazy' : undefined" class="aspect-[4/3] w-full object-cover" />`,
+        `            </template>`,
+        `            <!-- TODO: рендеринг содержимого карточки -->`,
+        `            <pre class="text-sm">{{ item }}</pre>`,
+        `          </UiCard>`,
+      );
+    } else {
+      templateLines.push(
+        `          <UiCard>`,
+        `            <!-- TODO: рендеринг элемента repeater -->`,
+        `            <pre class="text-sm">{{ item }}</pre>`,
+        `          </UiCard>`,
+      );
+    }
+
+    templateLines.push(
       `        </Motion>`,
       `      </Motion>`,
     );

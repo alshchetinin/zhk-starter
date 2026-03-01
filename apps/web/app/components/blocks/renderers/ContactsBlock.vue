@@ -9,7 +9,7 @@ defineProps<{
   departments?: Array<{ name: string; phone: string; email?: string }>;
 }>();
 
-const { fadeUp, staggerContainer, staggerChild, hoverScale } = useMotionPresets();
+const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
 
 function telHref(phone: string) {
   return `tel:${phone.replace(/\s/g, '')}`;
@@ -40,15 +40,9 @@ function telHref(phone: string) {
           </div>
         </div>
 
-        <Motion
-          v-if="buttonText && buttonUrl"
-          as="a"
-          v-bind="hoverScale"
-          :href="buttonUrl"
-          class="inline-flex shrink-0 items-center rounded-lg bg-[var(--web-accent)] px-6 py-3 text-sm font-medium text-[var(--web-text-inverse)] transition-colors hover:bg-[var(--web-accent-hover)]"
-        >
+        <UiButton v-if="buttonText && buttonUrl" as="a" :href="buttonUrl" variant="primary" size="lg" class="shrink-0">
           {{ buttonText }}
-        </Motion>
+        </UiButton>
       </Motion>
 
       <!-- Address -->
