@@ -1,11 +1,12 @@
 import tailwindcss from "@tailwindcss/vite";
+import themeFont from "./app/theme.generated.json";
 
 export default defineNuxtConfig({
   compatibilityDate: "latest",
   devtools: { enabled: true },
   devServer: { port: 3001, host: "0.0.0.0" },
 
-  modules: ["reka-ui/nuxt", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt"],
+  modules: ["reka-ui/nuxt", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt", "motion-v/nuxt"],
 
   css: ["~/assets/css/main.css"],
 
@@ -16,10 +17,19 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       {
-        name: "Plus Jakarta Sans",
-        provider: "google",
-        weights: [400, 500, 600, 700],
+        name: themeFont.fontSans,
+        provider: themeFont.fontProvider,
+        weights: themeFont.fontWeights,
       },
+      ...(themeFont.fontDisplay !== themeFont.fontSans
+        ? [
+            {
+              name: themeFont.fontDisplay,
+              provider: themeFont.fontProvider,
+              weights: themeFont.fontWeights,
+            },
+          ]
+        : []),
     ],
   },
 

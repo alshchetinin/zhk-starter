@@ -1,0 +1,32 @@
+{
+  "name": "авторика",
+  "colors": {
+    "brandHue": 161,
+    "brandChroma": 0.03,
+    "surfaceHue": 58,
+    "surfaceChroma": 0.008,
+    "accentStep": "500",
+    "accentHue": 37,
+    "accentChroma": 0.158
+  },
+  "typography": {
+    "fontSans": "Suisse Intl",
+    "fontDisplay": "Suisse Intl",
+    "fontProvider": "local",
+    "fontWeights": [400, 500, 600, 700],
+    "fontScale": 1
+  },
+  "style": {
+    "radiusProfile": "soft",
+    "shadowProfile": "subtle",
+    "density": "airy",
+    "containerMax": 1280
+  },
+  "animation": {
+    "intensity": "moderate",
+    "feel": "smooth",
+    "staggerDelay": 0.06,
+    "parallax": true,
+    "respectReducedMotion": true
+  }
+}

@@ -3,17 +3,19 @@ defineProps<{
   name: string;
   picture: string;
 }>();
+
+const { fadeUp } = useMotionPresets();
 </script>
 
 <template>
   <div class="section">
-    <div class="container-web flex flex-col items-center">
+    <Motion as="div" v-bind="fadeUp" class="container-web flex flex-col items-center">
       <img
         :src="picture"
         :alt="name"
-        class="w-full max-w-xs rounded-xl object-cover aspect-square"
-      >
-      <h3 class="mt-4 text-xl font-semibold text-center">{{ name }}</h3>
-    </div>
+        class="aspect-square w-full max-w-xs rounded-xl object-cover"
+      />
+      <h3 class="mt-4 text-center text-xl font-semibold">{{ name }}</h3>
+    </Motion>
   </div>
 </template>

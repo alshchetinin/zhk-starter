@@ -10,6 +10,7 @@ const props = defineProps<{
 }>();
 
 const currentSlide = ref(0);
+const { fadeUp, hoverScale } = useMotionPresets();
 
 function next() {
   currentSlide.value = (currentSlide.value + 1) % props.images.length;
@@ -54,31 +55,35 @@ function prev() {
     </template>
 
     <!-- Content -->
-    <div class="relative z-10 mt-auto px-6 pb-8 md:px-12 lg:px-20">
+    <Motion as="div" v-bind="fadeUp" class="relative z-10 mt-auto px-6 pb-8 md:px-12 lg:px-20">
       <h1 class="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
         {{ title }}
       </h1>
       <p v-if="description" class="mt-4 max-w-xl text-lg text-white/80">
         {{ description }}
       </p>
-    </div>
+    </Motion>
 
     <!-- Bottom bar -->
     <div class="relative z-10 border-t border-white/20 bg-white px-6 py-4 text-[var(--web-text-primary)] md:px-12 lg:px-20">
       <div class="flex flex-wrap items-center justify-end gap-4">
-        <a
+        <Motion
           v-if="secondaryButtonText && secondaryButtonUrl"
+          as="a"
+          v-bind="hoverScale"
           :href="secondaryButtonUrl"
           class="rounded-lg border border-[var(--web-border)] px-6 py-3 text-sm font-medium transition-colors hover:bg-[var(--web-bg-muted)]"
         >
           {{ secondaryButtonText }}
-        </a>
-        <a
+        </Motion>
+        <Motion
+          as="a"
+          v-bind="hoverScale"
           :href="primaryButtonUrl"
           class="rounded-lg bg-[var(--web-accent)] px-6 py-3 text-sm font-medium text-[var(--web-text-inverse)] transition-colors hover:bg-[var(--web-accent-hover)]"
         >
           {{ primaryButtonText }}
-        </a>
+        </Motion>
       </div>
     </div>
   </div>

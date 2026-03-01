@@ -13,6 +13,8 @@ const props = defineProps<{
   } | null;
 }>();
 
+const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
+
 const stats = computed(() => {
   if (!props.project) return [];
   const items: Array<{ label: string; value: number }> = [];
@@ -29,17 +31,30 @@ const stats = computed(() => {
 <template>
   <div v-if="project && stats.length" class="section">
     <div class="container-web">
-      <div class="rounded-2xl bg-[var(--web-bg-muted)] p-8 md:p-12">
-        <h2 v-if="project.name" class="text-2xl font-bold mb-8 text-center">{{ project.name }}</h2>
-        <div class="flex flex-wrap gap-8 justify-center">
-          <div v-for="stat in stats" :key="stat.label" class="text-center">
-            <div class="text-4xl md:text-5xl font-bold text-[var(--web-accent)]">
+      <Motion as="div" v-bind="fadeUp" class="rounded-2xl bg-[var(--web-bg-muted)] p-8 md:p-12">
+        <h2 v-if="project.name" class="mb-8 text-center text-2xl font-bold">{{ project.name }}</h2>
+        <Motion
+          as="div"
+          :variants="staggerContainer"
+          initial="hidden"
+          whileInView="show"
+          :inViewOptions="{ once: true }"
+          class="flex flex-wrap justify-center gap-8"
+        >
+          <Motion
+            as="div"
+            v-for="stat in stats"
+            :key="stat.label"
+            :variants="staggerChild"
+            class="text-center"
+          >
+            <div class="text-4xl font-bold text-[var(--web-accent)] md:text-5xl">
               {{ stat.value.toLocaleString("ru-RU") }}
             </div>
             <div class="mt-2 text-sm text-[var(--web-text-secondary)]">{{ stat.label }}</div>
-          </div>
-        </div>
-      </div>
+          </Motion>
+        </Motion>
+      </Motion>
     </div>
   </div>
 </template>

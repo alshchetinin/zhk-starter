@@ -4,24 +4,37 @@ defineProps<{
   description?: string;
   items: Array<{ title: string; image: string | null }>;
 }>();
+
+const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
 </script>
 
 <template>
   <div class="section">
     <div class="container-web">
       <!-- Header -->
-      <h2 class="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-[var(--web-text-primary)] md:text-4xl lg:text-5xl">
-        {{ title }}
-      </h2>
-      <p v-if="description" class="mt-6 max-w-2xl text-[var(--web-text-secondary)] md:ml-auto">
-        {{ description }}
-      </p>
+      <Motion as="div" v-bind="fadeUp">
+        <h2 class="max-w-4xl text-3xl font-bold leading-tight tracking-tight text-[var(--web-text-primary)] md:text-4xl lg:text-5xl">
+          {{ title }}
+        </h2>
+        <p v-if="description" class="mt-6 max-w-2xl text-[var(--web-text-secondary)] md:ml-auto">
+          {{ description }}
+        </p>
+      </Motion>
 
       <!-- Cards grid -->
-      <div class="mt-10 grid gap-4 md:grid-cols-3">
-        <div
+      <Motion
+        as="div"
+        :variants="staggerContainer"
+        initial="hidden"
+        whileInView="show"
+        :inViewOptions="{ once: true }"
+        class="mt-10 grid gap-4 md:grid-cols-3"
+      >
+        <Motion
+          as="div"
           v-for="(item, i) in items"
           :key="i"
+          :variants="staggerChild"
           class="group relative overflow-hidden rounded-2xl"
         >
           <img
@@ -39,8 +52,8 @@ defineProps<{
               {{ item.title }}
             </h3>
           </div>
-        </div>
-      </div>
+        </Motion>
+      </Motion>
     </div>
   </div>
 </template>

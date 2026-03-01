@@ -1,0 +1,30 @@
+{
+  "name": "default",
+  "colors": {
+    "brandHue": 250,
+    "brandChroma": 0.12,
+    "surfaceHue": 80,
+    "surfaceChroma": 0.006,
+    "accentStep": "600"
+  },
+  "typography": {
+    "fontSans": "Plus Jakarta Sans",
+    "fontDisplay": "Plus Jakarta Sans",
+    "fontProvider": "google",
+    "fontWeights": [400, 500, 600, 700],
+    "fontScale": 1
+  },
+  "style": {
+    "radiusProfile": "soft",
+    "shadowProfile": "subtle",
+    "density": "balanced",
+    "containerMax": 1280
+  },
+  "animation": {
+    "intensity": "moderate",
+    "feel": "smooth",
+    "staggerDelay": 0.08,
+    "parallax": true,
+    "respectReducedMotion": true
+  }
+}

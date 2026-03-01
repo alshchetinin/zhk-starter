@@ -7,13 +7,14 @@ const props = defineProps<{
 
 const activeTab = ref(0);
 const activeItem = computed(() => props.tabs[activeTab.value]);
+const { fadeUp, scaleIn, hoverScale } = useMotionPresets();
 </script>
 
 <template>
   <div class="section">
     <div class="container-web">
       <!-- Header -->
-      <div class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+      <Motion as="div" v-bind="fadeUp" class="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
         <div class="max-w-xl">
           <h2 class="text-3xl font-bold tracking-tight text-[var(--web-text-primary)] md:text-4xl">
             {{ title }}
@@ -25,9 +26,11 @@ const activeItem = computed(() => props.tabs[activeTab.value]);
 
         <!-- Tabs -->
         <div class="flex flex-wrap gap-2">
-          <button
+          <Motion
+            as="button"
             v-for="(tab, i) in tabs"
             :key="i"
+            v-bind="hoverScale"
             class="rounded-full px-5 py-2.5 text-sm font-medium transition-colors"
             :class="i === activeTab
               ? 'bg-[var(--web-accent)] text-[var(--web-text-inverse)]'
@@ -35,12 +38,12 @@ const activeItem = computed(() => props.tabs[activeTab.value]);
             @click="activeTab = i"
           >
             {{ tab.label }}
-          </button>
+          </Motion>
         </div>
-      </div>
+      </Motion>
 
       <!-- Tab content -->
-      <div v-if="activeItem" class="mt-8">
+      <Motion as="div" v-if="activeItem" v-bind="scaleIn" :key="activeTab" class="mt-8">
         <div class="relative overflow-hidden rounded-2xl bg-[var(--web-bg-muted)]">
           <img
             v-if="activeItem.image"
@@ -62,7 +65,7 @@ const activeItem = computed(() => props.tabs[activeTab.value]);
             </p>
           </div>
         </div>
-      </div>
+      </Motion>
     </div>
   </div>
 </template>

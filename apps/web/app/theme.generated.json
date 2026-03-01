@@ -1,0 +1,11 @@
+{
+  "fontSans": "Suisse Intl",
+  "fontDisplay": "Suisse Intl",
+  "fontProvider": "local",
+  "fontWeights": [
+    400,
+    500,
+    600,
+    700
+  ]
+}
