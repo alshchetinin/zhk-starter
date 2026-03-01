@@ -20,3 +20,5 @@ export * from "./non-residential-floors";
 export * from "./tickets";
 export * from "./auth";
 export * from "./news";
+export * from "./pages";
+export * from "./documents";

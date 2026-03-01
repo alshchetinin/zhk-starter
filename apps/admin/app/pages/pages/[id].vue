@@ -10,9 +10,9 @@ const queryClient = useQueryClient();
 
 const id = computed(() => route.params.id as string);
 
-const { data: article, isPending } = useQuery(
+const { data: pageData, isPending } = useQuery(
   computed(() =>
-    $orpc.news.getById.queryOptions({
+    $orpc.pages.getById.queryOptions({
       input: { id: id.value },
     }),
   ),
@@ -21,10 +21,7 @@ const { data: article, isPending } = useQuery(
 const form = reactive({
   title: "",
   slug: "",
-  excerpt: "",
-  coverImage: null as string | null,
-  status: "draft" as NewsStatus,
-  publishedAt: "",
+  status: "draft" as PageStatus,
   contentBlocks: [] as ContentBlock[],
   metaTitle: "",
   metaDescription: "",
@@ -33,15 +30,10 @@ const form = reactive({
 
 const slugManuallyEdited = ref(true);
 
-whenever(article, (val) => {
+whenever(pageData, (val) => {
   form.title = val.title;
   form.slug = val.slug;
-  form.excerpt = val.excerpt ?? "";
-  form.coverImage = val.coverImage ?? null;
   form.status = val.status;
-  form.publishedAt = val.publishedAt
-    ? new Date(val.publishedAt).toISOString().slice(0, 16)
-    : "";
   form.contentBlocks = (val.contentBlocks as ContentBlock[]) ?? [];
   form.metaTitle = val.metaTitle ?? "";
   form.metaDescription = val.metaDescription ?? "";
@@ -59,33 +51,28 @@ watch(
 
 const updateMutation = useMutation({
   mutationFn: () =>
-    $orpcClient.news.update({
+    $orpcClient.pages.update({
       id: id.value,
       title: form.title,
       slug: form.slug,
-      excerpt: form.excerpt || null,
-      coverImage: form.coverImage,
       status: form.status,
-      publishedAt: form.publishedAt
-        ? new Date(form.publishedAt).toISOString()
-        : null,
       contentBlocks: form.contentBlocks,
       metaTitle: form.metaTitle || null,
       metaDescription: form.metaDescription || null,
       ogImage: form.ogImage,
     }),
   onSuccess: () => {
-    toast.add({ title: "Статья обновлена", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
+    toast.add({ title: "Страница обновлена", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.pages.key() });
   },
 });
 
 const deleteMutation = useMutation({
-  mutationFn: () => $orpcClient.news.delete({ id: id.value }),
+  mutationFn: () => $orpcClient.pages.delete({ id: id.value }),
   onSuccess: () => {
-    toast.add({ title: "Статья удалена", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
-    router.push("/news");
+    toast.add({ title: "Страница удалена", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.pages.key() });
+    router.push("/pages");
   },
 });
 </script>
@@ -100,10 +87,10 @@ const deleteMutation = useMutation({
       <span>Загрузка...</span>
     </div>
 
-    <template v-else-if="article">
+    <template v-else-if="pageData">
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <NuxtLink to="/news">
+          <NuxtLink to="/pages">
             <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
           </NuxtLink>
           <h1 class="text-2xl font-bold">{{ form.title || "Редактирование" }}</h1>
@@ -139,7 +126,7 @@ const deleteMutation = useMutation({
             <UFormField label="Заголовок">
               <UInput
                 v-model="form.title"
-                placeholder="Заголовок статьи"
+                placeholder="Заголовок страницы"
                 size="lg"
               />
             </UFormField>
@@ -149,14 +136,6 @@ const deleteMutation = useMutation({
                 v-model="form.slug"
                 placeholder="url-slug"
                 @input="slugManuallyEdited = true"
-              />
-            </UFormField>
-
-            <UFormField label="Краткое описание">
-              <UTextarea
-                v-model="form.excerpt"
-                placeholder="Краткое описание для списка и SEO..."
-                :rows="3"
               />
             </UFormField>
           </div>
@@ -176,22 +155,7 @@ const deleteMutation = useMutation({
             class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
           >
             <UFormField label="Статус">
-              <USelect v-model="form.status" :items="newsStatusOptions" />
-            </UFormField>
-
-            <UFormField label="Дата публикации">
-              <UInput v-model="form.publishedAt" type="datetime-local" />
-            </UFormField>
-          </div>
-
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Обложка">
-              <ImageUpload
-                v-model="form.coverImage"
-                folder="news/covers"
-              />
+              <USelect v-model="form.status" :items="pageStatusOptions" />
             </UFormField>
           </div>
 
@@ -199,7 +163,7 @@ const deleteMutation = useMutation({
             v-model:meta-title="form.metaTitle"
             v-model:meta-description="form.metaDescription"
             v-model:og-image="form.ogImage"
-            folder="news/og"
+            folder="pages/og"
           />
         </div>
       </div>

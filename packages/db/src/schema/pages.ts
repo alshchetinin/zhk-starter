@@ -1,10 +1,10 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { newsStatusEnum } from "./_enums";
+import { pageStatusEnum } from "./_enums";
 import type { ContentBlock } from "./_shared";
 import { tenants } from "./tenants";
 
-export const news = pgTable("news", {
+export const pages = pgTable("pages", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -14,10 +14,7 @@ export const news = pgTable("news", {
     .references(() => tenants.id),
   title: text("title").notNull(),
   slug: text("slug").notNull(),
-  excerpt: text("excerpt"),
-  coverImage: text("cover_image"),
-  status: newsStatusEnum("status").notNull().default("draft"),
-  publishedAt: timestamp("published_at", { withTimezone: true }),
+  status: pageStatusEnum("status").notNull().default("draft"),
   contentBlocks: jsonb("content_blocks").$type<ContentBlock[]>().default([]),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
@@ -31,9 +28,9 @@ export const news = pgTable("news", {
     .notNull(),
 });
 
-export const newsRelations = relations(news, ({ one }) => ({
+export const pagesRelations = relations(pages, ({ one }) => ({
   tenant: one(tenants, {
-    fields: [news.tenantId],
+    fields: [pages.tenantId],
     references: [tenants.id],
   }),
 }));

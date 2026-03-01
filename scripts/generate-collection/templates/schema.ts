@@ -28,15 +28,15 @@ export function generateSchemaTemplate(
     })
     .join("\n");
 
-  const contentBlockInterface = hasDynamicBlocks
-    ? `\n// Loose type for JSONB column — API layer validates with stricter Zod schema\ninterface ContentBlock {\n  id: string;\n  type: string;\n  data: Record<string, unknown>;\n}\n`
+  const contentBlockImport = hasDynamicBlocks
+    ? `\nimport type { ContentBlock } from "./_shared";`
     : "";
 
   return `import { relations } from "drizzle-orm";
 import { ${drizzleImportList} } from "drizzle-orm/pg-core";
-import { baseColumns } from "./_shared";
+import { baseColumns } from "./_shared";${contentBlockImport}
 import { tenants } from "./tenants";
-${contentBlockInterface}
+
 export const ${names.camel} = pgTable("${names.snake}", {
   ...baseColumns,
   title: text("title").notNull(),

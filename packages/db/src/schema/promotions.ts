@@ -1,5 +1,14 @@
 import { relations } from "drizzle-orm";
-import { date, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  date,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
+import { promotionStatusEnum } from "./_enums";
+import type { ContentBlock } from "./_shared";
 import { tenants } from "./tenants";
 import { integrations } from "./integrations";
 import { apartments } from "./apartments";
@@ -13,9 +22,16 @@ export const promotions = pgTable("promotions", {
     .default("default")
     .references(() => tenants.id),
   name: text("name").notNull(),
+  slug: text("slug"),
   description: text("description"),
+  coverImage: text("cover_image"),
+  status: promotionStatusEnum("status").notNull().default("draft"),
   dateStart: date("date_start"),
   dateEnd: date("date_end"),
+  contentBlocks: jsonb("content_blocks").$type<ContentBlock[]>().default([]),
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  ogImage: text("og_image"),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),
   createdAt: timestamp("created_at", { withTimezone: true })

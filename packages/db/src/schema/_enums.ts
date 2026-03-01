@@ -28,3 +28,20 @@ export const newsStatusEnum = pgEnum("news_status", [
   "published",
   "archived",
 ]);
+
+export const pageStatusEnum = pgEnum("page_status", [
+  "draft",
+  "published",
+  "archived",
+]);
+
+export const documentStatusEnum = pgEnum("document_status", [
+  "draft",
+  "published",
+]);
+
+export const promotionStatusEnum = pgEnum("promotion_status", [
+  "draft",
+  "published",
+  "archived",
+]);

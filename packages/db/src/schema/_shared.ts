@@ -1,5 +1,12 @@
 import { text, timestamp } from "drizzle-orm/pg-core";
 
+/** Loose type for JSONB columns — API layer validates with stricter Zod schema */
+export interface ContentBlock {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+}
+
 export const baseColumns = {
   id: text("id")
     .primaryKey()

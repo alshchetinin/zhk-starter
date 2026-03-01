@@ -18,6 +18,9 @@ const realtyItems: NavItem[] = [
 
 const contentItems: NavItem[] = [
   { label: "Новости", icon: "i-tabler-news", to: "/news" },
+  { label: "Страницы", icon: "i-tabler-file-text", to: "/pages" },
+  { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions" },
+  { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents" },
 ];
 
 const systemItems: NavItem[] = [

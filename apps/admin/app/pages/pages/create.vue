@@ -9,10 +9,7 @@ const router = useRouter();
 const form = reactive({
   title: "",
   slug: "",
-  excerpt: "",
-  coverImage: null as string | null,
-  status: "draft" as NewsStatus,
-  publishedAt: "",
+  status: "draft" as PageStatus,
   contentBlocks: [] as ContentBlock[],
   metaTitle: "",
   metaDescription: "",
@@ -32,23 +29,18 @@ watch(
 
 const createMutation = useMutation({
   mutationFn: () =>
-    $orpcClient.news.create({
+    $orpcClient.pages.create({
       title: form.title,
       slug: form.slug,
-      excerpt: form.excerpt || undefined,
-      coverImage: form.coverImage ?? undefined,
       status: form.status,
-      publishedAt: form.publishedAt
-        ? new Date(form.publishedAt).toISOString()
-        : undefined,
       contentBlocks: form.contentBlocks,
       metaTitle: form.metaTitle || undefined,
       metaDescription: form.metaDescription || undefined,
       ogImage: form.ogImage ?? undefined,
     }),
   onSuccess: () => {
-    toast.add({ title: "Статья создана", color: "success" });
-    router.push("/news");
+    toast.add({ title: "Страница создана", color: "success" });
+    router.push("/pages");
   },
 });
 </script>
@@ -57,10 +49,10 @@ const createMutation = useMutation({
   <PageContainer>
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <NuxtLink to="/news">
+        <NuxtLink to="/pages">
           <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
         </NuxtLink>
-        <h1 class="text-2xl font-bold">Новая статья</h1>
+        <h1 class="text-2xl font-bold">Новая страница</h1>
       </div>
       <UButton
         icon="i-tabler-device-floppy"
@@ -81,7 +73,7 @@ const createMutation = useMutation({
           <UFormField label="Заголовок">
             <UInput
               v-model="form.title"
-              placeholder="Заголовок статьи"
+              placeholder="Заголовок страницы"
               size="lg"
             />
           </UFormField>
@@ -91,14 +83,6 @@ const createMutation = useMutation({
               v-model="form.slug"
               placeholder="url-slug"
               @input="slugManuallyEdited = true"
-            />
-          </UFormField>
-
-          <UFormField label="Краткое описание">
-            <UTextarea
-              v-model="form.excerpt"
-              placeholder="Краткое описание для списка и SEO..."
-              :rows="3"
             />
           </UFormField>
         </div>
@@ -118,22 +102,7 @@ const createMutation = useMutation({
           class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
         >
           <UFormField label="Статус">
-            <USelect v-model="form.status" :items="newsStatusOptions" />
-          </UFormField>
-
-          <UFormField label="Дата публикации">
-            <UInput v-model="form.publishedAt" type="datetime-local" />
-          </UFormField>
-        </div>
-
-        <div
-          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-        >
-          <UFormField label="Обложка">
-            <ImageUpload
-              v-model="form.coverImage"
-              folder="news/covers"
-            />
+            <USelect v-model="form.status" :items="pageStatusOptions" />
           </UFormField>
         </div>
 
@@ -141,7 +110,7 @@ const createMutation = useMutation({
           v-model:meta-title="form.metaTitle"
           v-model:meta-description="form.metaDescription"
           v-model:og-image="form.ogImage"
-          folder="news/og"
+          folder="pages/og"
         />
       </div>
     </div>

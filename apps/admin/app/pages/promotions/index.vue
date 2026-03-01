@@ -9,11 +9,11 @@ const page = ref(1);
 const pageSize = 20;
 const search = ref("");
 const debouncedSearch = refDebounced(search, 300);
-const statusFilter = ref<NewsStatus>();
+const statusFilter = ref<PromotionStatus>();
 
 const { data, isPending } = useQuery(
   computed(() =>
-    $orpc.news.list.queryOptions({
+    $orpc.promotions.list.queryOptions({
       input: {
         page: page.value,
         pageSize,
@@ -29,10 +29,10 @@ watch([debouncedSearch, statusFilter], () => {
 });
 
 const deleteMutation = useMutation({
-  mutationFn: (id: string) => $orpcClient.news.delete({ id }),
+  mutationFn: (id: string) => $orpcClient.promotions.delete({ id }),
   onSuccess: () => {
-    toast.add({ title: "Новость удалена", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
+    toast.add({ title: "Акция удалена", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.promotions.key() });
   },
 });
 </script>
@@ -40,7 +40,7 @@ const deleteMutation = useMutation({
 <template>
   <PageContainer>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Новости</h1>
+      <h1 class="text-2xl font-bold">Акции</h1>
       <div class="flex items-center gap-3">
         <UInput
           v-model="search"
@@ -50,16 +50,16 @@ const deleteMutation = useMutation({
         />
         <USelect
           v-model="statusFilter"
-          :items="newsStatusOptions"
+          :items="promotionStatusOptions"
           placeholder="Все статусы"
           class="w-40"
         />
-        <NuxtLink to="/news/create">
+        <NuxtLink to="/promotions/create">
           <UButton
             icon="i-tabler-plus"
             class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
           >
-            Новая статья
+            Новая акция
           </UButton>
         </NuxtLink>
       </div>
@@ -81,18 +81,18 @@ const deleteMutation = useMutation({
       >
         <!-- Cover image -->
         <NuxtLink
-          :to="`/news/${item.id}`"
+          :to="`/promotions/${item.id}`"
           class="flex items-center justify-center w-32 h-20 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden"
         >
           <img
             v-if="item.coverImage"
             :src="item.coverImage"
-            :alt="item.title"
+            :alt="item.name"
             class="h-full w-full object-cover"
           />
           <UIcon
             v-else
-            name="i-tabler-news"
+            name="i-tabler-tag"
             class="size-8 text-(--ui-text-muted)"
           />
         </NuxtLink>
@@ -101,35 +101,32 @@ const deleteMutation = useMutation({
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <NuxtLink
-              :to="`/news/${item.id}`"
+              :to="`/promotions/${item.id}`"
               class="text-base font-semibold truncate hover:underline"
             >
-              {{ item.title }}
+              {{ item.name }}
             </NuxtLink>
             <UBadge
-              :color="newsStatusColors[item.status] ?? 'neutral'"
+              :color="promotionStatusColors[item.status] ?? 'neutral'"
               variant="subtle"
             >
-              {{ newsStatusLabels[item.status] ?? item.status }}
+              {{ promotionStatusLabels[item.status] ?? item.status }}
             </UBadge>
           </div>
           <p
-            v-if="item.excerpt"
+            v-if="item.dateStart || item.dateEnd"
             class="text-sm text-(--ui-text-muted) truncate mb-1"
           >
-            {{ item.excerpt }}
+            {{ formatDate(item.dateStart) }} — {{ formatDate(item.dateEnd) }}
           </p>
           <div class="flex items-center gap-4 text-xs text-(--ui-text-dimmed)">
-            <span v-if="item.publishedAt">
-              {{ formatDate(item.publishedAt) }}
-            </span>
             <span>Создано: {{ formatDate(item.createdAt) }}</span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="flex items-center gap-1 shrink-0">
-          <NuxtLink :to="`/news/${item.id}`">
+          <NuxtLink :to="`/promotions/${item.id}`">
             <UButton
               variant="ghost"
               size="xs"
@@ -155,13 +152,13 @@ const deleteMutation = useMutation({
       class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
     >
       <UIcon
-        name="i-tabler-news-off"
+        name="i-tabler-tag-off"
         class="mx-auto size-12 text-(--ui-text-muted)"
       />
-      <p class="mt-2 text-(--ui-text-muted)">Новости не найдены</p>
-      <NuxtLink to="/news/create">
+      <p class="mt-2 text-(--ui-text-muted)">Акции не найдены</p>
+      <NuxtLink to="/promotions/create">
         <UButton class="mt-4" icon="i-tabler-plus">
-          Создать первую статью
+          Создать первую акцию
         </UButton>
       </NuxtLink>
     </div>
