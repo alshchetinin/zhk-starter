@@ -13,19 +13,22 @@ export const pagesRouter = {
       paginationInput.extend({
         status: z.enum(pageStatusEnum.enumValues).optional(),
         search: z.string().optional(),
+        projectId: z.string().optional(),
       }),
     )
     .handler(async ({ input }) => {
-      const { page, pageSize, status, search } = input;
+      const { page, pageSize, status, search, projectId } = input;
       const conditions = [];
       if (status) conditions.push(eq(pages.status, status));
       if (search) conditions.push(ilike(pages.title, `%${search}%`));
+      if (projectId) conditions.push(eq(pages.projectId, projectId));
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const [data, countResult] = await Promise.all([
         db.query.pages.findMany({
           where,
           columns: { contentBlocks: false },
+          with: { project: { columns: { id: true, name: true } } },
           limit: pageSize,
           offset: calcOffset(page, pageSize),
           orderBy: (n, { desc }) => [desc(n.createdAt)],
@@ -41,6 +44,7 @@ export const pagesRouter = {
     .handler(async ({ input }) => {
       const item = await db.query.pages.findFirst({
         where: eq(pages.id, input.id),
+        with: { project: { columns: { id: true, name: true } } },
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Page not found" });
@@ -55,6 +59,7 @@ export const pagesRouter = {
         slug: z.string().min(1),
         status: z.enum(pageStatusEnum.enumValues).default("draft"),
         contentBlocks: contentBlocksSchema.default([]),
+        projectId: z.string().nullable().optional(),
         metaTitle: z.string().optional(),
         metaDescription: z.string().optional(),
         ogImage: z.string().optional(),
@@ -68,6 +73,7 @@ export const pagesRouter = {
           slug: input.slug,
           status: input.status,
           contentBlocks: input.contentBlocks,
+          projectId: input.projectId ?? null,
           metaTitle: input.metaTitle ?? null,
           metaDescription: input.metaDescription ?? null,
           ogImage: input.ogImage ?? null,
@@ -84,6 +90,7 @@ export const pagesRouter = {
         slug: z.string().min(1).optional(),
         status: z.enum(pageStatusEnum.enumValues).optional(),
         contentBlocks: contentBlocksSchema.optional(),
+        projectId: z.string().nullable().optional(),
         metaTitle: z.string().nullable().optional(),
         metaDescription: z.string().nullable().optional(),
         ogImage: z.string().nullable().optional(),

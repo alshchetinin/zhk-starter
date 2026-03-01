@@ -23,6 +23,12 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { items: [] };
     case "card-v1":
       return { items: [] };
+    case "project-gallery":
+      return { projectId: "", columns: "3", maxImages: undefined };
+    case "project-stats":
+      return { projectId: "", showFree: true, showTotal: true };
+    case "project-location":
+      return { projectId: "", showAddress: true, mapHeight: 400 };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

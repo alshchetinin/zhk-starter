@@ -5,12 +5,16 @@ import { useMutation } from "@tanstack/vue-query";
 const { $orpcClient } = useNuxtApp();
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
+
+const { options: projectOptions } = useProjectOptions();
 
 const form = reactive({
   title: "",
   slug: "",
   status: "draft" as PageStatus,
   contentBlocks: [] as ContentBlock[],
+  projectId: (route.query.projectId as string) || PROJECT_NONE,
   metaTitle: "",
   metaDescription: "",
   ogImage: null as string | null,
@@ -34,6 +38,7 @@ const createMutation = useMutation({
       slug: form.slug,
       status: form.status,
       contentBlocks: form.contentBlocks,
+      projectId: form.projectId === PROJECT_NONE ? null : form.projectId,
       metaTitle: form.metaTitle || undefined,
       metaDescription: form.metaDescription || undefined,
       ogImage: form.ogImage ?? undefined,
@@ -101,6 +106,10 @@ const createMutation = useMutation({
         <div
           class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
         >
+          <UFormField label="Проект">
+            <USelect v-model="form.projectId" :items="projectOptions" placeholder="Без проекта" />
+          </UFormField>
+
           <UFormField label="Статус">
             <USelect v-model="form.status" :items="pageStatusOptions" />
           </UFormField>

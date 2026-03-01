@@ -94,6 +94,9 @@ const deleteMutation = useMutation({
             >
               {{ pageStatusLabels[item.status] ?? item.status }}
             </UBadge>
+            <UBadge v-if="item.project" variant="subtle" color="primary" class="ml-1">
+              {{ item.project.name }}
+            </UBadge>
           </div>
           <div class="flex items-center gap-4 text-xs text-(--ui-text-dimmed)">
             <span>Создано: {{ formatDate(item.createdAt) }}</span>

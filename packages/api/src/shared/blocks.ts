@@ -71,6 +71,48 @@ export const cardV1BlockSchema = baseBlockSchema.extend({
 
 // --- GENERATOR:BLOCK_SCHEMA ---
 
+// --- Project block base ---
+
+const projectBlockBase = z.object({
+  projectId: z.string().min(1),
+});
+
+// --- Галерея проекта block ---
+
+export const projectGalleryBlockDataSchema = projectBlockBase.extend({
+  columns: z.enum(["2", "3", "4"]).default("3"),
+  maxImages: z.number().optional(),
+});
+
+export const projectGalleryBlockSchema = baseBlockSchema.extend({
+  type: z.literal("project-gallery"),
+  data: projectGalleryBlockDataSchema,
+});
+
+// --- Статистика квартир block ---
+
+export const projectStatsBlockDataSchema = projectBlockBase.extend({
+  showFree: z.boolean().default(true),
+  showTotal: z.boolean().default(true),
+});
+
+export const projectStatsBlockSchema = baseBlockSchema.extend({
+  type: z.literal("project-stats"),
+  data: projectStatsBlockDataSchema,
+});
+
+// --- Карта и адрес проекта block ---
+
+export const projectLocationBlockDataSchema = projectBlockBase.extend({
+  showAddress: z.boolean().default(true),
+  mapHeight: z.number().default(400),
+});
+
+export const projectLocationBlockSchema = baseBlockSchema.extend({
+  type: z.literal("project-location"),
+  data: projectLocationBlockDataSchema,
+});
+
 // --- Discriminated union of all blocks ---
 
 export const contentBlockSchema = z.discriminatedUnion("type", [
@@ -79,6 +121,9 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
   teamBlockSchema,
   cardV1BlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
+  projectGalleryBlockSchema,
+  projectStatsBlockSchema,
+  projectLocationBlockSchema,
 ]);
 
 export type ContentBlock = z.infer<typeof contentBlockSchema>;
@@ -94,6 +139,7 @@ export interface BlockDefinition {
   label: string;
   icon: string;
   description: string;
+  category?: "content" | "project";
 }
 
 export const blockDefinitions: BlockDefinition[] = [
@@ -122,4 +168,25 @@ export const blockDefinitions: BlockDefinition[] = [
     description: "Карточки с описанием и картинкой",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
+  {
+    type: "project-gallery",
+    label: "Галерея проекта",
+    icon: "i-tabler-photo",
+    description: "Галерея изображений из проекта",
+    category: "project",
+  },
+  {
+    type: "project-stats",
+    label: "Статистика квартир",
+    icon: "i-tabler-chart-bar",
+    description: "Количество свободных и общее число квартир",
+    category: "project",
+  },
+  {
+    type: "project-location",
+    label: "Карта и адрес",
+    icon: "i-tabler-map-pin",
+    description: "Карта и адрес проекта",
+    category: "project",
+  },
 ];
