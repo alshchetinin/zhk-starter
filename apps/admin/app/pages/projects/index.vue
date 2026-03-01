@@ -34,25 +34,22 @@ const syncStatusColors: Record<string, "success" | "warning" | "error" | "neutra
   error: "error",
 };
 
-// Create project modal
-const showCreateModal = ref(false);
-
-// Sync mutation
-const syncingProjectId = ref<string | null>(null);
-const syncMutation = useMutation({
-  mutationFn: (projectId: string) => {
-    syncingProjectId.value = projectId;
-    return $orpcClient.projects.sync({ id: projectId });
-  },
-  onSuccess: () => {
+// Sync all mutation
+const syncAllMutation = useMutation({
+  mutationFn: () => $orpcClient.projects.syncAll(),
+  onSuccess: (result) => {
     toast.add({
       title: "Синхронизация запущена",
+      description: `Проектов: ${result.started}`,
       color: "success",
     });
     queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
-    syncingProjectId.value = null;
   },
 });
+
+const hasSyncableProjects = computed(() =>
+  data.value?.data.some((p) => p.macroComplexId && p.lastSyncStatus !== "loading") ?? false,
+);
 
 function formatDate(date: string | Date | null | undefined) {
   if (!date) return null;
@@ -72,11 +69,14 @@ function formatDate(date: string | Date | null | undefined) {
           class="w-64"
         />
         <UButton
-          icon="i-tabler-plus"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
-          @click="showCreateModal = true"
+          v-if="hasSyncableProjects"
+          variant="outline"
+          icon="i-tabler-refresh"
+          :loading="syncAllMutation.isPending.value"
+          class="rounded-xl"
+          @click="syncAllMutation.mutate()"
         >
-          Новый проект
+          Синхронизировать все
         </UButton>
       </div>
     </div>
@@ -178,19 +178,6 @@ function formatDate(date: string | Date | null | undefined) {
             </div>
           </div>
 
-          <!-- Sync button -->
-          <UButton
-            v-if="project.macroComplexId"
-            variant="outline"
-            size="xs"
-            icon="i-tabler-refresh"
-            :loading="syncMutation.isPending.value && syncingProjectId === project.id"
-            :disabled="project.lastSyncStatus === 'loading'"
-            class="rounded-xl"
-            @click.prevent="syncMutation.mutate(project.id)"
-          >
-            Синхронизировать
-          </UButton>
         </div>
       </div>
     </div>
@@ -198,20 +185,19 @@ function formatDate(date: string | Date | null | undefined) {
     <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
       <UIcon name="i-tabler-building-off" class="mx-auto size-12 text-(--ui-text-muted)" />
       <p class="mt-2 text-(--ui-text-muted)">Проекты не найдены</p>
-      <UButton
-        class="mt-4"
-        icon="i-tabler-plus"
-        @click="showCreateModal = true"
-      >
-        Создать первый проект
-      </UButton>
+      <NuxtLink to="/integrations">
+        <UButton
+          class="mt-4"
+          icon="i-tabler-plug-connected"
+        >
+          Добавить через интеграции
+        </UButton>
+      </NuxtLink>
     </div>
 
     <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
       <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
     </div>
 
-    <!-- Create Project Modal -->
-    <CreateProjectModal v-model:open="showCreateModal" @created="queryClient.invalidateQueries({ queryKey: $orpc.projects.key() })" />
   </PageContainer>
 </template>

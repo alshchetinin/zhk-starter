@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { integrations, tenants } from "@zhk/db/schema";
+import { integrations, tenants, projects } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { protectedProcedure } from "../index";
 import { encrypt, decrypt } from "../utils/encryption";
@@ -110,13 +110,25 @@ export const integrationRouter = {
     const appSecret = decrypt(integration.appSecret);
     const { getMacroComplexes } = await import("@zhk/macro");
 
-    const complexes = await getMacroComplexes(
-      integration.domain,
-      appSecret,
-      integration.apiDomain ?? "api.macroserver.ru",
-    );
+    const [complexes, existingProjects] = await Promise.all([
+      getMacroComplexes(
+        integration.domain,
+        appSecret,
+        integration.apiDomain ?? "api.macroserver.ru",
+      ),
+      db.query.projects.findMany({
+        where: eq(projects.integrationId, integration.id),
+        columns: { macroComplexId: true },
+      }),
+    ]);
 
-    return { complexes, integrationId: integration.id };
+    return {
+      complexes,
+      integrationId: integration.id,
+      existingComplexIds: existingProjects
+        .map((p) => p.macroComplexId)
+        .filter((id): id is number => id != null),
+    };
   }),
 
   remove: protectedProcedure.handler(async () => {
