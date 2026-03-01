@@ -29,6 +29,10 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { projectId: "", showFree: true, showTotal: true };
     case "project-location":
       return { projectId: "", showAddress: true, mapHeight: 400 };
+    case "map":
+      return { name: "1" };
+    case "test":
+      return { name: "" };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

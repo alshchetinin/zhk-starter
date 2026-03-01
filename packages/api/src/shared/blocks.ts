@@ -69,6 +69,28 @@ export const cardV1BlockSchema = baseBlockSchema.extend({
   data: cardV1BlockDataSchema,
 });
 
+// --- Карта block ---
+
+export const mapBlockDataSchema = z.object({
+  name: z.enum(["1", "2", "3", "4", "5"]),
+});
+
+export const mapBlockSchema = baseBlockSchema.extend({
+  type: z.literal("map"),
+  data: mapBlockDataSchema,
+});
+
+// --- тест block ---
+
+export const testBlockDataSchema = z.object({
+  name: z.string().min(1),
+});
+
+export const testBlockSchema = baseBlockSchema.extend({
+  type: z.literal("test"),
+  data: testBlockDataSchema,
+});
+
 // --- GENERATOR:BLOCK_SCHEMA ---
 
 // --- Project block base ---
@@ -120,6 +142,8 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
   featuresBlockSchema,
   teamBlockSchema,
   cardV1BlockSchema,
+  mapBlockSchema,
+  testBlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
   projectGalleryBlockSchema,
   projectStatsBlockSchema,
@@ -166,6 +190,18 @@ export const blockDefinitions: BlockDefinition[] = [
     label: "Карточки",
     icon: "i-tabler-ghost-3",
     description: "Карточки с описанием и картинкой",
+  },
+  {
+    type: "map",
+    label: "Карта",
+    icon: "i-tabler-ghost-3",
+    description: "Карта яндекс",
+  },
+  {
+    type: "test",
+    label: "тест",
+    icon: "i-tabler-ghost-3",
+    description: "тест",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
   {
