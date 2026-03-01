@@ -7,6 +7,8 @@ import { generateSchema } from "./generate-block/generators/schema.js";
 import { generateEditorComponent } from "./generate-block/generators/editor-component.js";
 import { updateEditorRegistry } from "./generate-block/generators/editor-registry.js";
 import { updateDynamicZone } from "./generate-block/generators/dynamic-zone.js";
+import { generateWebRenderer } from "./generate-block/generators/web-renderer.js";
+import { updateWebRendererRegistry } from "./generate-block/generators/web-renderer-registry.js";
 import { toPascalCase } from "./generate-block/utils.js";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -64,6 +66,8 @@ async function main() {
       `  + apps/admin/.../editors/${pascal}Block.vue`,
       `  ~ apps/admin/.../editors/index.ts`,
       `  ~ apps/admin/.../BlockDynamicZone.vue`,
+      `  + apps/web/.../renderers/${pascal}Block.vue`,
+      `  ~ apps/web/.../renderers/index.ts`,
     ].join("\n"),
     "Сводка",
   );
@@ -91,6 +95,14 @@ async function main() {
   s.start("Обновляю BlockDynamicZone...");
   updateDynamicZone(ROOT, blockInfo);
   s.stop("BlockDynamicZone обновлён");
+
+  s.start("Создаю web-рендерер...");
+  generateWebRenderer(ROOT, blockInfo);
+  s.stop(`Создан renderers/${pascal}Block.vue`);
+
+  s.start("Обновляю реестр web-рендереров...");
+  updateWebRendererRegistry(ROOT, blockInfo);
+  s.stop("Реестр web-рендереров обновлён");
 
   p.outro(`Блок "${blockInfo.name}" успешно создан!`);
 }

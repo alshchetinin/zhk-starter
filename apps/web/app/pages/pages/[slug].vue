@@ -10,9 +10,12 @@ onServerPrefetch(suspense);
 
 <template>
   <div>
-    <h1>Page Detail</h1>
-    <p v-if="isPending">Loading...</p>
-    <p v-else-if="error">Error: {{ error.message }}</p>
-    <pre v-else>{{ JSON.stringify(data, null, 2) }}</pre>
+    <p v-if="isPending" class="section container-web text-center text-[var(--web-text-muted)]">
+      Загрузка...
+    </p>
+    <p v-else-if="error" class="section container-web text-center text-[var(--web-text-muted)]">
+      {{ error.message }}
+    </p>
+    <BlockRenderer v-else-if="data" :blocks="data.contentBlocks" />
   </div>
 </template>

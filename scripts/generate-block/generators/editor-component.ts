@@ -1,22 +1,9 @@
 import path from "node:path";
 import { FIELD_TYPES } from "../field-types.js";
-import { writeFile, toPascalCase } from "../utils.js";
+import { writeFile, toPascalCase, buildTsFields } from "../utils.js";
 import type { BlockInfo, FieldInfo } from "../prompts.js";
 
 const RICHTEXT_IMPORT = `import { toolbarItems } from "~/utils/editor-toolbar";`;
-
-function resolveFieldTsType(f: FieldInfo): string {
-  if (f.type === "repeater" && f.subFields) {
-    const subTypes = f.subFields
-      .map((sf) => {
-        const opt = sf.required ? "" : "?";
-        return `${sf.name}${opt}: ${FIELD_TYPES[sf.type]!.tsType}`;
-      })
-      .join("; ");
-    return `Array<{ ${subTypes} }>`;
-  }
-  return FIELD_TYPES[f.type]!.tsType;
-}
 
 function resolveSubFieldDefault(sf: FieldInfo): string {
   if (!sf.required) return "undefined";
@@ -89,12 +76,7 @@ export function generateEditorComponent(rootDir: string, block: BlockInfo): void
   const hasRichtext = hasRichtextField(block.fields);
 
   // Build TypeScript type for defineModel
-  const tsFields = block.fields
-    .map((f) => {
-      const opt = f.required ? "" : "?";
-      return `  ${f.name}${opt}: ${resolveFieldTsType(f)};`;
-    })
-    .join("\n");
+  const tsFields = buildTsFields(block.fields);
 
   // Build template fields
   const templateFields = block.fields

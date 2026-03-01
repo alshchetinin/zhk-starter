@@ -1,4 +1,5 @@
 import type { Component } from "vue";
+import type { BlockType } from "@zhk/api/shared/blocks";
 import AllFieldsBlock from "./AllFieldsBlock.vue";
 import FeaturesBlock from "./FeaturesBlock.vue";
 import TeamBlock from "./TeamBlock.vue";
@@ -8,9 +9,9 @@ import ProjectStatsBlock from "./ProjectStatsBlock.vue";
 import ProjectLocationBlock from "./ProjectLocationBlock.vue";
 import MapBlock from "./MapBlock.vue";
 import TestBlock from "./TestBlock.vue";
-// --- GENERATOR:EDITOR_IMPORT ---
+// --- GENERATOR:RENDERER_COMPONENT ---
 
-export const blockEditorComponents: Record<string, Component> = {
+export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
   "all-fields": AllFieldsBlock,
   features: FeaturesBlock,
   team: TeamBlock,
@@ -20,5 +21,5 @@ export const blockEditorComponents: Record<string, Component> = {
   "project-location": ProjectLocationBlock,
   map: MapBlock,
   test: TestBlock,
-  // --- GENERATOR:EDITOR_COMPONENT ---
+  // --- GENERATOR:RENDERER_ENTRY ---
 };
