@@ -3,7 +3,8 @@ import { FIELD_TYPES } from "../field-types.js";
 import { insertBeforeMarker, readFile, writeFile } from "../utils.js";
 import type { BlockInfo } from "../prompts.js";
 
-function resolveDefaultValue(field: { type: string; options?: string[] }): string {
+function resolveDefaultValue(field: { type: string; options?: string[]; required: boolean }): string {
+  if (!field.required) return "undefined";
   const ft = FIELD_TYPES[field.type]!;
   return typeof ft.defaultValue === "function" ? ft.defaultValue(field.options) : ft.defaultValue;
 }

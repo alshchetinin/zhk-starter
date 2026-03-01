@@ -52,14 +52,6 @@ const syncMutation = useMutation({
     queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
     syncingProjectId.value = null;
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка синхронизации",
-      description: error.message,
-      color: "error",
-    });
-    syncingProjectId.value = null;
-  },
 });
 
 function formatDate(date: string | Date | null | undefined) {

@@ -34,13 +34,6 @@ const deleteMutation = useMutation({
     toast.add({ title: "Новость удалена", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка удаления",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 </script>
 

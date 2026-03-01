@@ -7,59 +7,37 @@ const baseBlockSchema = z.object({
   type: z.string(),
 });
 
-// --- Editor block ---
+// --- Все типы полей block ---
 
-export const editorBlockDataSchema = z.object({
-  content: z.string(),
+export const allFieldsBlockDataSchema = z.object({
+  title: z.string().min(1),
+  subtitle: z.string().optional(),
+  body: z.string().min(1),
+  note: z.string().optional(),
+  content: z.string().min(1),
+  sortOrder: z.number().optional(),
+  isVisible: z.boolean(),
+  link: z.union([z.string().url(), z.literal("")]).optional(),
+  cover: z.string().url(),
+  gallery: z.array(z.string().url()).optional(),
+  size: z.enum(["small", "medium", "large"]),
 });
 
-export const editorBlockSchema = baseBlockSchema.extend({
-  type: z.literal("editor"),
-  data: editorBlockDataSchema,
+export const allFieldsBlockSchema = baseBlockSchema.extend({
+  type: z.literal("all-fields"),
+  data: allFieldsBlockDataSchema,
 });
 
-// --- Изображение block ---
+// --- Перимущества block ---
 
-export const imageBlockDataSchema = z.object({
-  url: z.string().url().nullable(),
-  alt: z.string(),
-  caption: z.string(),
+export const featuresBlockDataSchema = z.object({
+  name: z.string().min(1),
+  picture: z.string().url(),
 });
 
-export const imageBlockSchema = baseBlockSchema.extend({
-  type: z.literal("image"),
-  data: imageBlockDataSchema,
-});
-
-// --- Цитата block ---
-
-export const queteBlockDataSchema = z.object({
-  text: z.string(),
-  name: z.string(),
-});
-
-export const queteBlockSchema = baseBlockSchema.extend({
-  type: z.literal("quete"),
-  data: queteBlockDataSchema,
-});
-
-// --- Тест всех полей block ---
-
-export const testAllFieldsBlockDataSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  content: z.string(),
-  count: z.number(),
-  isActive: z.boolean(),
-  link: z.union([z.string().url(), z.literal("")]),
-  cover: z.string().url().nullable(),
-  gallery: z.array(z.string().url()),
-  variant: z.enum(["small", "medium", "large"]),
-});
-
-export const testAllFieldsBlockSchema = baseBlockSchema.extend({
-  type: z.literal("test-all-fields"),
-  data: testAllFieldsBlockDataSchema,
+export const featuresBlockSchema = baseBlockSchema.extend({
+  type: z.literal("features"),
+  data: featuresBlockDataSchema,
 });
 
 // --- GENERATOR:BLOCK_SCHEMA ---
@@ -67,10 +45,8 @@ export const testAllFieldsBlockSchema = baseBlockSchema.extend({
 // --- Discriminated union of all blocks ---
 
 export const contentBlockSchema = z.discriminatedUnion("type", [
-  editorBlockSchema,
-  imageBlockSchema,
-  queteBlockSchema,
-  testAllFieldsBlockSchema,
+  allFieldsBlockSchema,
+  featuresBlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
 ]);
 
@@ -91,28 +67,16 @@ export interface BlockDefinition {
 
 export const blockDefinitions: BlockDefinition[] = [
   {
-    type: "editor",
-    label: "Текстовый редактор",
-    icon: "i-tabler-writing",
-    description: "Форматированный текст с заголовками, списками, ссылками",
+    type: "all-fields",
+    label: "Все типы полей",
+    icon: "i-tabler-layout-list",
+    description: "Блок со всеми типами полей для тестирования",
   },
   {
-    type: "image",
-    label: "Изображение",
-    icon: "i-tabler-photo",
-    description: "Одиночное изображение с подписью и alt-текстом",
-  },
-  {
-    type: "quete",
-    label: "Цитата",
-    icon: "i-tabler-",
-    description: "Блок с цитатой",
-  },
-  {
-    type: "test-all-fields",
-    label: "Тест всех полей",
-    icon: "i-tabler-test-pipe",
-    description: "Тестовый блок для проверки всех типов полей",
+    type: "features",
+    label: "Перимущества",
+    icon: "i-tabler-ghost-3",
+    description: "Карточки преимущести",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
 ];

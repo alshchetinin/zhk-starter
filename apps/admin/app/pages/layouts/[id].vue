@@ -31,13 +31,6 @@ const sunMutation = useMutation({
     toast.add({ title: "Положение солнца сохранено", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка сохранения",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 </script>
 

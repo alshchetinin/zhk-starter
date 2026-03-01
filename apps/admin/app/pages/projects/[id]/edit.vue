@@ -49,13 +49,6 @@ const saveMutation = useMutation({
     queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
     router.push(`/projects/${props.project.id}`);
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка сохранения",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 </script>
 

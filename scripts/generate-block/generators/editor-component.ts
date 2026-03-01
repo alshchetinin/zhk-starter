@@ -3,35 +3,7 @@ import { FIELD_TYPES } from "../field-types.js";
 import { writeFile, toPascalCase } from "../utils.js";
 import type { BlockInfo } from "../prompts.js";
 
-const TOOLBAR_ITEMS = `const toolbarItems = [
-  [
-    { kind: "heading" as const, level: 1, icon: "i-tabler-h-1", tooltip: { text: "Заголовок 1" } },
-    { kind: "heading" as const, level: 2, icon: "i-tabler-h-2", tooltip: { text: "Заголовок 2" } },
-    { kind: "heading" as const, level: 3, icon: "i-tabler-h-3", tooltip: { text: "Заголовок 3" } },
-  ],
-  [
-    { kind: "mark" as const, mark: "bold", icon: "i-tabler-bold", tooltip: { text: "Жирный" } },
-    { kind: "mark" as const, mark: "italic", icon: "i-tabler-italic", tooltip: { text: "Курсив" } },
-    { kind: "mark" as const, mark: "strike", icon: "i-tabler-strikethrough", tooltip: { text: "Зачёркнутый" } },
-  ],
-  [
-    { kind: "bulletList" as const, icon: "i-tabler-list", tooltip: { text: "Маркированный список" } },
-    { kind: "orderedList" as const, icon: "i-tabler-list-numbers", tooltip: { text: "Нумерованный список" } },
-  ],
-  [
-    { kind: "blockquote" as const, icon: "i-tabler-blockquote", tooltip: { text: "Цитата" } },
-    { kind: "link" as const, icon: "i-tabler-link", tooltip: { text: "Ссылка" } },
-  ],
-  [
-    { kind: "undo" as const, icon: "i-tabler-arrow-back-up", tooltip: { text: "Отменить" } },
-    { kind: "redo" as const, icon: "i-tabler-arrow-forward-up", tooltip: { text: "Повторить" } },
-  ],
-];`;
-
-function resolveDefaultValue(field: { type: string; options?: string[] }): string {
-  const ft = FIELD_TYPES[field.type]!;
-  return typeof ft.defaultValue === "function" ? ft.defaultValue(field.options) : ft.defaultValue;
-}
+const RICHTEXT_IMPORT = `import { toolbarItems } from "~/utils/editor-toolbar";`;
 
 export function generateEditorComponent(rootDir: string, block: BlockInfo): void {
   const pascal = toPascalCase(block.name);
@@ -45,12 +17,21 @@ export function generateEditorComponent(rootDir: string, block: BlockInfo): void
 
   // Build TypeScript type for defineModel
   const tsFields = block.fields
-    .map((f) => `  ${f.name}: ${FIELD_TYPES[f.type]!.tsType};`)
+    .map((f) => {
+      const opt = f.required ? "" : "?";
+      return `  ${f.name}${opt}: ${FIELD_TYPES[f.type]!.tsType};`;
+    })
     .join("\n");
 
   // Build template fields
   const templateFields = block.fields
-    .map((f) => FIELD_TYPES[f.type]!.vueTemplate(f.name, f.label, f.options))
+    .map((f) => FIELD_TYPES[f.type]!.vueTemplate({
+      fieldName: f.name,
+      label: f.label,
+      options: f.options,
+      description: f.description,
+      required: f.required,
+    }))
     .join("\n");
 
   const scriptLines = [
@@ -59,13 +40,16 @@ export function generateEditorComponent(rootDir: string, block: BlockInfo): void
     `}>({ required: true });`,
   ];
 
-  if (hasRichtext) {
-    scriptLines.push("");
-    scriptLines.push(TOOLBAR_ITEMS);
-  }
+  scriptLines.push("");
+  scriptLines.push(`function set<K extends keyof typeof model.value>(key: K, value: typeof model.value[K]) {`);
+  scriptLines.push(`  model.value = { ...model.value, [key]: value };`);
+  scriptLines.push(`}`);
+
+  const imports = hasRichtext ? [RICHTEXT_IMPORT, ""] : [];
 
   const component = [
     `<script setup lang="ts">`,
+    ...imports,
     ...scriptLines,
     `</script>`,
     ``,

@@ -1,22 +1,19 @@
 import type { VueQueryPluginOptions } from "@tanstack/vue-query";
 import { MutationCache, QueryCache, QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
+import { formatApiError } from "~/utils/format-error";
 
 export default defineNuxtPlugin({
   name: "vue-query",
   setup(nuxt) {
     const toast = useToast();
 
+    const onError = (error: Error) => {
+      toast.add({ title: "Ошибка", description: formatApiError(error), color: "error", duration: 0 });
+    };
+
     const queryClient = new QueryClient({
-      queryCache: new QueryCache({
-        onError: (error) => {
-          toast.add({ title: "Error", description: String(error.message), color: "error" });
-        },
-      }),
-      mutationCache: new MutationCache({
-        onError: (error) => {
-          toast.add({ title: "Error", description: String(error.message), color: "error" });
-        },
-      }),
+      queryCache: new QueryCache({ onError }),
+      mutationCache: new MutationCache({ onError }),
       defaultOptions: {
         queries: {
           staleTime: 30_000,

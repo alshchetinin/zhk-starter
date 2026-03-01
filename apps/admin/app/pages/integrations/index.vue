@@ -45,13 +45,6 @@ const setupMutation = useMutation({
     apiDomain.value = "api.macroserver.ru";
     queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
   },
-  onError: (error) => {
-    toast.add({
-      title: "Ошибка",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 
 // Verify mutation
@@ -65,13 +58,6 @@ const verifyMutation = useMutation({
     });
     queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
   },
-  onError: (error) => {
-    toast.add({
-      title: "Ошибка проверки",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 
 // Remove mutation
@@ -83,13 +69,6 @@ const removeMutation = useMutation({
     toast.add({ title: "Интеграция отключена", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
     showRemoveConfirm.value = false;
-  },
-  onError: (error) => {
-    toast.add({
-      title: "Ошибка",
-      description: error.message,
-      color: "error",
-    });
   },
 });
 

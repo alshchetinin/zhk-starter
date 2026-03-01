@@ -79,13 +79,6 @@ const updateMutation = useMutation({
     toast.add({ title: "Статья обновлена", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка обновления",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 
 const deleteMutation = useMutation({

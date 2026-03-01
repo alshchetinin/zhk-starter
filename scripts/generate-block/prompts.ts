@@ -6,6 +6,8 @@ export interface FieldInfo {
   type: string;
   label: string;
   options?: string[];
+  description?: string;
+  required: boolean;
 }
 
 export interface BlockInfo {
@@ -114,11 +116,25 @@ export async function collectBlockInfo(): Promise<BlockInfo> {
       fieldOptions = optionsInput.split(",").map((o) => o.trim()).filter(Boolean);
     }
 
+    const fieldDescription = await p.text({
+      message: "Описание поля (подсказка, Enter — пропустить):",
+      initialValue: "",
+    });
+    if (p.isCancel(fieldDescription)) process.exit(0);
+
+    const fieldRequired = await p.confirm({
+      message: "Поле обязательное?",
+      initialValue: true,
+    });
+    if (p.isCancel(fieldRequired)) process.exit(0);
+
     fields.push({
       name: fieldName,
       type: fieldType as string,
       label: fieldLabel,
       options: fieldOptions,
+      description: fieldDescription || undefined,
+      required: fieldRequired,
     });
 
     const continueAdding = await p.confirm({

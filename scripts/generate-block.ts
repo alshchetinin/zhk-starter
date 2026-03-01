@@ -26,7 +26,11 @@ async function main() {
 
   // Summary
   const fieldsTable = blockInfo.fields
-    .map((f) => `  ${f.name} (${FIELD_TYPES[f.type]!.label})`)
+    .map((f) => {
+      const req = f.required ? "" : " [опционально]";
+      const desc = f.description ? ` — ${f.description}` : "";
+      return `  ${f.name} (${FIELD_TYPES[f.type]!.label})${req}${desc}`;
+    })
     .join("\n");
 
   const pascal = toPascalCase(blockInfo.name);

@@ -92,13 +92,6 @@ const createMutation = useMutation({
     emit("created");
     closeAndReset();
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка создания",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 
 // Navigation

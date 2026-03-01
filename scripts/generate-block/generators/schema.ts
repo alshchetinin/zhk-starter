@@ -2,9 +2,15 @@ import { FIELD_TYPES } from "../field-types.js";
 import { insertBeforeMarker, readFile, writeFile, toCamelCase } from "../utils.js";
 import type { BlockInfo } from "../prompts.js";
 
-function resolveZodType(field: { type: string; options?: string[] }): string {
+function resolveZodType(field: { type: string; options?: string[]; required: boolean }): string {
   const ft = FIELD_TYPES[field.type]!;
-  return typeof ft.zodType === "function" ? ft.zodType(field.options) : ft.zodType;
+  const base = typeof ft.zodType === "function" ? ft.zodType(field.options) : ft.zodType;
+
+  if (field.required) {
+    return ft.minWhenRequired ? `${base}.min(1)` : base;
+  }
+
+  return ft.nullableWhenOptional ? `${base}.nullable()` : `${base}.optional()`;
 }
 
 export function generateSchema(blocksPath: string, block: BlockInfo): void {

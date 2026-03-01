@@ -51,13 +51,6 @@ const createMutation = useMutation({
     toast.add({ title: "Статья создана", color: "success" });
     router.push("/news");
   },
-  onError: (error: any) => {
-    toast.add({
-      title: "Ошибка создания",
-      description: error.message,
-      color: "error",
-    });
-  },
 });
 </script>
 

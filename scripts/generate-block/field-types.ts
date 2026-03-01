@@ -1,10 +1,29 @@
+export interface VueTemplateContext {
+  fieldName: string;
+  label: string;
+  options?: string[];
+  description?: string;
+  required: boolean;
+}
+
 export interface FieldType {
   label: string;
   zodType: string | ((options?: string[]) => string);
   tsType: string;
   defaultValue: string | ((options?: string[]) => string);
-  vueTemplate: (fieldName: string, label: string, options?: string[]) => string;
+  vueTemplate: (ctx: VueTemplateContext) => string;
   needsEditorSetup?: boolean;
+  /** Add .min(1) to zodType when field is required */
+  minWhenRequired?: boolean;
+  /** Use .nullable() instead of .optional() when field is optional */
+  nullableWhenOptional?: boolean;
+}
+
+function formFieldOpen(ctx: VueTemplateContext): string {
+  const props: string[] = [`label="${ctx.label}"`];
+  if (ctx.description) props.push(`description="${ctx.description}"`);
+  if (ctx.required) props.push("required");
+  return `<UFormField ${props.join(" ")}>`;
 }
 
 export const FIELD_TYPES: Record<string, FieldType> = {
@@ -13,8 +32,9 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.string()",
     tsType: "string",
     defaultValue: '""',
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <UInput v-model="model.${name}" />\n    </UFormField>`,
+    minWhenRequired: true,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <UInput :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" />\n    </UFormField>`,
   },
 
   text: {
@@ -22,8 +42,9 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.string()",
     tsType: "string",
     defaultValue: '""',
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <UTextarea v-model="model.${name}" :rows="4" />\n    </UFormField>`,
+    minWhenRequired: true,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <UTextarea :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" :rows="4" />\n    </UFormField>`,
   },
 
   richtext: {
@@ -31,11 +52,12 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.string()",
     tsType: "string",
     defaultValue: '""',
+    minWhenRequired: true,
     needsEditorSetup: true,
-    vueTemplate: (name, label) =>
+    vueTemplate: (ctx) =>
       [
-        `    <UFormField label="${label}">`,
-        `      <UEditor v-model="model.${name}" class="min-h-[200px] rounded-md border border-(--ui-border)">`,
+        `    ${formFieldOpen(ctx)}`,
+        `      <UEditor :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" class="min-h-[200px] rounded-md border border-(--ui-border)">`,
         `        <template #default="{ editor }">`,
         `          <UEditorToolbar :editor="editor" :items="toolbarItems" />`,
         `        </template>`,
@@ -49,8 +71,8 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.number()",
     tsType: "number",
     defaultValue: "0",
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <UInput v-model.number="model.${name}" type="number" />\n    </UFormField>`,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <UInput :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', Number($event))" type="number" />\n    </UFormField>`,
   },
 
   boolean: {
@@ -58,8 +80,11 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.boolean()",
     tsType: "boolean",
     defaultValue: "false",
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <USwitch v-model="model.${name}" />\n    </UFormField>`,
+    vueTemplate: (ctx) => {
+      // Boolean always has a value (true/false), so never show required asterisk
+      const boolCtx = { ...ctx, required: false };
+      return `    ${formFieldOpen(boolCtx)}\n      <USwitch :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+    },
   },
 
   url: {
@@ -67,17 +92,18 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: 'z.union([z.string().url(), z.literal("")])',
     tsType: "string",
     defaultValue: '""',
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <UInput v-model="model.${name}" type="url" placeholder="https://..." />\n    </UFormField>`,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <UInput :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" type="url" placeholder="https://..." />\n    </UFormField>`,
   },
 
   image: {
     label: "Изображение (image URL)",
-    zodType: "z.string().url().nullable()",
+    zodType: "z.string().url()",
     tsType: "string | null",
     defaultValue: "null",
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <ImageUpload v-model="model.${name}" folder="blocks" />\n    </UFormField>`,
+    nullableWhenOptional: true,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <ImageUpload :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" folder="blocks" />\n    </UFormField>`,
   },
 
   images: {
@@ -85,8 +111,8 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     zodType: "z.array(z.string().url())",
     tsType: "string[]",
     defaultValue: "[]",
-    vueTemplate: (name, label) =>
-      `    <UFormField label="${label}">\n      <GalleryUpload v-model="model.${name}" />\n    </UFormField>`,
+    vueTemplate: (ctx) =>
+      `    ${formFieldOpen(ctx)}\n      <GalleryUpload :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" />\n    </UFormField>`,
   },
 
   select: {
@@ -95,11 +121,11 @@ export const FIELD_TYPES: Record<string, FieldType> = {
       options ? `z.enum([${options.map((o) => `"${o}"`).join(", ")}])` : "z.string()",
     tsType: "string",
     defaultValue: (options) => options ? `"${options[0]}"` : '""',
-    vueTemplate: (name, label, options) => {
-      const items = options
-        ? `[${options.map((o) => `{ label: "${o}", value: "${o}" }`).join(", ")}]`
+    vueTemplate: (ctx) => {
+      const items = ctx.options
+        ? `[${ctx.options.map((o) => `{ label: "${o}", value: "${o}" }`).join(", ")}]`
         : "[]";
-      return `    <UFormField label="${label}">\n      <USelect v-model="model.${name}" class="w-full" :items="${items.replace(/"/g, "'")}" />\n    </UFormField>`;
+      return `    ${formFieldOpen(ctx)}\n      <USelect :model-value="model.${ctx.fieldName}" @update:model-value="set('${ctx.fieldName}', $event)" class="w-full" :items="${items.replace(/"/g, "'")}" />\n    </UFormField>`;
     },
   },
 };
