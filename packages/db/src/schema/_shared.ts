@@ -7,6 +7,22 @@ export interface ContentBlock {
   data: Record<string, unknown>;
 }
 
+export interface InfraCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  sortOrder: number;
+}
+
+export interface InfraPin {
+  id: string;
+  title: string;
+  coordinates: string;
+  categoryId: string;
+  description?: string;
+}
+
 export const baseColumns = {
   id: text("id")
     .primaryKey()

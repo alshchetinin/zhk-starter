@@ -26,9 +26,11 @@ const tabs = computed(() => [
   { label: "Квартиры", to: `/projects/${id.value}/apartments` },
   { label: "На сайте", to: `/projects/${id.value}/website` },
   { label: "Ход строительства", to: `/projects/${id.value}/progress` },
+  { label: "Инфраструктура", to: `/projects/${id.value}/infrastructure` },
 ]);
 
 const activeTab = computed(() => {
+  if (route.path.includes("/infrastructure")) return 7;
   if (route.path.includes("/progress")) return 6;
   if (route.path.includes("/website")) return 5;
   if (route.path.includes("/apartments")) return 4;

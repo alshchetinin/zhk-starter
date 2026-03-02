@@ -123,6 +123,20 @@ export const projectsRouter = {
         coordinates: z.string().nullable().optional(),
         gallery: z.array(z.string().url()).nullable().optional(),
         cameraUrl: z.string().nullable().optional(),
+        infrastructureCategories: z.array(z.object({
+          id: z.string(),
+          name: z.string().min(1),
+          icon: z.string().min(1),
+          color: z.string().min(1),
+          sortOrder: z.number().int(),
+        })).optional(),
+        infrastructurePins: z.array(z.object({
+          id: z.string(),
+          title: z.string().min(1),
+          coordinates: z.string().min(1),
+          categoryId: z.string(),
+          description: z.string().optional(),
+        })).optional(),
       }),
     )
     .handler(async ({ input }) => {

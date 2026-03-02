@@ -35,6 +35,8 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { title: "", description: undefined, images: [], address: "", district: undefined, walkTime: undefined, driveTime: undefined, buildings: [], primaryButtonLabel: undefined, primaryButtonUrl: undefined, secondaryButtonLabel: undefined, secondaryButtonUrl: undefined };
     case "infrastructure-tabs":
       return { subtitle: undefined, title: "", tabs: [] };
+    case "project-infrastructure":
+      return { projectId: "", mapHeight: 500, showCategories: true };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

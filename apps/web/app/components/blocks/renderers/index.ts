@@ -8,6 +8,7 @@ import AboutFeaturesBlock from "./AboutFeaturesBlock.vue";
 import ContactsOfficeBlock from "./ContactsOfficeBlock.vue";
 import HeroFullscreenBlock from "./HeroFullscreenBlock.vue";
 import InfrastructureTabsBlock from "./InfrastructureTabsBlock.vue";
+import ProjectInfrastructureBlock from "./ProjectInfrastructureBlock.vue";
 // --- GENERATOR:RENDERER_COMPONENT ---
 
 export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
@@ -19,5 +20,6 @@ export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
   "contacts-office": ContactsOfficeBlock,
   "hero-fullscreen": HeroFullscreenBlock,
   "infrastructure-tabs": InfrastructureTabsBlock,
+  "project-infrastructure": ProjectInfrastructureBlock,
   // --- GENERATOR:RENDERER_ENTRY ---
 };

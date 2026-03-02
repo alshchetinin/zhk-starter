@@ -154,6 +154,18 @@ export const projectLocationBlockSchema = baseBlockSchema.extend({
   data: projectLocationBlockDataSchema,
 });
 
+// --- Инфраструктура на карте block ---
+
+export const projectInfrastructureBlockDataSchema = projectBlockBase.extend({
+  mapHeight: z.number().default(500),
+  showCategories: z.boolean().default(true),
+});
+
+export const projectInfrastructureBlockSchema = baseBlockSchema.extend({
+  type: z.literal("project-infrastructure"),
+  data: projectInfrastructureBlockDataSchema,
+});
+
 // --- Discriminated union of all blocks ---
 
 export const contentBlockSchema = z.discriminatedUnion("type", [
@@ -166,6 +178,7 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
   projectGalleryBlockSchema,
   projectStatsBlockSchema,
   projectLocationBlockSchema,
+  projectInfrastructureBlockSchema,
 ]);
 
 export type ContentBlock = z.infer<typeof contentBlockSchema>;
@@ -235,6 +248,13 @@ export const blockDefinitions: BlockDefinition[] = [
     label: "Карта и адрес",
     icon: "i-tabler-map-pin",
     description: "Карта и адрес проекта",
+    category: "project",
+  },
+  {
+    type: "project-infrastructure",
+    label: "Инфраструктура на карте",
+    icon: "i-tabler-map-2",
+    description: "Карта инфраструктуры проекта с пинами по категориям",
     category: "project",
   },
 ];

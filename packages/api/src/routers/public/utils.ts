@@ -33,6 +33,13 @@ function pickProjectFields(type: string, project: ProjectRow) {
         address: project.address,
         coordinates: project.coordinates,
       };
+    case "project-infrastructure":
+      return {
+        name: project.name,
+        coordinates: project.coordinates,
+        infrastructureCategories: project.infrastructureCategories,
+        infrastructurePins: project.infrastructurePins,
+      };
     default:
       return { name: project.name };
   }
@@ -71,6 +78,8 @@ export async function enrichContentBlocks(
       corporateReservationCount: true,
       soldApartmentsCount: true,
       totalApartmentsCount: true,
+      infrastructureCategories: true,
+      infrastructurePins: true,
     },
   });
 

@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import type { InfraCategory, InfraPin } from "./_shared";
 import { projectStatusEnum } from "./_enums";
 import { tenants } from "./tenants";
 import { integrations } from "./integrations";
@@ -27,6 +28,8 @@ export const projects = pgTable("projects", {
   masterplanImage: text("masterplan_image"),
   masterplanScheme: text("masterplan_scheme"),
   cameraUrl: text("camera_url"),
+  infrastructureCategories: jsonb("infrastructure_categories").$type<InfraCategory[]>().default([]),
+  infrastructurePins: jsonb("infrastructure_pins").$type<InfraPin[]>().default([]),
   cityId: text("city_id").references(() => cities.id),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),

@@ -36,6 +36,13 @@
       "when": 1772431255063,
       "tag": "0004_handy_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1772434004838,
+      "tag": "0005_careful_naoko",
+      "breakpoints": true
     }
   ]
 }
