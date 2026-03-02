@@ -23,3 +23,4 @@ export * from "./news";
 export * from "./pages";
 export * from "./documents";
 export * from "./contacts";
+export * from "./homepage";

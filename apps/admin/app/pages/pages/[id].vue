@@ -136,7 +136,7 @@ const deleteMutation = useMutation({
               />
             </UFormField>
 
-            <UFormField label="Slug">
+            <UFormField label="Slug" description="Путь страницы. Можно использовать / для вложенности (например: team/about)">
               <UInput
                 v-model="form.slug"
                 placeholder="url-slug"

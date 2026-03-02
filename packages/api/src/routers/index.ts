@@ -14,6 +14,7 @@ import { pagesRouter } from "./pages";
 import { documentsRouter } from "./documents";
 import { promotionsRouter } from "./promotions";
 import { contactsRouter } from "./contacts";
+import { homepageRouter } from "./homepage";
 import { publicRouter } from "./public/index";
 
 export const appRouter = {
@@ -35,6 +36,7 @@ export const appRouter = {
   documents: documentsRouter,
   promotions: promotionsRouter,
   contacts: contactsRouter,
+  homepage: homepageRouter,
 };
 
 export type AppRouter = typeof appRouter;

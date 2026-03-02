@@ -4,6 +4,7 @@ import { publicPagesRouter } from "./pages";
 import { publicDocumentsRouter } from "./documents";
 import { publicPromotionsRouter } from "./promotions";
 import { publicContactsRouter } from "./contacts";
+import { publicHomepageRouter } from "./homepage";
 
 export const publicRouter = {
   projects: publicProjectsRouter,
@@ -12,4 +13,5 @@ export const publicRouter = {
   documents: publicDocumentsRouter,
   promotions: publicPromotionsRouter,
   contacts: publicContactsRouter,
+  homepage: publicHomepageRouter,
 };

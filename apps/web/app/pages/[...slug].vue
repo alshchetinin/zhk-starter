@@ -3,9 +3,31 @@ import { useQuery } from "@tanstack/vue-query";
 
 const route = useRoute();
 const { orpc } = useOrpc();
-const { data, isPending, error, suspense } = useQuery(orpc.public.pages.getBySlug.queryOptions({ input: { slug: route.params.slug as string } }));
+
+const slug = computed(() => {
+  const s = route.params.slug;
+  return Array.isArray(s) ? s.join("/") : s;
+});
+
+const { data, isPending, error, suspense } = useQuery(
+  computed(() =>
+    orpc.public.pages.getBySlug.queryOptions({
+      input: { slug: slug.value },
+    }),
+  ),
+);
 
 onServerPrefetch(suspense);
+
+watch(
+  [data, isPending],
+  ([d, loading]) => {
+    if (!loading && !d) {
+      throw createError({ statusCode: 404, statusMessage: "Страница не найдена" });
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <template>

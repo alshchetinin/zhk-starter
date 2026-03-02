@@ -2,16 +2,24 @@
 import { useQuery } from "@tanstack/vue-query";
 
 const { orpc } = useOrpc();
-const { data, isPending, error, suspense } = useQuery(orpc.public.projects.list.queryOptions({ input: { page: 1, pageSize: 10 } }));
+const { data, isPending, error, suspense } = useQuery(
+  orpc.public.homepage.get.queryOptions(),
+);
 
 onServerPrefetch(suspense);
 </script>
 
 <template>
   <div>
-    <h1>Home — Projects</h1>
-    <p v-if="isPending">Loading...</p>
-    <p v-else-if="error">Error: {{ error.message }}</p>
-    <pre v-else>{{ JSON.stringify(data, null, 2) }}</pre>
+    <p v-if="isPending" class="section container-web text-center text-[var(--web-text-muted)]">
+      Загрузка...
+    </p>
+    <p v-else-if="error" class="section container-web text-center text-[var(--web-text-muted)]">
+      {{ error.message }}
+    </p>
+    <BlockRenderer v-else-if="data" :blocks="data.contentBlocks" />
+    <div v-else class="section container-web text-center text-[var(--web-text-muted)]">
+      <p>Главная страница ещё не настроена</p>
+    </div>
   </div>
 </template>
