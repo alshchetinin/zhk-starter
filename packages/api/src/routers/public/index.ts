@@ -3,6 +3,7 @@ import { publicNewsRouter } from "./news";
 import { publicPagesRouter } from "./pages";
 import { publicDocumentsRouter } from "./documents";
 import { publicPromotionsRouter } from "./promotions";
+import { publicContactsRouter } from "./contacts";
 
 export const publicRouter = {
   projects: publicProjectsRouter,
@@ -10,4 +11,5 @@ export const publicRouter = {
   pages: publicPagesRouter,
   documents: publicDocumentsRouter,
   promotions: publicPromotionsRouter,
+  contacts: publicContactsRouter,
 };

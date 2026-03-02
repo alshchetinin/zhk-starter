@@ -13,6 +13,7 @@ import { newsRouter } from "./news";
 import { pagesRouter } from "./pages";
 import { documentsRouter } from "./documents";
 import { promotionsRouter } from "./promotions";
+import { contactsRouter } from "./contacts";
 import { publicRouter } from "./public/index";
 
 export const appRouter = {
@@ -33,6 +34,7 @@ export const appRouter = {
   pages: pagesRouter,
   documents: documentsRouter,
   promotions: promotionsRouter,
+  contacts: contactsRouter,
 };
 
 export type AppRouter = typeof appRouter;
