@@ -15,32 +15,22 @@ function addBlock(type: BlockType) {
 
 function getDefaultData(type: BlockType): Record<string, unknown> {
   switch (type) {
-    case "all-fields":
-      return { title: "", subtitle: undefined, body: "", note: undefined, content: "", sortOrder: undefined, isVisible: false, link: undefined, cover: null, gallery: undefined, size: "small" };
-    case "features":
-      return { name: "", picture: null };
-    case "team":
-      return { items: [] };
-    case "card-v1":
-      return { items: [] };
     case "project-gallery":
       return { projectId: "", columns: "3", maxImages: undefined };
     case "project-stats":
       return { projectId: "", showFree: true, showTotal: true };
     case "project-location":
       return { projectId: "", showAddress: true, mapHeight: 400 };
-    case "map":
-      return { name: "1" };
-    case "test":
-      return { name: "" };
-    case "hero":
-      return { title: "", description: undefined, images: [], primaryButtonText: "", primaryButtonUrl: "", secondaryButtonText: undefined, secondaryButtonUrl: undefined };
-    case "about-tabs":
+    case "about-project":
       return { title: "", description: undefined, tabs: [] };
-    case "about-cards":
+    case "about-features":
       return { title: "", description: undefined, items: [] };
-    case "contacts":
-      return { title: "", phone: "", email: "", address: "", buttonText: undefined, buttonUrl: undefined, departments: undefined };
+    case "contacts-office":
+      return { title: "", phone: "", email: "", address: "", mapCoordinates: undefined, buttonLabel: undefined, buttonUrl: undefined, socials: undefined, departments: [] };
+    case "hero-fullscreen":
+      return { title: "", description: undefined, images: [], address: "", district: undefined, walkTime: undefined, driveTime: undefined, buildings: [], primaryButtonLabel: undefined, primaryButtonUrl: undefined, secondaryButtonLabel: undefined, secondaryButtonUrl: undefined };
+    case "infrastructure-tabs":
+      return { subtitle: undefined, title: "", tabs: [] };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

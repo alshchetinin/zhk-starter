@@ -12,7 +12,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
 
 <template>
   <div class="space-y-4">
-    <UFormField label="Заголовок" description="Крупный заголовок секции" required>
+    <UFormField label="Заголовок" required>
       <UInput :model-value="model.title" @update:model-value="set('title', $event)" />
     </UFormField>
     <UFormField label="Описание">
@@ -23,11 +23,11 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
         :model-value="model.items"
         @update:model-value="set('items', $event)"
         :default-item="() => ({ title: '', image: null })"
-        :min="3"
+        :min="2" :max="6"
       >
         <template #item="{ item, update }">
           <div class="space-y-3">
-    <UFormField label="Название" required>
+    <UFormField label="Подпись" required>
       <UInput :model-value="item.title" @update:model-value="update('title', $event)" />
     </UFormField>
     <UFormField label="Изображение" required>

@@ -1,0 +1,32 @@
+{
+  "name": "contacts-office",
+  "label": "Контакты",
+  "description": "Секция контактов с адресом, картой, отделами и соцсетями",
+  "icon": "i-tabler-address-book",
+  "fields": [
+    { "name": "title", "type": "string", "label": "Заголовок", "required": true },
+    { "name": "phone", "type": "string", "label": "Основной телефон", "required": true },
+    { "name": "email", "type": "string", "label": "Основной email", "required": true },
+    { "name": "address", "type": "string", "label": "Адрес", "required": true },
+    { "name": "mapCoordinates", "type": "string", "label": "Координаты карты (lat,lng)", "required": false, "description": "Широта и долгота через запятую" },
+    { "name": "buttonLabel", "type": "string", "label": "Текст кнопки", "required": false },
+    { "name": "buttonUrl", "type": "url", "label": "Ссылка кнопки", "required": false },
+    {
+      "name": "socials", "type": "repeater", "label": "Соцсети", "required": false,
+      "minItems": 1, "maxItems": 5,
+      "subFields": [
+        { "name": "type", "type": "select", "label": "Соцсеть", "required": true, "options": ["telegram", "whatsapp", "vk"] },
+        { "name": "url", "type": "url", "label": "Ссылка", "required": true }
+      ]
+    },
+    {
+      "name": "departments", "type": "repeater", "label": "Отделы", "required": true,
+      "minItems": 1, "maxItems": 8,
+      "subFields": [
+        { "name": "name", "type": "string", "label": "Название отдела", "required": true },
+        { "name": "phone", "type": "string", "label": "Телефон", "required": true },
+        { "name": "email", "type": "string", "label": "Email", "required": true }
+      ]
+    }
+  ]
+}

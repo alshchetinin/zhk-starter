@@ -7,160 +7,107 @@ const baseBlockSchema = z.object({
   type: z.string(),
 });
 
-// --- Все типы полей block ---
+// --- О проекте block ---
 
-export const allFieldsBlockDataSchema = z.object({
-  title: z.string().min(1),
-  subtitle: z.string().optional(),
-  body: z.string().min(1),
-  note: z.string().optional(),
-  content: z.string().min(1),
-  sortOrder: z.number().optional(),
-  isVisible: z.boolean(),
-  link: z.union([z.string().url(), z.literal("")]).optional(),
-  cover: z.string().url(),
-  gallery: z.array(z.string().url()).optional(),
-  size: z.enum(["small", "medium", "large"]),
-});
-
-export const allFieldsBlockSchema = baseBlockSchema.extend({
-  type: z.literal("all-fields"),
-  data: allFieldsBlockDataSchema,
-});
-
-// --- Перимущества block ---
-
-export const featuresBlockDataSchema = z.object({
-  name: z.string().min(1),
-  picture: z.string().url(),
-});
-
-export const featuresBlockSchema = baseBlockSchema.extend({
-  type: z.literal("features"),
-  data: featuresBlockDataSchema,
-});
-
-// --- Команда block ---
-
-export const teamBlockDataSchema = z.object({
-  items: z.array(z.object({
-    name: z.string().min(1),
-    picture: z.string().url(),
-  })).min(4),
-});
-
-export const teamBlockSchema = baseBlockSchema.extend({
-  type: z.literal("team"),
-  data: teamBlockDataSchema,
-});
-
-// --- Карточки block ---
-
-export const cardV1BlockDataSchema = z.object({
-  items: z.array(z.object({
-    title: z.string().min(1),
-    description: z.string().optional(),
-    image: z.string().url(),
-  })).min(3).max(3),
-});
-
-export const cardV1BlockSchema = baseBlockSchema.extend({
-  type: z.literal("card-v1"),
-  data: cardV1BlockDataSchema,
-});
-
-// --- Карта block ---
-
-export const mapBlockDataSchema = z.object({
-  name: z.enum(["1", "2", "3", "4", "5"]),
-});
-
-export const mapBlockSchema = baseBlockSchema.extend({
-  type: z.literal("map"),
-  data: mapBlockDataSchema,
-});
-
-// --- тест block ---
-
-export const testBlockDataSchema = z.object({
-  name: z.string().min(1),
-});
-
-export const testBlockSchema = baseBlockSchema.extend({
-  type: z.literal("test"),
-  data: testBlockDataSchema,
-});
-
-// --- Главный баннер block ---
-
-export const heroBlockDataSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  images: z.array(z.string().url()).min(1),
-  primaryButtonText: z.string().min(1),
-  primaryButtonUrl: z.union([z.string().url(), z.literal("")]),
-  secondaryButtonText: z.string().optional(),
-  secondaryButtonUrl: z.union([z.string().url(), z.literal("")]).optional(),
-});
-
-export const heroBlockSchema = baseBlockSchema.extend({
-  type: z.literal("hero"),
-  data: heroBlockDataSchema,
-});
-
-// --- О проекте (табы) block ---
-
-export const aboutTabsBlockDataSchema = z.object({
+export const aboutProjectBlockDataSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   tabs: z.array(z.object({
     label: z.string().min(1),
-    image: z.string().url(),
-    subtitle: z.string().min(1),
-    text: z.string().optional(),
-  })).min(2),
+    title: z.string().min(1),
+    description: z.string().optional(),
+    images: z.array(z.string().url()),
+  })).min(2).max(6),
 });
 
-export const aboutTabsBlockSchema = baseBlockSchema.extend({
-  type: z.literal("about-tabs"),
-  data: aboutTabsBlockDataSchema,
+export const aboutProjectBlockSchema = baseBlockSchema.extend({
+  type: z.literal("about-project"),
+  data: aboutProjectBlockDataSchema,
 });
 
-// --- О проекте (карточки) block ---
+// --- Карточки о проекте block ---
 
-export const aboutCardsBlockDataSchema = z.object({
+export const aboutFeaturesBlockDataSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   items: z.array(z.object({
     title: z.string().min(1),
     image: z.string().url(),
-  })).min(3),
+  })).min(2).max(6),
 });
 
-export const aboutCardsBlockSchema = baseBlockSchema.extend({
-  type: z.literal("about-cards"),
-  data: aboutCardsBlockDataSchema,
+export const aboutFeaturesBlockSchema = baseBlockSchema.extend({
+  type: z.literal("about-features"),
+  data: aboutFeaturesBlockDataSchema,
 });
 
 // --- Контакты block ---
 
-export const contactsBlockDataSchema = z.object({
+export const contactsOfficeBlockDataSchema = z.object({
   title: z.string().min(1),
   phone: z.string().min(1),
   email: z.string().min(1),
   address: z.string().min(1),
-  buttonText: z.string().optional(),
+  mapCoordinates: z.string().optional(),
+  buttonLabel: z.string().optional(),
   buttonUrl: z.union([z.string().url(), z.literal("")]).optional(),
+  socials: z.array(z.object({
+    type: z.enum(["telegram", "whatsapp", "vk"]),
+    url: z.union([z.string().url(), z.literal("")]),
+  })).min(1).max(5).optional(),
   departments: z.array(z.object({
     name: z.string().min(1),
     phone: z.string().min(1),
-    email: z.string().optional(),
-  })).optional(),
+    email: z.string().min(1),
+  })).min(1).max(8),
 });
 
-export const contactsBlockSchema = baseBlockSchema.extend({
-  type: z.literal("contacts"),
-  data: contactsBlockDataSchema,
+export const contactsOfficeBlockSchema = baseBlockSchema.extend({
+  type: z.literal("contacts-office"),
+  data: contactsOfficeBlockDataSchema,
+});
+
+// --- Hero на весь экран block ---
+
+export const heroFullscreenBlockDataSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  images: z.array(z.string().url()),
+  address: z.string().min(1),
+  district: z.string().optional(),
+  walkTime: z.string().optional(),
+  driveTime: z.string().optional(),
+  buildings: z.array(z.object({
+    label: z.string().min(1),
+    date: z.string().min(1),
+  })).min(1).max(6),
+  primaryButtonLabel: z.string().optional(),
+  primaryButtonUrl: z.union([z.string().url(), z.literal("")]).optional(),
+  secondaryButtonLabel: z.string().optional(),
+  secondaryButtonUrl: z.union([z.string().url(), z.literal("")]).optional(),
+});
+
+export const heroFullscreenBlockSchema = baseBlockSchema.extend({
+  type: z.literal("hero-fullscreen"),
+  data: heroFullscreenBlockDataSchema,
+});
+
+// --- Инфраструктура block ---
+
+export const infrastructureTabsBlockDataSchema = z.object({
+  subtitle: z.string().optional(),
+  title: z.string().min(1),
+  tabs: z.array(z.object({
+    label: z.string().min(1),
+    title: z.string().min(1),
+    description: z.string().optional(),
+    image: z.string().url(),
+  })).min(2).max(8),
+});
+
+export const infrastructureTabsBlockSchema = baseBlockSchema.extend({
+  type: z.literal("infrastructure-tabs"),
+  data: infrastructureTabsBlockDataSchema,
 });
 
 // --- GENERATOR:BLOCK_SCHEMA ---
@@ -210,16 +157,11 @@ export const projectLocationBlockSchema = baseBlockSchema.extend({
 // --- Discriminated union of all blocks ---
 
 export const contentBlockSchema = z.discriminatedUnion("type", [
-  allFieldsBlockSchema,
-  featuresBlockSchema,
-  teamBlockSchema,
-  cardV1BlockSchema,
-  mapBlockSchema,
-  testBlockSchema,
-  heroBlockSchema,
-  aboutTabsBlockSchema,
-  aboutCardsBlockSchema,
-  contactsBlockSchema,
+  aboutProjectBlockSchema,
+  aboutFeaturesBlockSchema,
+  contactsOfficeBlockSchema,
+  heroFullscreenBlockSchema,
+  infrastructureTabsBlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
   projectGalleryBlockSchema,
   projectStatsBlockSchema,
@@ -244,64 +186,34 @@ export interface BlockDefinition {
 
 export const blockDefinitions: BlockDefinition[] = [
   {
-    type: "all-fields",
-    label: "Все типы полей",
-    icon: "i-tabler-layout-list",
-    description: "Блок со всеми типами полей для тестирования",
+    type: "about-project",
+    label: "О проекте",
+    icon: "i-tabler-building",
+    description: "Секция о проекте с табами и слайдером изображений",
   },
   {
-    type: "features",
-    label: "Перимущества",
-    icon: "i-tabler-ghost-3",
-    description: "Карточки преимущести",
+    type: "about-features",
+    label: "Карточки о проекте",
+    icon: "i-tabler-layout-grid",
+    description: "Секция с карточками-преимуществами проекта с изображениями",
   },
   {
-    type: "team",
-    label: "Команда",
-    icon: "i-tabler-ghost-3",
-    description: "Блок с карточками",
-  },
-  {
-    type: "card-v1",
-    label: "Карточки",
-    icon: "i-tabler-ghost-3",
-    description: "Карточки с описанием и картинкой",
-  },
-  {
-    type: "map",
-    label: "Карта",
-    icon: "i-tabler-ghost-3",
-    description: "Карта яндекс",
-  },
-  {
-    type: "test",
-    label: "тест",
-    icon: "i-tabler-ghost-3",
-    description: "тест",
-  },
-  {
-    type: "hero",
-    label: "Главный баннер",
-    icon: "i-tabler-photo",
-    description: "Fullscreen баннер проекта с фоном-слайдером и CTA",
-  },
-  {
-    type: "about-tabs",
-    label: "О проекте (табы)",
-    icon: "i-tabler-layout-bottombar",
-    description: "Секция о проекте с табами: картинка-слайдер, подзаголовок, описание",
-  },
-  {
-    type: "about-cards",
-    label: "О проекте (карточки)",
-    icon: "i-tabler-cards",
-    description: "Секция с большим заголовком, описанием и карточками с изображениями",
-  },
-  {
-    type: "contacts",
+    type: "contacts-office",
     label: "Контакты",
     icon: "i-tabler-address-book",
-    description: "Блок контактов с телефоном, email, адресом, отделами и картой",
+    description: "Секция контактов с адресом, картой, отделами и соцсетями",
+  },
+  {
+    type: "hero-fullscreen",
+    label: "Hero на весь экран",
+    icon: "i-tabler-photo",
+    description: "Полноэкранный hero-блок со слайдером, адресом и сроками сдачи",
+  },
+  {
+    type: "infrastructure-tabs",
+    label: "Инфраструктура",
+    icon: "i-tabler-trees",
+    description: "Секция инфраструктуры с табами и изображениями",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
   {
