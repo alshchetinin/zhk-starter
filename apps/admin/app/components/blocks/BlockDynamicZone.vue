@@ -37,6 +37,8 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { subtitle: undefined, title: "", tabs: [] };
     case "project-infrastructure":
       return { projectId: "", mapHeight: 500, showCategories: true };
+    case "about-company":
+      return { title: "", description: undefined, buttonLabel: undefined, buttonUrl: undefined, image: null, stats: [] };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

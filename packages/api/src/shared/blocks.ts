@@ -110,6 +110,25 @@ export const infrastructureTabsBlockSchema = baseBlockSchema.extend({
   data: infrastructureTabsBlockDataSchema,
 });
 
+// --- О компании block ---
+
+export const aboutCompanyBlockDataSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  buttonLabel: z.string().optional(),
+  buttonUrl: z.union([z.string().url(), z.literal("")]).optional(),
+  image: z.string().url(),
+  stats: z.array(z.object({
+    value: z.string().min(1),
+    label: z.string().min(1),
+  })).min(2).max(6),
+});
+
+export const aboutCompanyBlockSchema = baseBlockSchema.extend({
+  type: z.literal("about-company"),
+  data: aboutCompanyBlockDataSchema,
+});
+
 // --- GENERATOR:BLOCK_SCHEMA ---
 
 // --- Project block base ---
@@ -174,6 +193,7 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
   contactsOfficeBlockSchema,
   heroFullscreenBlockSchema,
   infrastructureTabsBlockSchema,
+  aboutCompanyBlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
   projectGalleryBlockSchema,
   projectStatsBlockSchema,
@@ -227,6 +247,12 @@ export const blockDefinitions: BlockDefinition[] = [
     label: "Инфраструктура",
     icon: "i-tabler-trees",
     description: "Секция инфраструктуры с табами и изображениями",
+  },
+  {
+    type: "about-company",
+    label: "О компании",
+    icon: "i-tabler-building-estate",
+    description: "Секция о компании с описанием, изображением и статистикой",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
   {
