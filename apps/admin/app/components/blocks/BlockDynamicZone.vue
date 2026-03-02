@@ -4,12 +4,16 @@ import { blockEditorComponents } from "./editors/index";
 
 const model = defineModel<ContentBlock[]>({ default: () => [] });
 
+const lastAddedId = ref<string | null>(null);
+
 function addBlock(type: BlockType) {
+  const id = crypto.randomUUID();
   const newBlock: ContentBlock = {
-    id: crypto.randomUUID(),
+    id,
     type,
     data: getDefaultData(type),
   } as ContentBlock;
+  lastAddedId.value = id;
   model.value = [...model.value, newBlock];
 }
 
@@ -64,6 +68,7 @@ function updateBlockData(index: number, data: Record<string, unknown>) {
       :type="block.type"
       :index="i"
       :total="model.length"
+      :default-open="block.id === lastAddedId"
       @remove="removeBlock(i)"
       @move-up="moveBlock(i, -1)"
       @move-down="moveBlock(i, 1)"

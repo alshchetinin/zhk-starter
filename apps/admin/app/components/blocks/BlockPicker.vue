@@ -14,20 +14,20 @@ const contentBlocks = computed(() =>
 const projectBlocks = computed(() =>
   blockDefinitions.filter(d => d.category === "project"),
 );
-
 </script>
 
 <template>
-  <UPopover v-model:open="open">
-    <UButton icon="i-tabler-plus" variant="outline" class="rounded-xl">
-      Добавить блок
-    </UButton>
-    <template #content>
-      <div class="p-2 space-y-1 w-64">
+  <UButton icon="i-tabler-plus" variant="outline" class="rounded-xl" @click="open = true">
+    Добавить блок
+  </UButton>
+
+  <USlideover v-model:open="open" title="Добавить блок" side="right">
+    <template #body>
+      <div class="space-y-1">
         <button
           v-for="def in contentBlocks"
           :key="def.type"
-          class="flex items-center gap-3 w-full px-3 py-2 rounded-md hover:bg-(--ui-bg-elevated) transition-colors text-left"
+          class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-(--ui-bg-elevated) transition-colors text-left"
           @click="
             $emit('select', def.type);
             open = false;
@@ -43,13 +43,13 @@ const projectBlocks = computed(() =>
         </button>
 
         <template v-if="projectBlocks.length">
-          <div class="border-t border-(--ui-border) my-1 pt-1">
+          <div class="border-t border-(--ui-border) my-2 pt-2">
             <p class="text-xs text-(--ui-text-dimmed) px-3 py-1">Блоки проекта</p>
           </div>
           <button
             v-for="def in projectBlocks"
             :key="def.type"
-            class="flex items-center gap-3 w-full px-3 py-2 rounded-md hover:bg-(--ui-bg-elevated) transition-colors text-left"
+            class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-(--ui-bg-elevated) transition-colors text-left"
             @click="
               $emit('select', def.type);
               open = false;
@@ -66,5 +66,5 @@ const projectBlocks = computed(() =>
         </template>
       </div>
     </template>
-  </UPopover>
+  </USlideover>
 </template>
