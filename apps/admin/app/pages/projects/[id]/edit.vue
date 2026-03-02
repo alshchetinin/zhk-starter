@@ -27,6 +27,7 @@ const form = reactive({
   tags: [...(props.project.tags ?? [])] as string[],
   coordinates: props.project.coordinates ?? "",
   gallery: [...(props.project.gallery ?? [])] as string[],
+  cameraUrl: props.project.cameraUrl ?? "",
 });
 
 const canSave = computed(() => form.name.trim().length > 0);
@@ -43,6 +44,7 @@ const saveMutation = useMutation({
       tags: form.tags.length > 0 ? form.tags : null,
       coordinates: form.coordinates || null,
       gallery: form.gallery.length > 0 ? form.gallery : null,
+      cameraUrl: form.cameraUrl.trim() || null,
     }),
   onSuccess: () => {
     toast.add({ title: "Проект обновлён", color: "success" });
@@ -125,6 +127,20 @@ const saveMutation = useMutation({
     <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
       <h2 class="text-lg font-semibold">Галерея</h2>
       <GalleryUpload v-model="form.gallery" :project-id="project.id" />
+    </div>
+
+    <!-- Camera -->
+    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
+      <h2 class="text-lg font-semibold">Онлайн-камера</h2>
+      <UFormField label="Ссылка на трансляцию" description="Камера стройки для всего проекта">
+        <UInput
+          v-model="form.cameraUrl"
+          placeholder="https://..."
+          icon="i-tabler-video"
+          size="xl"
+          class="w-full"
+        />
+      </UFormField>
     </div>
 
     <!-- Actions -->

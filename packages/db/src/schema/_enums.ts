@@ -45,3 +45,8 @@ export const promotionStatusEnum = pgEnum("promotion_status", [
   "published",
   "archived",
 ]);
+
+export const constructionProgressStatusEnum = pgEnum(
+  "construction_progress_status",
+  ["draft", "published"],
+);

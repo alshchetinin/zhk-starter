@@ -122,6 +122,7 @@ export const projectsRouter = {
         tags: z.array(z.string()).nullable().optional(),
         coordinates: z.string().nullable().optional(),
         gallery: z.array(z.string().url()).nullable().optional(),
+        cameraUrl: z.string().nullable().optional(),
       }),
     )
     .handler(async ({ input }) => {

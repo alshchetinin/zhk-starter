@@ -26,6 +26,7 @@ export const projects = pgTable("projects", {
   gallery: text("gallery").array(),
   masterplanImage: text("masterplan_image"),
   masterplanScheme: text("masterplan_scheme"),
+  cameraUrl: text("camera_url"),
   cityId: text("city_id").references(() => cities.id),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),

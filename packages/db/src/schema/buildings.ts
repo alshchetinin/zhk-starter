@@ -22,6 +22,7 @@ export const buildings = pgTable("buildings", {
   completionDate: date("completion_date"),
   sunPosition: integer("sun_position"),
   renovationCost: integer("renovation_cost"),
+  cameraUrl: text("camera_url"),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),
   freeApartmentsCount: integer("free_apartments_count").default(0),
