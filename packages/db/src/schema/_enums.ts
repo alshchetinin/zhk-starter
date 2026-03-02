@@ -50,3 +50,10 @@ export const constructionProgressStatusEnum = pgEnum(
   "construction_progress_status",
   ["draft", "published"],
 );
+
+export const ticketTypeEnum = pgEnum("ticket_type", [
+  "lead",
+  "callback",
+  "question",
+  "booking",
+]);

@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { ticketTypeEnum } from "./_enums";
 import { tenants } from "./tenants";
 import { integrations } from "./integrations";
 import { apartments } from "./apartments";
@@ -12,11 +13,16 @@ export const tickets = pgTable("tickets", {
     .notNull()
     .default("default")
     .references(() => tenants.id),
-  name: text("name").notNull(),
+  name: text("name"),
   phone: text("phone").notNull(),
   email: text("email"),
+  message: text("message"),
   comment: text("comment"),
-  requestType: text("request_type").notNull(),
+  type: ticketTypeEnum("type").notNull().default("lead"),
+  requestType: text("request_type"),
+  source: text("source"),
+  url: text("url"),
+  utm: jsonb("utm").$type<Record<string, string>>(),
   additionalInfo: jsonb("additional_info"),
   apartmentId: text("apartment_id").references(() => apartments.id),
   externalId: text("external_id"),

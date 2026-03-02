@@ -25,3 +25,4 @@ export * from "./documents";
 export * from "./contacts";
 export * from "./homepage";
 export * from "./construction-progress";
+export * from "./ticket-settings";

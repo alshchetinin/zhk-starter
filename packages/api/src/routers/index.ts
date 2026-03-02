@@ -16,6 +16,8 @@ import { promotionsRouter } from "./promotions";
 import { contactsRouter } from "./contacts";
 import { homepageRouter } from "./homepage";
 import { constructionProgressRouter } from "./construction-progress";
+import { ticketsRouter } from "./tickets";
+import { ticketSettingsRouter } from "./ticket-settings";
 import { publicRouter } from "./public/index";
 
 export const appRouter = {
@@ -39,6 +41,8 @@ export const appRouter = {
   contacts: contactsRouter,
   homepage: homepageRouter,
   constructionProgress: constructionProgressRouter,
+  tickets: ticketsRouter,
+  ticketSettings: ticketSettingsRouter,
 };
 
 export type AppRouter = typeof appRouter;

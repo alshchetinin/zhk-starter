@@ -6,6 +6,7 @@ import { publicPromotionsRouter } from "./promotions";
 import { publicContactsRouter } from "./contacts";
 import { publicHomepageRouter } from "./homepage";
 import { publicConstructionProgressRouter } from "./construction-progress";
+import { publicTicketsRouter } from "./tickets";
 
 export const publicRouter = {
   projects: publicProjectsRouter,
@@ -16,4 +17,5 @@ export const publicRouter = {
   contacts: publicContactsRouter,
   homepage: publicHomepageRouter,
   constructionProgress: publicConstructionProgressRouter,
+  tickets: publicTicketsRouter,
 };
