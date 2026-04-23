@@ -46,10 +46,35 @@ const saveMutation = useMutation({
       gallery: form.gallery.length > 0 ? form.gallery : null,
       cameraUrl: form.cameraUrl.trim() || null,
     }),
+  onMutate: async () => {
+    const key = $orpc.projects.getById.queryKey({ input: { id: props.project.id } });
+    await queryClient.cancelQueries({ queryKey: key });
+    const prev = queryClient.getQueryData(key);
+    queryClient.setQueryData(key, (old: any) =>
+      old && {
+        ...old,
+        name: form.name.trim(),
+        address: form.address.trim(),
+        type: form.type.trim() || null,
+        cityId: form.cityId || null,
+        location: form.location.trim() || null,
+        tags: form.tags.length > 0 ? form.tags : null,
+        coordinates: form.coordinates || null,
+        gallery: form.gallery.length > 0 ? form.gallery : null,
+        cameraUrl: form.cameraUrl.trim() || null,
+      },
+    );
+    return { prev, key };
+  },
+  onError: (_e, _v, ctx) => {
+    if (ctx) queryClient.setQueryData(ctx.key, ctx.prev);
+  },
   onSuccess: () => {
     toast.add({ title: "Проект обновлён", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
     router.push(`/projects/${props.project.id}`);
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
   },
 });
 </script>

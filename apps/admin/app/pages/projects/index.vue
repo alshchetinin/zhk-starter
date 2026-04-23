@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -10,12 +10,17 @@ const pageSize = 20;
 const search = ref("");
 
 const { data, isPending } = useQuery(
-  computed(() =>
-    $orpc.projects.list.queryOptions({
+  computed(() => ({
+    ...$orpc.projects.list.queryOptions({
       input: { page: page.value, pageSize, search: search.value || undefined },
     }),
-  ),
+    placeholderData: keepPreviousData,
+  })),
 );
+
+function prefetchProject(id: string) {
+  queryClient.prefetchQuery($orpc.projects.getById.queryOptions({ input: { id } }));
+}
 
 watch(search, () => {
   page.value = 1;
@@ -91,6 +96,7 @@ function formatDate(date: string | Date | null | undefined) {
         v-for="project in data.data"
         :key="project.id"
         class="flex flex-col sm:flex-row gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
+        @mouseenter="prefetchProject(project.id)"
       >
         <!-- Image / Placeholder -->
         <NuxtLink

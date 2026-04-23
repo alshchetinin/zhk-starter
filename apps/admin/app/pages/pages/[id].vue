@@ -66,8 +66,32 @@ const updateMutation = useMutation({
       metaDescription: form.metaDescription || null,
       ogImage: form.ogImage,
     }),
+  onMutate: async () => {
+    const key = $orpc.pages.getById.queryKey({ input: { id: id.value } });
+    await queryClient.cancelQueries({ queryKey: key });
+    const prev = queryClient.getQueryData(key);
+    queryClient.setQueryData(key, (old: any) =>
+      old && {
+        ...old,
+        title: form.title,
+        slug: form.slug,
+        status: form.status,
+        contentBlocks: form.contentBlocks,
+        projectId: form.projectId === PROJECT_NONE ? null : form.projectId,
+        metaTitle: form.metaTitle || null,
+        metaDescription: form.metaDescription || null,
+        ogImage: form.ogImage,
+      },
+    );
+    return { prev, key };
+  },
+  onError: (_e, _v, ctx) => {
+    if (ctx) queryClient.setQueryData(ctx.key, ctx.prev);
+  },
   onSuccess: () => {
     toast.add({ title: "Страница обновлена", color: "success" });
+  },
+  onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.pages.key() });
   },
 });

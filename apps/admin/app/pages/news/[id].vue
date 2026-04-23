@@ -74,8 +74,34 @@ const updateMutation = useMutation({
       metaDescription: form.metaDescription || null,
       ogImage: form.ogImage,
     }),
+  onMutate: async () => {
+    const key = $orpc.news.getById.queryKey({ input: { id: id.value } });
+    await queryClient.cancelQueries({ queryKey: key });
+    const prev = queryClient.getQueryData(key);
+    queryClient.setQueryData(key, (old: any) =>
+      old && {
+        ...old,
+        title: form.title,
+        slug: form.slug,
+        excerpt: form.excerpt || null,
+        coverImage: form.coverImage,
+        status: form.status,
+        publishedAt: form.publishedAt ? new Date(form.publishedAt).toISOString() : null,
+        contentBlocks: form.contentBlocks,
+        metaTitle: form.metaTitle || null,
+        metaDescription: form.metaDescription || null,
+        ogImage: form.ogImage,
+      },
+    );
+    return { prev, key };
+  },
+  onError: (_e, _v, ctx) => {
+    if (ctx) queryClient.setQueryData(ctx.key, ctx.prev);
+  },
   onSuccess: () => {
     toast.add({ title: "Статья обновлена", color: "success" });
+  },
+  onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
   },
 });
