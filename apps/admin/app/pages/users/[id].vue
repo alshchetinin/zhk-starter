@@ -93,6 +93,14 @@ function toggle<T>(list: T[], value: T) {
   if (i >= 0) list.splice(i, 1);
   else list.push(value);
 }
+
+function onSaveRole() {
+  roleMutation.mutate();
+}
+
+function onSavePermissions() {
+  permissionsMutation.mutate();
+}
 </script>
 
 <template>
@@ -129,13 +137,14 @@ function toggle<T>(list: T[], value: T) {
               { value: 'editor', label: 'Editor — доступ ограничен правами ниже' },
             ]"
           />
-          <UButton
-            class="mt-4 bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-            :loading="roleMutation.isPending.value"
-            @click="roleMutation.mutate()"
+          <button
+            type="button"
+            class="mt-4 text-sm font-medium px-4 py-2 rounded-xl bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
+            :disabled="roleMutation.isPending.value"
+            @click="onSaveRole"
           >
-            Сохранить роль
-          </UButton>
+            {{ roleMutation.isPending.value ? "Сохранение…" : "Сохранить роль" }}
+          </button>
         </section>
 
         <section v-if="role === 'editor'" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 flex flex-col gap-5">
@@ -197,13 +206,14 @@ function toggle<T>(list: T[], value: T) {
           </div>
 
           <div>
-            <UButton
-              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-              :loading="permissionsMutation.isPending.value"
-              @click="permissionsMutation.mutate()"
+            <button
+              type="button"
+              class="text-sm font-medium px-4 py-2 rounded-xl bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
+              :disabled="permissionsMutation.isPending.value"
+              @click="onSavePermissions"
             >
-              Сохранить права
-            </UButton>
+              {{ permissionsMutation.isPending.value ? "Сохранение…" : "Сохранить права" }}
+            </button>
           </div>
         </section>
       </div>
