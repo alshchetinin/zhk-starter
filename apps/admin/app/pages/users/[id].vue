@@ -24,6 +24,14 @@ const allowedSiteIds = ref<string[]>([]);
 const allowedSections = ref<string[]>([]);
 const allowedActions = ref<Array<"view" | "edit" | "publish">>([]);
 
+const ALL_ACTIONS: Array<"view" | "edit" | "publish"> = ["view", "edit", "publish"];
+
+const ACTION_LABELS: Record<"view" | "edit" | "publish", string> = {
+  view: "Просмотр",
+  edit: "Редактирование",
+  publish: "Публикация",
+};
+
 const ALL_SECTIONS = [
   { id: "homepage", label: "Главная" },
   { id: "news", label: "Новости" },
@@ -39,19 +47,22 @@ const ALL_SECTIONS = [
   { id: "layouts", label: "Layouts" },
 ];
 
-watchEffect(() => {
-  if (userData.value) {
+watch(
+  () => userData.value?.id,
+  (newId) => {
+    if (!newId || !userData.value) return;
     role.value = (userData.value.role as "admin" | "editor") ?? "editor";
     const p = (userData.value.permissions ?? {}) as {
       siteIds?: string[];
       sections?: string[];
       actions?: Array<"view" | "edit" | "publish">;
     };
-    allowedSiteIds.value = p.siteIds ?? [];
-    allowedSections.value = p.sections ?? [];
-    allowedActions.value = p.actions ?? ["view"];
-  }
-});
+    allowedSiteIds.value = [...(p.siteIds ?? [])];
+    allowedSections.value = [...(p.sections ?? [])];
+    allowedActions.value = [...(p.actions ?? ["view"])];
+  },
+  { immediate: true },
+);
 
 const roleMutation = useMutation({
   mutationFn: () => $orpcClient.users.updateRole({ id: id.value, role: role.value }),
@@ -77,10 +88,10 @@ const permissionsMutation = useMutation({
   },
 });
 
-function toggle<T>(list: Ref<T[]>, value: T) {
-  const i = list.value.indexOf(value);
-  if (i >= 0) list.value.splice(i, 1);
-  else list.value.push(value);
+function toggle<T>(list: T[], value: T) {
+  const i = list.indexOf(value);
+  if (i >= 0) list.splice(i, 1);
+  else list.push(value);
 }
 </script>
 
@@ -134,48 +145,54 @@ function toggle<T>(list: Ref<T[]>, value: T) {
             <h4 class="text-sm font-medium mb-2">Разрешённые сайты</h4>
             <p class="text-xs text-(--ui-text-muted) mb-3">Пусто = все сайты</p>
             <div class="flex flex-wrap gap-2">
-              <UBadge
+              <button
                 v-for="s in (sitesData ?? [])"
                 :key="s.id"
-                :color="allowedSiteIds.includes(s.id) ? 'primary' : 'neutral'"
-                :variant="allowedSiteIds.includes(s.id) ? 'solid' : 'subtle'"
-                class="cursor-pointer select-none"
+                type="button"
+                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
+                :class="allowedSiteIds.includes(s.id)
+                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
+                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
                 @click="toggle(allowedSiteIds, s.id)"
               >
                 {{ s.name }}
-              </UBadge>
+              </button>
             </div>
           </div>
 
           <div>
             <h4 class="text-sm font-medium mb-2">Разрешённые разделы</h4>
             <div class="flex flex-wrap gap-2">
-              <UBadge
+              <button
                 v-for="sec in ALL_SECTIONS"
                 :key="sec.id"
-                :color="allowedSections.includes(sec.id) ? 'primary' : 'neutral'"
-                :variant="allowedSections.includes(sec.id) ? 'solid' : 'subtle'"
-                class="cursor-pointer select-none"
+                type="button"
+                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
+                :class="allowedSections.includes(sec.id)
+                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
+                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
                 @click="toggle(allowedSections, sec.id)"
               >
                 {{ sec.label }}
-              </UBadge>
+              </button>
             </div>
           </div>
 
           <div>
             <h4 class="text-sm font-medium mb-2">Действия</h4>
             <div class="flex flex-wrap gap-2">
-              <UBadge
-                v-for="a in (['view', 'edit', 'publish'] as const)"
+              <button
+                v-for="a in ALL_ACTIONS"
                 :key="a"
-                :color="allowedActions.includes(a) ? 'primary' : 'neutral'"
-                :variant="allowedActions.includes(a) ? 'solid' : 'subtle'"
-                class="cursor-pointer select-none"
+                type="button"
+                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
+                :class="allowedActions.includes(a)
+                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
+                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
                 @click="toggle(allowedActions, a)"
               >
-                {{ a === 'view' ? 'Просмотр' : a === 'edit' ? 'Редактирование' : 'Публикация' }}
-              </UBadge>
+                {{ ACTION_LABELS[a] }}
+              </button>
             </div>
           </div>
 
