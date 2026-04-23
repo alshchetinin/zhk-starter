@@ -46,18 +46,21 @@ JSON конфиг (`BlockInfo`):
 }
 ```
 
-### Генератор создаёт 6 файлов
+### Генератор создаёт 3 файла
 
-1. `packages/api/src/shared/blocks.ts` — Zod-схема + union member + blockDefinition
-2. `apps/admin/.../editors/{Name}Block.vue` — редактор
-3. `apps/admin/.../editors/index.ts` — регистрация редактора
-4. `apps/admin/.../BlockDynamicZone.vue` — default data
-5. `apps/web/.../renderers/{Name}Block.vue` — рендерер (stub)
-6. `apps/web/.../renderers/index.ts` — регистрация рендерера
+1. `packages/api/src/shared/blocks/{type}.ts` — `defineBlock({ type, label, icon, description, category?, dataSchema, defaultData })` — единый source of truth: Zod-схема, метаданные для picker, default data. Плюс добавляется в `allBlocks` массив в `blocks/index.ts`.
+2. `apps/admin/.../editors/{Name}Block.vue` — редактор (авто-регистрируется через `import.meta.glob` по имени файла `{PascalCase}Block.vue` → `{kebab-case}` тип)
+3. `apps/web/.../renderers/{Name}Block.vue` — рендерер (stub, авто-регистрация аналогично)
+
+Никакие реестры и default data руками править не нужно — всё собирается автоматически.
 
 ### После генератора — доработать web renderer
 
 Генератор создаёт stub renderer (`<pre>{{ $props }}</pre>`). Нужно заменить на вёрстку по прототипу.
+
+### Удаление блока
+
+Удалить 3 файла: `blocks/{type}.ts`, admin editor, web renderer. Убрать импорт/entry из `blocks/index.ts`. Всё.
 
 ## Паттерны кода
 

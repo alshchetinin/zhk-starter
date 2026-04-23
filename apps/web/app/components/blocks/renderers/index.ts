@@ -1,31 +1,17 @@
 import type { Component } from "vue";
-import type { BlockType } from "@zhk/api/shared/blocks";
-import ProjectGalleryBlock from "./ProjectGalleryBlock.vue";
-import ProjectStatsBlock from "./ProjectStatsBlock.vue";
-import ProjectLocationBlock from "./ProjectLocationBlock.vue";
-import AboutProjectBlock from "./AboutProjectBlock.vue";
-import AboutFeaturesBlock from "./AboutFeaturesBlock.vue";
-import ContactsOfficeBlock from "./ContactsOfficeBlock.vue";
-import HeroFullscreenBlock from "./HeroFullscreenBlock.vue";
-import InfrastructureTabsBlock from "./InfrastructureTabsBlock.vue";
-import ProjectInfrastructureBlock from "./ProjectInfrastructureBlock.vue";
-import AboutCompanyBlock from "./AboutCompanyBlock.vue";
-import TemasBlock from "./TemasBlock.vue";
-import CareerBlock from "./CareerBlock.vue";
-// --- GENERATOR:RENDERER_COMPONENT ---
+import { blockDefinitions, type BlockType } from "@zhk/api/shared/blocks";
 
-export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
-  "project-gallery": ProjectGalleryBlock,
-  "project-stats": ProjectStatsBlock,
-  "project-location": ProjectLocationBlock,
-  "about-project": AboutProjectBlock,
-  "about-features": AboutFeaturesBlock,
-  "contacts-office": ContactsOfficeBlock,
-  "hero-fullscreen": HeroFullscreenBlock,
-  "infrastructure-tabs": InfrastructureTabsBlock,
-  "project-infrastructure": ProjectInfrastructureBlock,
-  "about-company": AboutCompanyBlock,
-  temas: TemasBlock,
-  career: CareerBlock,
-  // --- GENERATOR:RENDERER_ENTRY ---
-};
+const modules = import.meta.glob<{ default: Component }>("./*Block.vue", { eager: true });
+
+function fileNameToType(path: string): string {
+  const base = path.split("/").pop()!.replace(/Block\.vue$/, "");
+  return base.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+const validTypes = new Set<string>(blockDefinitions.map((b) => b.type));
+
+export const blockRendererComponents: Partial<Record<BlockType, Component>> = Object.fromEntries(
+  Object.entries(modules)
+    .map(([path, mod]) => [fileNameToType(path), mod.default] as const)
+    .filter(([type]) => validTypes.has(type)),
+) as Partial<Record<BlockType, Component>>;
