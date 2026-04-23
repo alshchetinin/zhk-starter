@@ -11,7 +11,7 @@ export interface CollectionFieldType {
 }
 
 function formField(
-  name: string,
+  _name: string,
   label: string,
   required: boolean,
   inner: string,

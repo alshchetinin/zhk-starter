@@ -19,6 +19,7 @@ export interface BlockInfo {
   label: string;
   description: string;
   icon: string;
+  category?: "content" | "project";
   fields: FieldInfo[];
 }
 

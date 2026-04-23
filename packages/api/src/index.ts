@@ -29,7 +29,21 @@ const requireAdmin = o.middleware(async ({ context, next }) => {
   return next({ context: { session: context.session } });
 });
 
+const requireDev = o.middleware(async ({ context, next }) => {
+  if (process.env.NODE_ENV === "production") {
+    throw new ORPCError("FORBIDDEN", { message: "Dev-only endpoint" });
+  }
+  if (!context.session?.user) {
+    throw new ORPCError("UNAUTHORIZED");
+  }
+  if ((context.session.user as { role?: string }).role !== "admin") {
+    throw new ORPCError("FORBIDDEN", { message: "Admin role required" });
+  }
+  return next({ context: { session: context.session } });
+});
+
 export const protectedProcedure = publicProcedure.use(requireAuth);
 export const siteProcedure = protectedProcedure.use(requireSite);
 export const adminProcedure = publicProcedure.use(requireAdmin);
 export const publicSiteProcedure = publicProcedure.use(requireSite);
+export const devProcedure = publicProcedure.use(requireDev);

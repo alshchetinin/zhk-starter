@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { FIELD_TYPES } from "../field-types.js";
-import { insertBeforeMarker, readFile, writeFile, toCamelCase } from "../utils.js";
+import { readFile, writeFile, toCamelCase } from "../utils.js";
 import type { BlockInfo, FieldInfo } from "../prompts.js";
 
 function resolveZodType(field: FieldInfo): string {
