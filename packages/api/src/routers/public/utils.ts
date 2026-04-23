@@ -1,11 +1,21 @@
 import { db } from "@zhk/db";
 import { projects } from "@zhk/db/schema";
+import type { ContentBlock } from "@zhk/db/schema";
 import { inArray, ne, and } from "drizzle-orm";
-import { blockDefinitions, type ContentBlock } from "../../shared/blocks";
+import { blockDefinitions } from "../../shared/blocks";
 
-const PROJECT_BLOCK_TYPES = new Set(
-  blockDefinitions.filter((d) => d.category === "project").map((d) => d.type),
-);
+const PROJECT_BLOCK_TYPES: readonly string[] = blockDefinitions
+  .filter((d) => d.category === "project")
+  .map((d) => d.type);
+
+function hasProjectId(
+  block: ContentBlock,
+): block is ContentBlock & { data: { projectId: string } } {
+  return (
+    PROJECT_BLOCK_TYPES.includes(block.type) &&
+    typeof block.data.projectId === "string"
+  );
+}
 
 type ProjectRow = typeof projects.$inferSelect;
 
@@ -50,16 +60,15 @@ function pickProjectFields(type: string, project: ProjectRow) {
  * Каждый блок получает только нужные ему поля проекта в `data.project`.
  */
 export async function enrichContentBlocks(
-  contentBlocks: ContentBlock[],
+  contentBlocks: ContentBlock[] | null | undefined,
 ): Promise<ContentBlock[]> {
+  const blocks = contentBlocks ?? [];
   const projectIds = new Set<string>();
-  for (const block of contentBlocks) {
-    if (PROJECT_BLOCK_TYPES.has(block.type) && block.data?.projectId) {
-      projectIds.add(block.data.projectId as string);
-    }
+  for (const block of blocks) {
+    if (hasProjectId(block)) projectIds.add(block.data.projectId);
   }
 
-  if (projectIds.size === 0) return contentBlocks;
+  if (projectIds.size === 0) return blocks;
 
   const data = await db.query.projects.findMany({
     where: and(
@@ -85,11 +94,9 @@ export async function enrichContentBlocks(
 
   const projectsMap = new Map(data.map((p) => [p.id, p]));
 
-  return contentBlocks.map((block) => {
-    if (!PROJECT_BLOCK_TYPES.has(block.type) || !block.data?.projectId) {
-      return block;
-    }
-    const project = projectsMap.get(block.data.projectId as string);
+  return blocks.map((block) => {
+    if (!hasProjectId(block)) return block;
+    const project = projectsMap.get(block.data.projectId);
     const projectData = project
       ? pickProjectFields(block.type, project as unknown as ProjectRow)
       : null;
