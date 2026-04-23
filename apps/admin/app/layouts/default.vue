@@ -18,7 +18,7 @@ const { open } = useMobileSidebar();
 
     <div
       class="flex flex-col min-h-svh transition-[padding] duration-300"
-      :class="isCollapsed ? 'lg:pl-[3.75rem]' : 'lg:pl-[14.75rem]'"
+      :class="isCollapsed ? 'lg:pl-[4.25rem]' : 'lg:pl-[15.25rem]'"
     >
       <ImpersonationBanner />
       <slot />
