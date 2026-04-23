@@ -10,6 +10,8 @@ import HeroFullscreenBlock from "./HeroFullscreenBlock.vue";
 import InfrastructureTabsBlock from "./InfrastructureTabsBlock.vue";
 import ProjectInfrastructureBlock from "./ProjectInfrastructureBlock.vue";
 import AboutCompanyBlock from "./AboutCompanyBlock.vue";
+import TemasBlock from "./TemasBlock.vue";
+import CareerBlock from "./CareerBlock.vue";
 // --- GENERATOR:RENDERER_COMPONENT ---
 
 export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
@@ -23,5 +25,7 @@ export const blockRendererComponents: Partial<Record<BlockType, Component>> = {
   "infrastructure-tabs": InfrastructureTabsBlock,
   "project-infrastructure": ProjectInfrastructureBlock,
   "about-company": AboutCompanyBlock,
+  temas: TemasBlock,
+  career: CareerBlock,
   // --- GENERATOR:RENDERER_ENTRY ---
 };

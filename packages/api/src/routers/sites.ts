@@ -4,6 +4,7 @@ import { sites } from "@zhk/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { adminProcedure, protectedProcedure } from "../index";
+import { resolveSiteFromHost } from "../utils/resolve-site";
 
 const slugSchema = z
   .string()
@@ -124,18 +125,6 @@ export const sitesRouter = {
   resolveByHost: protectedProcedure
     .input(z.object({ host: z.string() }))
     .handler(async ({ input }) => {
-      const hostname = input.host.split(":")[0] ?? "";
-      const byDomain = await db.query.sites.findFirst({
-        where: eq(sites.customDomain, hostname),
-      });
-      if (byDomain) return byDomain;
-      const parts = hostname.split(".");
-      const isLocalhost = hostname === "localhost" || hostname.endsWith(".localhost");
-      const sub = parts.length > (isLocalhost ? 1 : 2) ? parts[0] : null;
-      if (sub) {
-        const bySlug = await db.query.sites.findFirst({ where: eq(sites.slug, sub) });
-        if (bySlug) return bySlug;
-      }
-      return db.query.sites.findFirst({ where: eq(sites.isPrimary, true) });
+      return (await resolveSiteFromHost(input.host)) ?? null;
     }),
 };

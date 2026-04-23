@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/vue-query";
+import { SITE_COOKIE } from "@zhk/api/shared/constants";
 
 export function useCurrentSite() {
   const { $orpc } = useNuxtApp();
-  const cookie = useCookie<string | null>("zhk-site-id", {
+  const cookie = useCookie<string | null>(SITE_COOKIE, {
     default: () => null,
     sameSite: "lax",
   });
@@ -21,9 +22,11 @@ export function useCurrentSite() {
     return list.find((s) => s.isPrimary) ?? list[0] ?? null;
   });
 
-  function setSite(id: string) {
+  function setSite(id: string, navigateTo?: string) {
     cookie.value = id;
-    if (typeof window !== "undefined") window.location.reload();
+    if (typeof window !== "undefined") {
+      window.location.href = navigateTo ?? window.location.pathname;
+    }
   }
 
   return {

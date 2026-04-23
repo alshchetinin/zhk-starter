@@ -1,4 +1,5 @@
 import type { ContentBlock } from "@zhk/api/shared/blocks";
+import { PREVIEW_MESSAGE } from "@zhk/api/shared/constants";
 
 export type PreviewViewport = "desktop" | "tablet" | "mobile";
 
@@ -27,14 +28,11 @@ export function useBlockPreview() {
   }
 
   function sendBlocks(blocks: ContentBlock[]) {
-    sendMessage({
-      type: "preview:update",
-      blocks: JSON.parse(JSON.stringify(blocks)),
-    });
+    sendMessage({ type: PREVIEW_MESSAGE.Update, blocks });
   }
 
   function reloadPreview() {
-    sendMessage({ type: "preview:get-scroll" });
+    sendMessage({ type: PREVIEW_MESSAGE.GetScroll });
   }
 
   function hardReload() {
@@ -50,15 +48,15 @@ export function useBlockPreview() {
   function handleMessage(event: MessageEvent) {
     if (event.origin !== webOrigin.value) return;
 
-    if (event.data?.type === "preview:ready") {
+    if (event.data?.type === PREVIEW_MESSAGE.Ready) {
       iframeReady.value = true;
       if (pendingScrollY.value !== null) {
-        sendMessage({ type: "preview:restore-scroll", scrollY: pendingScrollY.value });
+        sendMessage({ type: PREVIEW_MESSAGE.RestoreScroll, scrollY: pendingScrollY.value });
         pendingScrollY.value = null;
       }
     }
 
-    if (event.data?.type === "preview:scroll-position") {
+    if (event.data?.type === PREVIEW_MESSAGE.ScrollPosition) {
       pendingScrollY.value = event.data.scrollY ?? 0;
       hardReload();
     }

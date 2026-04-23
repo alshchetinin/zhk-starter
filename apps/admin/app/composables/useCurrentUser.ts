@@ -1,33 +1,37 @@
 import { useQuery } from "@tanstack/vue-query";
+import { IMPERSONATE_COOKIE, PERMISSION_ACTIONS } from "@zhk/api/shared/constants";
+import type { PermissionAction } from "@zhk/api/shared/constants";
 
 export type UserRole = "admin" | "editor";
 
 export interface EditorPermissions {
   siteIds?: string[];
   sections?: string[];
-  actions?: Array<"view" | "edit" | "publish">;
+  actions?: PermissionAction[];
 }
+
+export { PERMISSION_ACTIONS };
+export type { PermissionAction };
 
 export function useCurrentUser() {
   const { $orpc } = useNuxtApp();
   const { data: me, isLoading } = useQuery($orpc.users.me.queryOptions());
 
-  const impersonateCookie = useCookie<string | null>("zhk-impersonate-user", {
+  const impersonateCookie = useCookie<string | null>(IMPERSONATE_COOKIE, {
     default: () => null,
     sameSite: "lax",
   });
 
-  const { data: allUsers } = useQuery({
-    ...$orpc.users.list.queryOptions(),
-    enabled: computed(() => !!me.value && me.value.role === "admin"),
-  });
+  const impersonateId = computed(() =>
+    me.value?.role === "admin" ? impersonateCookie.value : null,
+  );
 
-  const impersonated = computed(() => {
-    const id = impersonateCookie.value;
-    if (!id || !allUsers.value) return null;
-    if (me.value?.role !== "admin") return null;
-    return allUsers.value.find((u) => u.id === id) ?? null;
-  });
+  const { data: impersonated } = useQuery(
+    computed(() => ({
+      ...$orpc.users.getById.queryOptions({ input: { id: impersonateId.value ?? "" } }),
+      enabled: !!impersonateId.value,
+    })),
+  );
 
   const effective = computed(() => impersonated.value ?? me.value);
   const isImpersonating = computed(() => !!impersonated.value);
@@ -63,7 +67,7 @@ export function useCurrentUser() {
     return allowed.includes(siteId);
   }
 
-  function can(action: "view" | "edit" | "publish") {
+  function can(action: PermissionAction) {
     if (isAdmin.value) return true;
     const allowed = permissions.value.actions;
     if (!allowed || allowed.length === 0) return action === "view";

@@ -4,9 +4,10 @@ import { contentVersions } from "@zhk/db/schema";
 import { and, desc, eq, max } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { siteProcedure } from "../index";
+import { ENTITY_TYPES, type EntityType } from "../shared/constants";
 
-export const ENTITY_TYPES = ["pages", "news", "documents", "promotions", "homepage", "contacts"] as const;
-export type EntityType = (typeof ENTITY_TYPES)[number];
+export { ENTITY_TYPES };
+export type { EntityType };
 
 export async function snapshotContent(options: {
   siteId: string;

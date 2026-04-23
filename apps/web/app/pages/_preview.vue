@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ContentBlock } from "@zhk/api/shared/blocks";
+import { PREVIEW_MESSAGE } from "@zhk/api/shared/constants";
 
 definePageMeta({ layout: "default" });
 
@@ -17,27 +18,27 @@ function handleMessage(event: MessageEvent) {
 
   const { type, ...payload } = event.data ?? {};
 
-  if (type === "preview:update") {
+  if (type === PREVIEW_MESSAGE.Update) {
     blocks.value = (payload.blocks ?? []) as ContentBlock[];
   }
 
-  if (type === "preview:scroll-to") {
+  if (type === PREVIEW_MESSAGE.ScrollTo) {
     const el = document.getElementById(`block-${payload.blockId}`);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  if (type === "preview:get-scroll") {
-    sendToAdmin("preview:scroll-position", { scrollY: window.scrollY });
+  if (type === PREVIEW_MESSAGE.GetScroll) {
+    sendToAdmin(PREVIEW_MESSAGE.ScrollPosition, { scrollY: window.scrollY });
   }
 
-  if (type === "preview:restore-scroll") {
+  if (type === PREVIEW_MESSAGE.RestoreScroll) {
     window.scrollTo(0, Number(payload.scrollY) || 0);
   }
 }
 
 onMounted(() => {
   window.addEventListener("message", handleMessage);
-  sendToAdmin("preview:ready");
+  sendToAdmin(PREVIEW_MESSAGE.Ready);
 });
 
 onUnmounted(() => {
