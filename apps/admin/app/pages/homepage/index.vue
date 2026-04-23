@@ -25,6 +25,8 @@ whenever(data, (val) => {
   form.ogImage = val.ogImage ?? null;
 }, { once: true, immediate: true });
 
+const showPreview = ref(false);
+
 const saveMutation = useMutation({
   mutationFn: () =>
     $orpcClient.homepage.save({
@@ -59,27 +61,43 @@ const saveMutation = useMutation({
             Контент и SEO главной страницы сайта
           </p>
         </div>
-        <UButton
-          :loading="saveMutation.isPending.value"
-          icon="i-tabler-device-floppy"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-          @click="saveMutation.mutate()"
-        >
-          Сохранить
-        </UButton>
+        <div class="flex items-center gap-2">
+          <UButton
+            :variant="showPreview ? 'solid' : 'outline'"
+            icon="i-tabler-eye"
+            class="rounded-xl"
+            @click="showPreview = !showPreview"
+          >
+            Превью
+          </UButton>
+          <UButton
+            :loading="saveMutation.isPending.value"
+            icon="i-tabler-device-floppy"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+            @click="saveMutation.mutate()"
+          >
+            Сохранить
+          </UButton>
+        </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div
+        class="grid grid-cols-1 gap-3"
+        :class="showPreview ? 'lg:grid-cols-2' : 'lg:grid-cols-3'"
+      >
         <!-- Main content -->
-        <div class="lg:col-span-2 space-y-3">
+        <div class="space-y-3" :class="showPreview ? '' : 'lg:col-span-2'">
           <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
             <h3 class="text-lg font-semibold mb-4">Контент</h3>
             <BlockDynamicZone v-model="form.contentBlocks" />
           </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="space-y-3">
+        <!-- Sidebar: preview OR seo -->
+        <div v-if="showPreview" class="sticky top-3 h-[calc(100svh-2rem)]">
+          <BlockPreviewPanel :blocks="form.contentBlocks" />
+        </div>
+        <div v-else class="space-y-3">
           <SeoSidebar
             v-model:meta-title="form.metaTitle"
             v-model:meta-description="form.metaDescription"
