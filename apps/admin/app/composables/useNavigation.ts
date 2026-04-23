@@ -37,9 +37,16 @@ const systemItems: NavItem[] = [
   { label: "Интеграции", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
 ];
 
-const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, systemItems];
+// Dev-only tools (content-type builder). Hidden in production.
+const devItems: NavItem[] = import.meta.dev
+  ? [
+      { label: "Блоки", icon: "i-tabler-puzzle", to: "/dev/blocks", adminOnly: true },
+    ]
+  : [];
 
-export { contentItems, catalogItems, mainItems, systemItems };
+const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, systemItems, devItems];
+
+export { contentItems, catalogItems, mainItems, systemItems, devItems };
 
 export function useNavigation() {
   const route = useRoute();
