@@ -4,14 +4,22 @@ import path from "node:path";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 import { devProcedure } from "../../index";
-
-const REPO_ROOT = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
-  "../../../../..",
-);
+import { REPO_ROOT } from "../../utils/paths";
+import { toCamelCase } from "../../utils/naming";
 
 const PAGES_DIR = path.join(REPO_ROOT, "apps/admin/app/pages");
 const NAV_FILE = path.join(REPO_ROOT, "apps/admin/app/composables/useNavigation.ts");
+const SCHEMA_INDEX = path.join(REPO_ROOT, "packages/db/src/schema/index.ts");
+const ROUTERS_INDEX = path.join(REPO_ROOT, "packages/api/src/routers/index.ts");
+
+const SCAN_ROOTS = [
+  path.join(REPO_ROOT, "packages/api/src"),
+  path.join(REPO_ROOT, "packages/db/src"),
+  path.join(REPO_ROOT, "apps/admin/app"),
+  path.join(REPO_ROOT, "apps/web/app"),
+];
+
+const EXCLUDED_DIR_NAMES = new Set(["node_modules", ".nuxt", "dist"]);
 
 const fieldSchema = z.object({
   name: z.string().regex(/^[a-z][a-zA-Z0-9]*$/),
@@ -28,44 +36,35 @@ const collectionInfoSchema = z.object({
   fields: z.array(fieldSchema),
 });
 
+type Section = "content" | "catalog" | "system";
+
 interface DiskCollection {
   kebab: string;
   label: string | null;
   icon: string | null;
-  section: "content" | "catalog" | "system" | null;
+  section: Section | null;
 }
 
-/** Scan admin pages directory for CRUD-shaped collections. */
+function kebabToSection(navContent: string, entryMatch: string): Section | null {
+  for (const [arr, section] of [
+    ["contentItems", "content" as const],
+    ["catalogItems", "catalog" as const],
+    ["systemItems", "system" as const],
+  ] as const) {
+    const start = navContent.indexOf(`const ${arr}`);
+    if (start === -1) continue;
+    const end = navContent.indexOf("];", start);
+    if (end === -1) continue;
+    const idx = navContent.indexOf(entryMatch, start);
+    if (idx !== -1 && idx < end) return section;
+  }
+  return null;
+}
+
 function readCollectionsFromDisk(): DiskCollection[] {
   if (!fs.existsSync(PAGES_DIR)) return [];
 
   const navContent = fs.existsSync(NAV_FILE) ? fs.readFileSync(NAV_FILE, "utf-8") : "";
-
-  function findInNav(
-    kebab: string,
-  ): { label: string | null; icon: string | null; section: DiskCollection["section"] } {
-    const escaped = kebab.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-    const entryRe = new RegExp(
-      `\\{[^}]*label:\\s*"([^"]+)"[^}]*icon:\\s*"([^"]+)"[^}]*to:\\s*"/${escaped}"[^}]*\\}`,
-    );
-    const match = navContent.match(entryRe);
-    if (!match) return { label: null, icon: null, section: null };
-
-    const arrays = ["contentItems", "catalogItems", "systemItems"] as const;
-    let section: DiskCollection["section"] = null;
-    for (const arr of arrays) {
-      const start = navContent.indexOf(`const ${arr}`);
-      if (start === -1) continue;
-      const end = navContent.indexOf("];", start);
-      if (end === -1) continue;
-      const idx = navContent.indexOf(match[0], start);
-      if (idx !== -1 && idx < end) {
-        section = arr === "contentItems" ? "content" : arr === "catalogItems" ? "catalog" : "system";
-        break;
-      }
-    }
-    return { label: match[1]!, icon: match[2]!, section };
-  }
 
   const dirs = fs
     .readdirSync(PAGES_DIR, { withFileTypes: true })
@@ -75,64 +74,34 @@ function readCollectionsFromDisk(): DiskCollection[] {
   const collections: DiskCollection[] = [];
   for (const dir of dirs) {
     const dirPath = path.join(PAGES_DIR, dir);
-    const hasIndex = fs.existsSync(path.join(dirPath, "index.vue"));
-    const hasCreate = fs.existsSync(path.join(dirPath, "create.vue"));
-    const hasDetail = fs.existsSync(path.join(dirPath, "[id].vue"));
-    if (!(hasIndex && hasCreate && hasDetail)) continue;
+    if (
+      !fs.existsSync(path.join(dirPath, "index.vue")) ||
+      !fs.existsSync(path.join(dirPath, "create.vue")) ||
+      !fs.existsSync(path.join(dirPath, "[id].vue"))
+    ) {
+      continue;
+    }
 
-    const meta = findInNav(dir);
+    const escaped = dir.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const entryRe = new RegExp(
+      `\\{[^}]*label:\\s*"([^"]+)"[^}]*icon:\\s*"([^"]+)"[^}]*to:\\s*"/${escaped}"[^}]*\\}`,
+    );
+    const match = navContent.match(entryRe);
+
     collections.push({
       kebab: dir,
-      label: meta.label,
-      icon: meta.icon,
-      section: meta.section,
+      label: match?.[1] ?? null,
+      icon: match?.[2] ?? null,
+      section: match ? kebabToSection(navContent, match[0]!) : null,
     });
   }
 
   return collections.sort((a, b) => a.kebab.localeCompare(b.kebab));
 }
 
-/**
- * Find files outside the collection's own 5 files that reference it.
- * Checks: drizzle query usage (query.<camel>), bare table identifier in imports
- * from @zhk/db/schema, kebab string literal in arrays, and direct import paths.
- */
-function findExternalReferences(kebab: string): string[] {
-  const camel = kebab
-    .split("-")
-    .map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)))
-    .join("");
-
-  const routerVar = camel + "Router";
-
-  // Files we either delete outright or auto-unregister from — ignore those
-  const ownFiles = new Set([
-    path.join(REPO_ROOT, `packages/db/src/schema/${kebab}.ts`),
-    path.join(REPO_ROOT, `packages/api/src/routers/${kebab}.ts`),
-    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/index.vue`),
-    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/create.vue`),
-    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/[id].vue`),
-    path.join(REPO_ROOT, "packages/db/src/schema/index.ts"),
-    path.join(REPO_ROOT, "packages/api/src/routers/index.ts"),
-    path.join(REPO_ROOT, "apps/admin/app/composables/useNavigation.ts"),
-  ]);
-
-  const scanRoots = [
-    path.join(REPO_ROOT, "packages/api/src"),
-    path.join(REPO_ROOT, "packages/db/src"),
-    path.join(REPO_ROOT, "apps/admin/app"),
-    path.join(REPO_ROOT, "apps/web/app"),
-  ];
-
-  // Patterns that strongly suggest a dependency on this collection
-  const wordBoundary = new RegExp(
-    // drizzle query.<camel>, <routerVar>, or dotted .<camel>(
-    `(?:\\bquery\\.${camel}\\b|\\b${routerVar}\\b|\\b${camel}\\.\\w)`,
-  );
-  const kebabLiteral = new RegExp(`["']${kebab}["']`);
-  const importFromKebab = new RegExp(`from\\s+["'](?:\\./)?${kebab}(?:/[^"']*)?["']`);
-
-  const refs: string[] = [];
+/** One-shot walk that builds a map of all scannable files → file content. */
+function loadScannableFiles(ownFiles: ReadonlySet<string>): Map<string, string> {
+  const out = new Map<string, string>();
 
   function walk(dir: string) {
     let entries: fs.Dirent[];
@@ -144,38 +113,86 @@ function findExternalReferences(kebab: string): string[] {
     for (const entry of entries) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === "node_modules" || entry.name === ".nuxt" || entry.name === "dist") continue;
-        walk(full);
+        if (!EXCLUDED_DIR_NAMES.has(entry.name)) walk(full);
         continue;
       }
       if (!entry.isFile()) continue;
       if (!/\.(ts|vue)$/.test(entry.name)) continue;
       if (ownFiles.has(full)) continue;
-
-      let content: string;
       try {
-        content = fs.readFileSync(full, "utf-8");
+        out.set(full, fs.readFileSync(full, "utf-8"));
       } catch {
-        continue;
-      }
-
-      if (wordBoundary.test(content) || kebabLiteral.test(content) || importFromKebab.test(content)) {
-        refs.push(path.relative(REPO_ROOT, full));
+        /* skip */
       }
     }
   }
 
-  for (const root of scanRoots) walk(root);
+  for (const root of SCAN_ROOTS) walk(root);
+  return out;
+}
 
+function ownFilesFor(kebab: string): Set<string> {
+  return new Set([
+    path.join(REPO_ROOT, `packages/db/src/schema/${kebab}.ts`),
+    path.join(REPO_ROOT, `packages/api/src/routers/${kebab}.ts`),
+    path.join(PAGES_DIR, kebab, "index.vue"),
+    path.join(PAGES_DIR, kebab, "create.vue"),
+    path.join(PAGES_DIR, kebab, "[id].vue"),
+    SCHEMA_INDEX,
+    ROUTERS_INDEX,
+    NAV_FILE,
+  ]);
+}
+
+function buildReferenceRegex(kebab: string): RegExp {
+  const camel = toCamelCase(kebab);
+  const routerVar = `${camel}Router`;
+  // drizzle query.<camel>, routerVar, <camel>.<anything>, string literal, import path
+  return new RegExp(
+    `(?:\\bquery\\.${camel}\\b|\\b${routerVar}\\b|\\b${camel}\\.\\w|["']${kebab}["']|from\\s+["'](?:\\./)?${kebab}(?:/[^"']*)?["'])`,
+  );
+}
+
+function findReferencesIn(files: Map<string, string>, kebab: string): string[] {
+  const re = buildReferenceRegex(kebab);
+  const refs: string[] = [];
+  for (const [full, content] of files) {
+    if (re.test(content)) refs.push(path.relative(REPO_ROOT, full));
+  }
   return refs.sort();
+}
+
+function findExternalReferences(kebab: string): string[] {
+  return findReferencesIn(loadScannableFiles(ownFilesFor(kebab)), kebab);
+}
+
+function safeUnlink(file: string) {
+  try {
+    fs.unlinkSync(file);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+  }
 }
 
 export const devCollectionsRouter = {
   list: devProcedure.handler(() => {
-    return readCollectionsFromDisk().map((c) => ({
-      ...c,
-      referenceCount: findExternalReferences(c.kebab).length,
-    }));
+    const collections = readCollectionsFromDisk();
+    // Own-files set is per-collection, but shared dirs/excludes are the same.
+    // Load once with a minimal excludes set, then check each collection against cached content.
+    const sharedExcluded = new Set([SCHEMA_INDEX, ROUTERS_INDEX, NAV_FILE]);
+    const files = loadScannableFiles(sharedExcluded);
+
+    return collections.map((c) => {
+      // Drop this collection's own files from the match (they'd self-match)
+      const own = ownFilesFor(c.kebab);
+      const re = buildReferenceRegex(c.kebab);
+      let count = 0;
+      for (const [full, content] of files) {
+        if (own.has(full)) continue;
+        if (re.test(content)) count++;
+      }
+      return { ...c, referenceCount: count };
+    });
   }),
 
   create: devProcedure
@@ -221,22 +238,19 @@ export const devCollectionsRouter = {
           content: generateRouterTemplate(names, input.fields),
         },
         {
-          path: path.join(REPO_ROOT, `apps/admin/app/pages/${names.kebab}/index.vue`),
+          path: path.join(PAGES_DIR, `${names.kebab}/index.vue`),
           content: generateListPageTemplate(names),
         },
         {
-          path: path.join(REPO_ROOT, `apps/admin/app/pages/${names.kebab}/[id].vue`),
+          path: path.join(PAGES_DIR, `${names.kebab}/[id].vue`),
           content: generateDetailPageTemplate(names, input.fields),
         },
         {
-          path: path.join(REPO_ROOT, `apps/admin/app/pages/${names.kebab}/create.vue`),
+          path: path.join(PAGES_DIR, `${names.kebab}/create.vue`),
           content: generateCreatePageTemplate(names, input.fields),
         },
       ];
-
-      for (const f of files) {
-        writeFile(f.path, f.content);
-      }
+      for (const f of files) writeFile(f.path, f.content);
 
       registerSchemaExport(REPO_ROOT, names);
       registerRouterImport(REPO_ROOT, names);
@@ -267,78 +281,58 @@ export const devCollectionsRouter = {
   delete: devProcedure
     .input(z.object({ kebab: z.string().min(1) }))
     .handler(async ({ input }) => {
-      const found = readCollectionsFromDisk().find((c) => c.kebab === input.kebab);
-      if (!found) {
-        throw new ORPCError("NOT_FOUND", {
-          message: `Коллекция "${input.kebab}" не найдена`,
-        });
+      const { kebab } = input;
+      if (!readCollectionsFromDisk().some((c) => c.kebab === kebab)) {
+        throw new ORPCError("NOT_FOUND", { message: `Коллекция "${kebab}" не найдена` });
       }
 
-      const references = findExternalReferences(input.kebab);
+      const references = findExternalReferences(kebab);
       if (references.length > 0) {
         throw new ORPCError("CONFLICT", {
           message:
-            `Коллекцию "${input.kebab}" нельзя удалить — на неё ссылаются ${references.length} файл(ов). ` +
+            `Коллекцию "${kebab}" нельзя удалить — на неё ссылаются ${references.length} файл(ов). ` +
             `Сначала уберите ссылки в:\n${references.map((r) => `  ${r}`).join("\n")}`,
           data: { references },
         });
       }
 
-      const { kebab } = input;
-      const camel = kebab
-        .split("-")
-        .map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)))
-        .join("");
-      const routerVar = camel + "Router";
-
-      // Delete files and empty dir
+      const camel = toCamelCase(kebab);
+      const routerVar = `${camel}Router`;
       const pagesDir = path.join(PAGES_DIR, kebab);
-      const filesToDelete = [
+
+      for (const f of [
         path.join(REPO_ROOT, `packages/db/src/schema/${kebab}.ts`),
         path.join(REPO_ROOT, `packages/api/src/routers/${kebab}.ts`),
         path.join(pagesDir, "index.vue"),
         path.join(pagesDir, "create.vue"),
         path.join(pagesDir, "[id].vue"),
-      ];
-      for (const f of filesToDelete) {
-        if (fs.existsSync(f)) fs.unlinkSync(f);
+      ]) {
+        safeUnlink(f);
       }
-      if (fs.existsSync(pagesDir) && fs.readdirSync(pagesDir).length === 0) {
-        fs.rmdirSync(pagesDir);
-      }
-
-      // Unregister from schema/index.ts
-      const schemaIdx = path.join(REPO_ROOT, "packages/db/src/schema/index.ts");
-      if (fs.existsSync(schemaIdx)) {
-        let content = fs.readFileSync(schemaIdx, "utf-8");
-        content = content.replace(new RegExp(`export \\* from "\\./${kebab}";\\n?`), "");
-        fs.writeFileSync(schemaIdx, content, "utf-8");
+      try {
+        if (fs.readdirSync(pagesDir).length === 0) fs.rmdirSync(pagesDir);
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
       }
 
-      // Unregister from routers/index.ts
-      const routersIdx = path.join(REPO_ROOT, "packages/api/src/routers/index.ts");
-      if (fs.existsSync(routersIdx)) {
-        let content = fs.readFileSync(routersIdx, "utf-8");
-        content = content.replace(
-          new RegExp(`import \\{ ${routerVar} \\} from "\\./${kebab}";\\n?`),
-          "",
-        );
-        content = content.replace(new RegExp(`  ${camel}: ${routerVar},\\n?`), "");
-        fs.writeFileSync(routersIdx, content, "utf-8");
+      function rewrite(file: string, mutate: (s: string) => string) {
+        try {
+          fs.writeFileSync(file, mutate(fs.readFileSync(file, "utf-8")), "utf-8");
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        }
       }
 
-      // Unregister from navigation
-      if (fs.existsSync(NAV_FILE)) {
-        let content = fs.readFileSync(NAV_FILE, "utf-8");
-        const escaped = kebab.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-        content = content.replace(
-          new RegExp(
-            `\\s*\\{[^}]*to:\\s*"/${escaped}"[^}]*\\},?`,
-          ),
-          "",
-        );
-        fs.writeFileSync(NAV_FILE, content, "utf-8");
-      }
+      rewrite(SCHEMA_INDEX, (s) => s.replace(new RegExp(`export \\* from "\\./${kebab}";\\n?`), ""));
+      rewrite(ROUTERS_INDEX, (s) =>
+        s
+          .replace(new RegExp(`import \\{ ${routerVar} \\} from "\\./${kebab}";\\n?`), "")
+          .replace(new RegExp(`  ${camel}: ${routerVar},\\n?`), ""),
+      );
+      const escaped = kebab.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+      rewrite(NAV_FILE, (s) =>
+        s.replace(new RegExp(`\\s*\\{[^}]*to:\\s*"/${escaped}"[^}]*\\},?`), ""),
+      );
 
       return {
         kebab,

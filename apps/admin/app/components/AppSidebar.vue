@@ -35,17 +35,19 @@ const visibleContentItems = computed(() =>
   contentItems.filter((item) => !item.section || canAccessSection(item.section)),
 );
 
-const visibleCatalogItems = computed(() =>
-  catalogItems.filter((item) => !item.section || canAccessSection(item.section)),
-);
+function filterByAccess<T extends { section?: string; adminOnly?: boolean }>(items: T[]): T[] {
+  return items.filter((item) => {
+    if (item.adminOnly && !isAdmin.value) return false;
+    if (item.section && !canAccessSection(item.section)) return false;
+    return true;
+  });
+}
 
-const visibleSystemItems = computed(() =>
-  systemItems.filter((item) => !item.adminOnly || isAdmin.value),
-);
-
-const visibleDevItems = computed(() =>
-  devItems.filter((item) => !item.adminOnly || isAdmin.value),
-);
+const navSections = computed(() => [
+  { label: "Каталог", items: filterByAccess(catalogItems) },
+  { label: "Разработка", items: filterByAccess(devItems) },
+  { label: "Система", items: filterByAccess(systemItems) },
+].filter((s) => s.items.length > 0));
 
 const menuItems = computed(() => [
   [{ label: "Sign Out", icon: "i-tabler-logout", onSelect: handleSignOut }],
@@ -174,88 +176,19 @@ const menuItems = computed(() => [
         </template>
       </div>
 
-      <!-- Shared catalog -->
-      <div v-if="visibleCatalogItems.length" class="mt-3 pt-3 border-t border-(--ui-border)">
+      <div
+        v-for="section in navSections"
+        :key="section.label"
+        class="mt-3 pt-3 border-t border-(--ui-border)"
+      >
         <div
           v-if="!isCollapsed"
           class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
         >
-          Каталог
+          {{ section.label }}
         </div>
         <nav class="flex flex-col gap-px">
-          <template v-for="item in visibleCatalogItems" :key="item.to">
-            <NuxtLink
-              v-if="!isCollapsed"
-              :to="item.to"
-              class="flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors"
-              :class="isActive(item.to)
-                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
-                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
-            >
-              <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-80" />
-              <span>{{ item.label }}</span>
-            </NuxtLink>
-            <UTooltip v-else :text="item.label">
-              <NuxtLink
-                :to="item.to"
-                class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
-                :class="isActive(item.to)
-                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
-                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
-              >
-                <UIcon :name="item.icon" class="size-4" />
-              </NuxtLink>
-            </UTooltip>
-          </template>
-        </nav>
-      </div>
-
-      <!-- Dev tools -->
-      <div v-if="visibleDevItems.length" class="mt-3 pt-3 border-t border-(--ui-border)">
-        <div
-          v-if="!isCollapsed"
-          class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
-        >
-          Разработка
-        </div>
-        <nav class="flex flex-col gap-px">
-          <template v-for="item in visibleDevItems" :key="item.to">
-            <NuxtLink
-              v-if="!isCollapsed"
-              :to="item.to"
-              class="flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors"
-              :class="isActive(item.to)
-                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
-                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
-            >
-              <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-80" />
-              <span>{{ item.label }}</span>
-            </NuxtLink>
-            <UTooltip v-else :text="item.label">
-              <NuxtLink
-                :to="item.to"
-                class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
-                :class="isActive(item.to)
-                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
-                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
-              >
-                <UIcon :name="item.icon" class="size-4" />
-              </NuxtLink>
-            </UTooltip>
-          </template>
-        </nav>
-      </div>
-
-      <!-- Admin system -->
-      <div v-if="visibleSystemItems.length" class="mt-3 pt-3 border-t border-(--ui-border)">
-        <div
-          v-if="!isCollapsed"
-          class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
-        >
-          Система
-        </div>
-        <nav class="flex flex-col gap-px">
-          <template v-for="item in visibleSystemItems" :key="item.to">
+          <template v-for="item in section.items" :key="item.to">
             <NuxtLink
               v-if="!isCollapsed"
               :to="item.to"

@@ -3,12 +3,8 @@ import { z } from "zod";
 import path from "node:path";
 import fs from "node:fs";
 import { devProcedure } from "../../index";
-
-// blocks.ts is at packages/api/src/routers/dev/blocks.ts — 5 dirs up to repo root
-const REPO_ROOT = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
-  "../../../../..",
-);
+import { REPO_ROOT } from "../../utils/paths";
+import { toCamelCase, toPascalCase } from "../../utils/naming";
 
 const BLOCKS_DIR = path.join(REPO_ROOT, "packages/api/src/shared/blocks");
 
@@ -55,10 +51,6 @@ const blockInfoSchema = z.object({
   category: z.enum(["content", "project"]).optional(),
   fields: z.array(fieldSchema).min(1),
 });
-
-function toPascalCase(s: string): string {
-  return s.split("-").map((p) => p[0]!.toUpperCase() + p.slice(1)).join("");
-}
 
 function extractString(source: string, key: string): string | null {
   const match = source.match(new RegExp(`${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
@@ -166,16 +158,16 @@ export const devBlocksRouter = {
       ];
 
       for (const file of files) {
-        if (fs.existsSync(file)) fs.unlinkSync(file);
+        try {
+          fs.unlinkSync(file);
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        }
       }
 
-      // Remove import + entry from blocks/index.ts
       const indexPath = path.join(BLOCKS_DIR, "index.ts");
+      const camel = toCamelCase(input.type);
       let idx = fs.readFileSync(indexPath, "utf-8");
-      const camel = input.type
-        .split("-")
-        .map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)))
-        .join("");
       idx = idx.replace(new RegExp(`\\nimport \\{ ${camel}Block \\} from "\\./${input.type}";`), "");
       idx = idx.replace(new RegExp(`  ${camel}Block,\\n`), "");
       fs.writeFileSync(indexPath, idx, "utf-8");
