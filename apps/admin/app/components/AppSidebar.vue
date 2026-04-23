@@ -50,13 +50,13 @@ const menuItems = computed(() => [
 
 <template>
   <aside
-    class="fixed left-2 top-2 bottom-2 z-40 hidden lg:flex flex-col rounded-xl border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-lg shadow-black/5 transition-all duration-300"
-    :class="[isCollapsed ? 'w-14' : 'w-60']"
+    class="fixed left-1.5 top-1.5 bottom-1.5 z-40 hidden lg:flex flex-col rounded-lg border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-md shadow-black/[0.04] transition-all duration-300"
+    :class="[isCollapsed ? 'w-14' : 'w-[232px]']"
   >
     <!-- Header -->
     <div
-      class="h-12 flex items-center shrink-0 border-b border-(--ui-border) transition-all duration-300"
-      :class="[isCollapsed ? 'justify-center' : 'justify-between px-3']"
+      class="h-11 flex items-center shrink-0 transition-all duration-300"
+      :class="[isCollapsed ? 'justify-center' : 'justify-between px-2.5']"
     >
       <span v-if="!isCollapsed" class="font-semibold text-[13px] truncate tracking-tight">ZHK</span>
       <button
@@ -72,7 +72,7 @@ const menuItems = computed(() => [
     </div>
 
     <!-- Body -->
-    <div class="flex-1 flex flex-col min-h-0 overflow-y-auto px-1.5 py-2 gap-0.5">
+    <div class="flex-1 flex flex-col min-h-0 overflow-y-auto px-1.5 pb-2">
       <!-- Main (Dashboard) -->
       <nav class="flex flex-col gap-px">
         <template v-for="item in mainItems" :key="item.to">
@@ -102,10 +102,10 @@ const menuItems = computed(() => [
       </nav>
 
       <!-- Sites -->
-      <div v-if="sites.length" class="mt-3">
+      <div v-if="sites.length" class="mt-4">
         <div
           v-if="!isCollapsed"
-          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
+          class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
         >
           Сайты
         </div>
@@ -171,10 +171,10 @@ const menuItems = computed(() => [
       </div>
 
       <!-- Shared catalog -->
-      <div v-if="visibleCatalogItems.length" class="mt-3">
+      <div v-if="visibleCatalogItems.length" class="mt-4">
         <div
           v-if="!isCollapsed"
-          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
+          class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
         >
           Каталог
         </div>
@@ -207,10 +207,10 @@ const menuItems = computed(() => [
       </div>
 
       <!-- Admin system -->
-      <div v-if="visibleSystemItems.length" class="mt-3">
+      <div v-if="visibleSystemItems.length" class="mt-4">
         <div
           v-if="!isCollapsed"
-          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
+          class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
         >
           Система
         </div>
@@ -244,8 +244,8 @@ const menuItems = computed(() => [
     </div>
 
     <!-- Footer -->
-    <div class="p-1.5 border-t border-(--ui-border) shrink-0 flex flex-col gap-1">
-      <div :class="isCollapsed ? 'flex justify-center' : 'flex px-1'">
+    <div class="px-1.5 py-1.5 border-t border-(--ui-border) shrink-0 flex flex-col gap-0.5">
+      <div :class="isCollapsed ? 'flex justify-center' : 'flex px-0.5'">
         <UTooltip v-if="isCollapsed" text="Theme">
           <UColorModeButton size="xs" />
         </UTooltip>
