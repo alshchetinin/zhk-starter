@@ -3,13 +3,14 @@ import { z } from "zod";
 import path from "node:path";
 import fs from "node:fs";
 import { devProcedure } from "../../index";
-import { blockDefinitions, allBlocks } from "../../shared/blocks";
 
 // blocks.ts is at packages/api/src/routers/dev/blocks.ts — 5 dirs up to repo root
 const REPO_ROOT = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   "../../../../..",
 );
+
+const BLOCKS_DIR = path.join(REPO_ROOT, "packages/api/src/shared/blocks");
 
 const fieldSchema: z.ZodType<{
   name: string;
@@ -59,26 +60,70 @@ function toPascalCase(s: string): string {
   return s.split("-").map((p) => p[0]!.toUpperCase() + p.slice(1)).join("");
 }
 
-export const devBlocksRouter = {
-  list: devProcedure.handler(() => {
-    return allBlocks.map((b) => ({
-      type: b.type,
-      label: b.label,
-      icon: b.icon,
-      description: b.description,
-      category: b.category ?? null,
+function extractString(source: string, key: string): string | null {
+  const match = source.match(new RegExp(`${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+  return match ? match[1]!.replace(/\\"/g, '"') : null;
+}
+
+interface DiskBlock {
+  type: string;
+  label: string;
+  icon: string;
+  description: string;
+  category: "content" | "project" | null;
+  files: {
+    definition: string;
+    editor: string;
+    renderer: string;
+  };
+}
+
+/**
+ * Reads block metadata by parsing the .ts files directly on disk.
+ * Does not depend on ESM import cache, so reflects the current filesystem state.
+ */
+function readBlocksFromDisk(): DiskBlock[] {
+  if (!fs.existsSync(BLOCKS_DIR)) return [];
+
+  const files = fs
+    .readdirSync(BLOCKS_DIR)
+    .filter((f) => f.endsWith(".ts") && f !== "index.ts" && !f.startsWith("_"));
+
+  const blocks: DiskBlock[] = [];
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(BLOCKS_DIR, file), "utf-8");
+    const type = extractString(source, "type");
+    const label = extractString(source, "label");
+    const icon = extractString(source, "icon");
+    const description = extractString(source, "description");
+    const category = extractString(source, "category") as DiskBlock["category"];
+    if (!type || !label || !icon || !description) continue;
+
+    blocks.push({
+      type,
+      label,
+      icon,
+      description,
+      category: category === "content" || category === "project" ? category : null,
       files: {
-        definition: `packages/api/src/shared/blocks/${b.type}.ts`,
-        editor: `apps/admin/app/components/blocks/editors/${toPascalCase(b.type)}Block.vue`,
-        renderer: `apps/web/app/components/blocks/renderers/${toPascalCase(b.type)}Block.vue`,
+        definition: `packages/api/src/shared/blocks/${type}.ts`,
+        editor: `apps/admin/app/components/blocks/editors/${toPascalCase(type)}Block.vue`,
+        renderer: `apps/web/app/components/blocks/renderers/${toPascalCase(type)}Block.vue`,
       },
-    }));
-  }),
+    });
+  }
+
+  return blocks.sort((a, b) => a.label.localeCompare(b.label, "ru"));
+}
+
+export const devBlocksRouter = {
+  list: devProcedure.handler(() => readBlocksFromDisk()),
 
   create: devProcedure
     .input(blockInfoSchema)
     .handler(async ({ input }) => {
-      if (blockDefinitions.some((b) => b.type === input.name)) {
+      const existingTypes = readBlocksFromDisk().map((b) => b.type);
+      if (existingTypes.includes(input.name)) {
         throw new ORPCError("CONFLICT", {
           message: `Блок "${input.name}" уже существует`,
         });
@@ -94,7 +139,6 @@ export const devBlocksRouter = {
         import("../../../../../scripts/generate-block/generators/web-renderer.js"),
       ]);
 
-      // BlockInfo shape matches input 1:1
       const blockInfo = input as unknown as Parameters<typeof generateBlockDefinition>[1];
 
       generateBlockDefinition(REPO_ROOT, blockInfo);
@@ -107,7 +151,8 @@ export const devBlocksRouter = {
   delete: devProcedure
     .input(z.object({ type: z.string().min(1) }))
     .handler(async ({ input }) => {
-      if (!blockDefinitions.some((b) => b.type === input.type)) {
+      const blockFile = path.join(BLOCKS_DIR, `${input.type}.ts`);
+      if (!fs.existsSync(blockFile)) {
         throw new ORPCError("NOT_FOUND", {
           message: `Блок "${input.type}" не найден`,
         });
@@ -115,7 +160,7 @@ export const devBlocksRouter = {
 
       const pascal = toPascalCase(input.type);
       const files = [
-        path.join(REPO_ROOT, `packages/api/src/shared/blocks/${input.type}.ts`),
+        blockFile,
         path.join(REPO_ROOT, `apps/admin/app/components/blocks/editors/${pascal}Block.vue`),
         path.join(REPO_ROOT, `apps/web/app/components/blocks/renderers/${pascal}Block.vue`),
       ];
@@ -125,9 +170,12 @@ export const devBlocksRouter = {
       }
 
       // Remove import + entry from blocks/index.ts
-      const indexPath = path.join(REPO_ROOT, "packages/api/src/shared/blocks/index.ts");
+      const indexPath = path.join(BLOCKS_DIR, "index.ts");
       let idx = fs.readFileSync(indexPath, "utf-8");
-      const camel = input.type.split("-").map((p, i) => i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)).join("");
+      const camel = input.type
+        .split("-")
+        .map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)))
+        .join("");
       idx = idx.replace(new RegExp(`\\nimport \\{ ${camel}Block \\} from "\\./${input.type}";`), "");
       idx = idx.replace(new RegExp(`  ${camel}Block,\\n`), "");
       fs.writeFileSync(indexPath, idx, "utf-8");

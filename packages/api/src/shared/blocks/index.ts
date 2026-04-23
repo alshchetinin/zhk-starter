@@ -8,11 +8,13 @@ import { heroFullscreenBlock } from "./hero-fullscreen";
 import { infrastructureTabsBlock } from "./infrastructure-tabs";
 import { aboutCompanyBlock } from "./about-company";
 import { temasBlock } from "./temas";
-import { careerBlock } from "./career";
 import { projectGalleryBlock } from "./project-gallery";
 import { projectStatsBlock } from "./project-stats";
 import { projectLocationBlock } from "./project-location";
 import { projectInfrastructureBlock } from "./project-infrastructure";
+
+import { testTetBlock } from "./test-tet";
+
 
 export { defineBlock } from "./_core";
 export type { BlockDefinition, BlockCategory } from "./_core";
@@ -25,11 +27,11 @@ export const allBlocks = [
   infrastructureTabsBlock,
   aboutCompanyBlock,
   temasBlock,
-  careerBlock,
   projectGalleryBlock,
   projectStatsBlock,
   projectLocationBlock,
   projectInfrastructureBlock,
+  testTetBlock,
 ] as const satisfies readonly BlockDefinition[];
 
 export const contentBlockSchema = z.discriminatedUnion(
