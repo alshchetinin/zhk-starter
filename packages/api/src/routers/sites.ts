@@ -3,7 +3,7 @@ import { db } from "@zhk/db";
 import { sites } from "@zhk/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { adminProcedure, protectedProcedure } from "../index";
 
 const slugSchema = z
   .string()
@@ -28,7 +28,7 @@ export const sitesRouter = {
       return site;
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
         slug: slugSchema,
@@ -59,7 +59,7 @@ export const sitesRouter = {
       return created;
     }),
 
-  update: protectedProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -99,7 +99,7 @@ export const sitesRouter = {
       return updated;
     }),
 
-  makePrimary: protectedProcedure
+  makePrimary: adminProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       await db.transaction(async (tx) => {
@@ -109,7 +109,7 @@ export const sitesRouter = {
       return { success: true };
     }),
 
-  delete: protectedProcedure
+  delete: adminProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const site = await db.query.sites.findFirst({ where: eq(sites.id, input.id) });
