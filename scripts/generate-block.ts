@@ -4,12 +4,9 @@ import path from "node:path";
 import { collectBlockInfo } from "./generate-block/prompts.js";
 import type { BlockInfo } from "./generate-block/prompts.js";
 import { FIELD_TYPES } from "./generate-block/field-types.js";
-import { generateSchema } from "./generate-block/generators/schema.js";
+import { generateBlockDefinition } from "./generate-block/generators/block-definition.js";
 import { generateEditorComponent } from "./generate-block/generators/editor-component.js";
-import { updateEditorRegistry } from "./generate-block/generators/editor-registry.js";
-import { updateDynamicZone } from "./generate-block/generators/dynamic-zone.js";
 import { generateWebRenderer } from "./generate-block/generators/web-renderer.js";
-import { updateWebRendererRegistry } from "./generate-block/generators/web-renderer-registry.js";
 import { toPascalCase } from "./generate-block/utils.js";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -50,44 +47,30 @@ function printSummary(blockInfo: BlockInfo): void {
       fieldsTable,
       ``,
       `Файлы:`,
-      `  ~ packages/api/src/shared/blocks.ts`,
+      `  + packages/api/src/shared/blocks/${blockInfo.name}.ts`,
+      `  ~ packages/api/src/shared/blocks/index.ts`,
       `  + apps/admin/.../editors/${pascal}Block.vue`,
-      `  ~ apps/admin/.../editors/index.ts`,
-      `  ~ apps/admin/.../BlockDynamicZone.vue`,
       `  + apps/web/.../renderers/${pascal}Block.vue`,
-      `  ~ apps/web/.../renderers/index.ts`,
     ].join("\n"),
     "Сводка",
   );
 }
 
-function runGenerators(blocksPath: string, blockInfo: BlockInfo): void {
+function runGenerators(blockInfo: BlockInfo): void {
   const pascal = toPascalCase(blockInfo.name);
   const s = p.spinner();
 
-  s.start("Обновляю Zod-схемы...");
-  generateSchema(blocksPath, blockInfo);
-  s.stop("Zod-схемы обновлены");
+  s.start("Создаю описание блока...");
+  generateBlockDefinition(ROOT, blockInfo);
+  s.stop(`Создан blocks/${blockInfo.name}.ts`);
 
   s.start("Создаю компонент редактора...");
   generateEditorComponent(ROOT, blockInfo);
   s.stop(`Создан editors/${pascal}Block.vue`);
 
-  s.start("Обновляю реестр редакторов...");
-  updateEditorRegistry(ROOT, blockInfo);
-  s.stop("Реестр редакторов обновлён");
-
-  s.start("Обновляю BlockDynamicZone...");
-  updateDynamicZone(ROOT, blockInfo);
-  s.stop("BlockDynamicZone обновлён");
-
   s.start("Создаю web-рендерер...");
   generateWebRenderer(ROOT, blockInfo);
   s.stop(`Создан renderers/${pascal}Block.vue`);
-
-  s.start("Обновляю реестр web-рендереров...");
-  updateWebRendererRegistry(ROOT, blockInfo);
-  s.stop("Реестр web-рендереров обновлён");
 }
 
 async function main() {
@@ -99,7 +82,6 @@ async function main() {
   let blockInfo: BlockInfo;
 
   if (configIdx !== -1 && args[configIdx + 1]) {
-    // Non-interactive mode: read BlockInfo from JSON file
     const configPath = path.resolve(args[configIdx + 1]);
     if (!fs.existsSync(configPath)) {
       p.cancel(`Файл не найден: ${configPath}`);
@@ -108,21 +90,17 @@ async function main() {
     blockInfo = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     p.log.info(`Конфиг загружен из ${configPath}`);
   } else {
-    // Interactive mode
     blockInfo = await collectBlockInfo();
   }
 
-  // Check for duplicate block
-  const blocksPath = path.join(ROOT, "packages/api/src/shared/blocks.ts");
-  const blocksContent = fs.readFileSync(blocksPath, "utf-8");
-  if (blocksContent.includes(`z.literal("${blockInfo.name}")`)) {
-    p.cancel(`Блок "${blockInfo.name}" уже существует в blocks.ts`);
+  const blockFile = path.join(ROOT, "packages/api/src/shared/blocks", `${blockInfo.name}.ts`);
+  if (fs.existsSync(blockFile)) {
+    p.cancel(`Блок "${blockInfo.name}" уже существует (${blockFile})`);
     process.exit(1);
   }
 
   printSummary(blockInfo);
 
-  // In config mode, skip confirmation
   if (configIdx === -1) {
     const confirmed = await p.confirm({ message: "Создать блок?" });
     if (p.isCancel(confirmed) || !confirmed) {
@@ -131,7 +109,7 @@ async function main() {
     }
   }
 
-  runGenerators(blocksPath, blockInfo);
+  runGenerators(blockInfo);
 
   p.outro(`Блок "${blockInfo.name}" успешно создан!`);
 }

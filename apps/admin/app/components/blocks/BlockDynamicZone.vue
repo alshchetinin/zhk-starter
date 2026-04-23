@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ContentBlock, BlockType } from "@zhk/api/shared/blocks";
+import { type ContentBlock, type BlockType, getBlockDefaultData } from "@zhk/api/shared/blocks";
 import { blockEditorComponents } from "./editors/index";
 
 const model = defineModel<ContentBlock[]>({ default: () => [] });
@@ -8,45 +8,13 @@ const lastAddedId = ref<string | null>(null);
 
 function addBlock(type: BlockType) {
   const id = crypto.randomUUID();
-  const newBlock: ContentBlock = {
+  const newBlock = {
     id,
     type,
-    data: getDefaultData(type),
+    data: getBlockDefaultData(type),
   } as ContentBlock;
   lastAddedId.value = id;
   model.value = [...model.value, newBlock];
-}
-
-function getDefaultData(type: BlockType): Record<string, unknown> {
-  switch (type) {
-    case "project-gallery":
-      return { projectId: "", columns: "3", maxImages: undefined };
-    case "project-stats":
-      return { projectId: "", showFree: true, showTotal: true };
-    case "project-location":
-      return { projectId: "", showAddress: true, mapHeight: 400 };
-    case "about-project":
-      return { title: "", description: undefined, tabs: [] };
-    case "about-features":
-      return { title: "", description: undefined, items: [] };
-    case "contacts-office":
-      return { title: "", phone: "", email: "", address: "", mapCoordinates: undefined, buttonLabel: undefined, buttonUrl: undefined, socials: undefined, departments: [] };
-    case "hero-fullscreen":
-      return { title: "", description: undefined, images: [], address: "", district: undefined, walkTime: undefined, driveTime: undefined, buildings: [], primaryButtonLabel: undefined, primaryButtonUrl: undefined, secondaryButtonLabel: undefined, secondaryButtonUrl: undefined };
-    case "infrastructure-tabs":
-      return { subtitle: undefined, title: "", tabs: [] };
-    case "project-infrastructure":
-      return { projectId: "", mapHeight: 500, showCategories: true };
-    case "about-company":
-      return { title: "", description: undefined, buttonLabel: undefined, buttonUrl: undefined, image: null, stats: [] };
-    case "temas":
-      return { title: "", member: [] };
-    case "career":
-      return { title: "", description: undefined, buttonLabel: undefined, buttonUrl: undefined, vacancies: [] };
-    // --- GENERATOR:DEFAULT_DATA ---
-    default:
-      return {};
-  }
 }
 
 function removeBlock(index: number) {
