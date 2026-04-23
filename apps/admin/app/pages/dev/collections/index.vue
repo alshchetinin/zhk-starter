@@ -8,8 +8,7 @@ const queryClient = useQueryClient();
 const { data, isPending } = useQuery($orpc.dev.collections.list.queryOptions());
 
 const deleteMutation = useMutation({
-  mutationFn: (args: { kebab: string; force: boolean }) =>
-    $orpcClient.dev.collections.delete(args),
+  mutationFn: (kebab: string) => $orpcClient.dev.collections.delete({ kebab }),
   onSuccess: (res) => {
     toast.add({
       title: `Коллекция "${res.kebab}" удалена`,
@@ -29,19 +28,22 @@ async function confirmDelete(kebab: string, label: string | null) {
   const name = label ?? kebab;
   const { references } = await $orpcClient.dev.collections.deleteCheck({ kebab });
 
-  const base = `Удалить коллекцию "${name}"?\n\nБудут удалены 5 файлов + регистрации.\nТаблица в БД сохранится.`;
-
-  if (references.length === 0) {
-    if (window.confirm(base)) deleteMutation.mutate({ kebab, force: false });
+  if (references.length > 0) {
+    const refList = references.slice(0, 20).map((r) => `  • ${r}`).join("\n");
+    const more = references.length > 20 ? `\n  … и ещё ${references.length - 20}` : "";
+    window.alert(
+      `Коллекция "${name}" не удаляется — на неё ссылаются ${references.length} файл(ов):\n\n${refList}${more}\n\n` +
+        `Это "ядровая" коллекция — её код использует другой код в репозитории (public API, ENTITY_TYPES, permissions и т.п.). ` +
+        `Удалить её безопасно нельзя: сломается сборка. Если вам это действительно нужно — уберите ссылки вручную, ` +
+        `затем вернитесь сюда.`,
+    );
     return;
   }
 
-  const refList = references.slice(0, 15).map((r) => `  ${r}`).join("\n");
-  const more = references.length > 15 ? `\n  … и ещё ${references.length - 15}` : "";
-  const forceMsg =
-    `${base}\n\n⚠ Внешние ссылки на коллекцию (${references.length}):\n${refList}${more}\n\n` +
-    `Удаление сломает эти файлы. Продолжить (force)?`;
-  if (window.confirm(forceMsg)) deleteMutation.mutate({ kebab, force: true });
+  const ok = window.confirm(
+    `Удалить коллекцию "${name}"?\n\nБудут удалены 5 файлов + регистрации. Таблица в БД сохранится.`,
+  );
+  if (ok) deleteMutation.mutate(kebab);
 }
 
 const sectionLabel = {
@@ -87,11 +89,15 @@ const sectionLabel = {
             <code class="text-[11px] text-(--ui-text-dimmed) font-mono">{{ col.kebab }}</code>
           </div>
         </div>
+        <UTooltip v-if="col.referenceCount > 0" :text="`${col.referenceCount} внешних ссылок — удалить нельзя`">
+          <UIcon name="i-tabler-link" class="size-4 text-(--ui-text-dimmed)" />
+        </UTooltip>
         <UButton
           icon="i-tabler-trash"
           color="error"
           variant="ghost"
           size="sm"
+          :disabled="col.referenceCount > 0"
           :loading="deleteMutation.isPending.value && deleteMutation.variables.value === col.kebab"
           @click="confirmDelete(col.kebab, col.label)"
         />

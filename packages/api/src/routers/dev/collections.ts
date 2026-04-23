@@ -171,7 +171,12 @@ function findExternalReferences(kebab: string): string[] {
 }
 
 export const devCollectionsRouter = {
-  list: devProcedure.handler(() => readCollectionsFromDisk()),
+  list: devProcedure.handler(() => {
+    return readCollectionsFromDisk().map((c) => ({
+      ...c,
+      referenceCount: findExternalReferences(c.kebab).length,
+    }));
+  }),
 
   create: devProcedure
     .input(collectionInfoSchema)
@@ -260,7 +265,7 @@ export const devCollectionsRouter = {
     }),
 
   delete: devProcedure
-    .input(z.object({ kebab: z.string().min(1), force: z.boolean().default(false) }))
+    .input(z.object({ kebab: z.string().min(1) }))
     .handler(async ({ input }) => {
       const found = readCollectionsFromDisk().find((c) => c.kebab === input.kebab);
       if (!found) {
@@ -270,12 +275,11 @@ export const devCollectionsRouter = {
       }
 
       const references = findExternalReferences(input.kebab);
-      if (references.length > 0 && !input.force) {
+      if (references.length > 0) {
         throw new ORPCError("CONFLICT", {
           message:
-            `Коллекцию "${input.kebab}" нельзя удалить безопасно — на неё ссылаются ${references.length} файл(ов):\n` +
-            references.map((r) => `  ${r}`).join("\n") +
-            `\n\nПередайте force: true, чтобы удалить всё равно (после этого админка сломается до правок).`,
+            `Коллекцию "${input.kebab}" нельзя удалить — на неё ссылаются ${references.length} файл(ов). ` +
+            `Сначала уберите ссылки в:\n${references.map((r) => `  ${r}`).join("\n")}`,
           data: { references },
         });
       }
