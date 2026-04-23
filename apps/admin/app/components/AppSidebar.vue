@@ -50,7 +50,7 @@ const menuItems = computed(() => [
 
 <template>
   <aside
-    class="fixed left-1.5 top-1.5 bottom-1.5 z-40 hidden lg:flex flex-col rounded-lg border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-md shadow-black/[0.04] transition-all duration-300"
+    class="fixed left-0.5 top-0.5 bottom-0.5 z-40 hidden lg:flex flex-col rounded-lg border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-md shadow-black/[0.04] transition-all duration-300"
     :class="[isCollapsed ? 'w-14' : 'w-[232px]']"
   >
     <!-- Header -->
