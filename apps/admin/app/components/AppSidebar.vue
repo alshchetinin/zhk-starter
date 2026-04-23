@@ -1,7 +1,47 @@
 <script setup lang="ts">
+import { contentItems, catalogItems, mainItems, systemItems } from "../composables/useNavigation";
+
 const { isCollapsed, toggle } = useSidebar();
 const { user } = useSession();
-const { navGroups, isActive, handleSignOut } = useNavigation();
+const { isActive, handleSignOut } = useNavigation();
+const { sites, currentSiteId, setSite } = useCurrentSite();
+const { isAdmin, canAccessSection } = useCurrentUser();
+
+const expandedSites = ref<Record<string, boolean>>({});
+
+watch(
+  [sites, currentSiteId],
+  ([list, id]) => {
+    if (id && list.length) {
+      expandedSites.value = { ...expandedSites.value, [id]: true };
+    }
+  },
+  { immediate: true },
+);
+
+function toggleSiteExpand(siteId: string) {
+  expandedSites.value = { ...expandedSites.value, [siteId]: !expandedSites.value[siteId] };
+}
+
+function openSiteContent(siteId: string, path: string) {
+  if (currentSiteId.value === siteId) {
+    navigateTo(path);
+  } else {
+    setSite(siteId, path);
+  }
+}
+
+const visibleContentItems = computed(() =>
+  contentItems.filter((item) => !item.section || canAccessSection(item.section)),
+);
+
+const visibleCatalogItems = computed(() =>
+  catalogItems.filter((item) => !item.section || canAccessSection(item.section)),
+);
+
+const visibleSystemItems = computed(() =>
+  systemItems.filter((item) => !item.adminOnly || isAdmin.value),
+);
 
 const menuItems = computed(() => [
   [{ label: "Sign Out", icon: "i-tabler-logout", onSelect: handleSignOut }],
@@ -10,94 +50,221 @@ const menuItems = computed(() => [
 
 <template>
   <aside
-    class="fixed left-0 top-0 z-40 h-screen border-r border-(--ui-border) bg-(--ui-bg) transition-all duration-300 hidden lg:flex flex-col"
-    :class="[isCollapsed ? 'w-16' : 'w-64']"
+    class="fixed left-2 top-2 bottom-2 z-40 hidden lg:flex flex-col rounded-xl border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-lg shadow-black/5 transition-all duration-300"
+    :class="[isCollapsed ? 'w-14' : 'w-60']"
   >
     <!-- Header -->
     <div
-      class="h-16 flex items-center shrink-0 border-b border-(--ui-border) transition-all duration-300"
-      :class="[isCollapsed ? 'justify-center' : 'justify-between px-4']"
+      class="h-12 flex items-center shrink-0 border-b border-(--ui-border) transition-all duration-300"
+      :class="[isCollapsed ? 'justify-center' : 'justify-between px-3']"
     >
-      <span v-if="!isCollapsed" class="font-bold text-lg truncate">ZHK Admin</span>
-      <UButton
-        variant="ghost"
-        color="neutral"
-        :icon="isCollapsed ? 'i-tabler-layout-sidebar-right' : 'i-tabler-layout-sidebar-left-collapse'"
+      <span v-if="!isCollapsed" class="font-semibold text-[13px] truncate tracking-tight">ZHK</span>
+      <button
+        type="button"
+        class="p-1 rounded-md text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted) transition-colors"
         @click="toggle"
-      />
-    </div>
-
-    <!-- Site switcher -->
-    <div class="px-2 pt-3">
-      <AppSiteSwitcher :collapsed="isCollapsed" />
+      >
+        <UIcon
+          :name="isCollapsed ? 'i-tabler-layout-sidebar-right' : 'i-tabler-layout-sidebar-left-collapse'"
+          class="size-3.5"
+        />
+      </button>
     </div>
 
     <!-- Body -->
-    <div class="flex-1 flex flex-col min-h-0 overflow-y-auto px-2 py-4 gap-4">
-      <!-- Nav groups -->
-      <template v-for="(group, gi) in navGroups" :key="gi">
-        <div v-if="gi > 0" class="h-px bg-(--ui-border) mx-2" />
-        <nav class="flex flex-col gap-1" :class="{ 'mt-auto': gi === 3 }">
-          <template v-for="item in group" :key="item.to">
-            <!-- Expanded -->
+    <div class="flex-1 flex flex-col min-h-0 overflow-y-auto px-1.5 py-2 gap-0.5">
+      <!-- Main (Dashboard) -->
+      <nav class="flex flex-col gap-px">
+        <template v-for="item in mainItems" :key="item.to">
+          <NuxtLink
+            v-if="!isCollapsed"
+            :to="item.to"
+            class="flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors"
+            :class="isActive(item.to)
+              ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+              : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
+          >
+            <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-80" />
+            <span>{{ item.label }}</span>
+          </NuxtLink>
+          <UTooltip v-else :text="item.label">
+            <NuxtLink
+              :to="item.to"
+              class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+              :class="isActive(item.to)
+                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
+                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
+            >
+              <UIcon :name="item.icon" class="size-4" />
+            </NuxtLink>
+          </UTooltip>
+        </template>
+      </nav>
+
+      <!-- Sites -->
+      <div v-if="sites.length" class="mt-3">
+        <div
+          v-if="!isCollapsed"
+          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
+        >
+          Сайты
+        </div>
+
+        <template v-for="site in sites" :key="site.id">
+          <button
+            v-if="!isCollapsed"
+            type="button"
+            class="flex items-center gap-1.5 px-2 py-1.5 rounded-md w-full text-left text-[13px] transition-colors group"
+            :class="currentSiteId === site.id
+              ? 'text-(--ui-text-highlighted) font-medium'
+              : 'text-(--ui-text-muted) hover:text-(--ui-text-highlighted)'"
+            @click="toggleSiteExpand(site.id)"
+          >
+            <UIcon
+              name="i-tabler-chevron-right"
+              class="size-3 shrink-0 opacity-60 transition-transform duration-150"
+              :class="{ 'rotate-90': expandedSites[site.id] }"
+            />
+            <UIcon
+              :name="site.isPrimary ? 'i-tabler-home-star' : 'i-tabler-building-store'"
+              class="size-3.5 shrink-0 opacity-80"
+            />
+            <span class="truncate flex-1">{{ site.name }}</span>
+            <span
+              v-if="currentSiteId === site.id"
+              class="size-1.5 rounded-full bg-(--ui-primary) shrink-0"
+              aria-label="active"
+            />
+          </button>
+          <UTooltip v-else :text="site.name">
+            <button
+              type="button"
+              class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+              :class="currentSiteId === site.id
+                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
+                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
+              @click="setSite(site.id)"
+            >
+              <UIcon :name="site.isPrimary ? 'i-tabler-home-star' : 'i-tabler-building-store'" class="size-4" />
+            </button>
+          </UTooltip>
+
+          <nav
+            v-if="expandedSites[site.id] && !isCollapsed"
+            class="flex flex-col gap-px ml-3.5 pl-2.5 border-l border-(--ui-border) my-0.5"
+          >
+            <button
+              v-for="item in visibleContentItems"
+              :key="item.to"
+              type="button"
+              class="flex items-center gap-2 px-2 py-1 rounded-md w-full text-left text-[12.5px] transition-colors"
+              :class="currentSiteId === site.id && isActive(item.to)
+                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
+              @click="openSiteContent(site.id, item.to)"
+            >
+              <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-70" />
+              <span>{{ item.label }}</span>
+            </button>
+          </nav>
+        </template>
+      </div>
+
+      <!-- Shared catalog -->
+      <div v-if="visibleCatalogItems.length" class="mt-3">
+        <div
+          v-if="!isCollapsed"
+          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
+        >
+          Каталог
+        </div>
+        <nav class="flex flex-col gap-px">
+          <template v-for="item in visibleCatalogItems" :key="item.to">
             <NuxtLink
               v-if="!isCollapsed"
               :to="item.to"
-              class="flex items-center gap-3 px-3 py-2 rounded-md transition-colors text-sm font-medium whitespace-nowrap"
-              :class="[
-                isActive(item.to)
-                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
-                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'
-              ]"
+              class="flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors"
+              :class="isActive(item.to)
+                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
             >
-              <UIcon :name="item.icon" class="size-5 shrink-0" />
+              <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-80" />
               <span>{{ item.label }}</span>
             </NuxtLink>
-
-            <!-- Collapsed -->
             <UTooltip v-else :text="item.label">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center justify-center w-full aspect-square rounded-md transition-colors"
-                :class="[
-                  isActive(item.to)
-                    ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
-                    : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'
-                ]"
+                class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+                :class="isActive(item.to)
+                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
+                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
               >
-                <UIcon :name="item.icon" class="size-5" />
+                <UIcon :name="item.icon" class="size-4" />
               </NuxtLink>
             </UTooltip>
           </template>
         </nav>
-      </template>
-    </div>
-
-    <!-- Footer: Theme + User -->
-    <div class="p-2 border-t border-(--ui-border) shrink-0 flex flex-col gap-2">
-      <!-- Color mode -->
-      <div :class="isCollapsed ? 'flex justify-center' : 'flex px-1'">
-        <UTooltip v-if="isCollapsed" text="Theme">
-          <UColorModeButton size="sm" />
-        </UTooltip>
-        <UColorModeButton v-else />
       </div>
 
-      <!-- User menu -->
-      <UDropdownMenu :items="menuItems" :ui="{ content: 'w-56 mb-2' }">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          class="w-full p-2 h-auto"
-          :class="[isCollapsed ? 'justify-center' : 'justify-start']"
+      <!-- Admin system -->
+      <div v-if="visibleSystemItems.length" class="mt-3">
+        <div
+          v-if="!isCollapsed"
+          class="px-2 pb-1 text-[10px] font-medium uppercase tracking-[0.08em] text-(--ui-text-dimmed) select-none"
         >
-          <UAvatar :alt="user?.name ?? 'U'" size="sm" />
-          <div v-if="!isCollapsed" class="flex flex-col items-start min-w-0 flex-1 ml-2 text-left">
-            <span class="text-sm font-medium truncate w-full block">{{ user?.name || user?.email || 'User' }}</span>
-            <span class="text-xs text-(--ui-text-muted) truncate w-full block">{{ user?.email }}</span>
+          Система
+        </div>
+        <nav class="flex flex-col gap-px">
+          <template v-for="item in visibleSystemItems" :key="item.to">
+            <NuxtLink
+              v-if="!isCollapsed"
+              :to="item.to"
+              class="flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors"
+              :class="isActive(item.to)
+                ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+                : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
+            >
+              <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-80" />
+              <span>{{ item.label }}</span>
+            </NuxtLink>
+            <UTooltip v-else :text="item.label">
+              <NuxtLink
+                :to="item.to"
+                class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+                :class="isActive(item.to)
+                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
+                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
+              >
+                <UIcon :name="item.icon" class="size-4" />
+              </NuxtLink>
+            </UTooltip>
+          </template>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-1.5 border-t border-(--ui-border) shrink-0 flex flex-col gap-1">
+      <div :class="isCollapsed ? 'flex justify-center' : 'flex px-1'">
+        <UTooltip v-if="isCollapsed" text="Theme">
+          <UColorModeButton size="xs" />
+        </UTooltip>
+        <UColorModeButton v-else size="xs" />
+      </div>
+
+      <UDropdownMenu :items="menuItems" :ui="{ content: 'w-56 mb-2' }">
+        <button
+          type="button"
+          class="w-full flex items-center gap-2 p-1.5 rounded-md hover:bg-(--ui-bg-elevated) transition-colors"
+          :class="[isCollapsed ? 'justify-center' : '']"
+        >
+          <UAvatar :alt="user?.name ?? 'U'" size="xs" />
+          <div v-if="!isCollapsed" class="flex flex-col items-start min-w-0 flex-1 text-left">
+            <span class="text-[12.5px] font-medium truncate w-full block">{{ user?.name || user?.email || 'User' }}</span>
+            <span class="text-[11px] text-(--ui-text-dimmed) truncate w-full block">{{ user?.email }}</span>
           </div>
-          <UIcon v-if="!isCollapsed" name="i-tabler-chevron-up" class="size-4 ml-2 text-(--ui-text-muted) shrink-0" />
-        </UButton>
+          <UIcon v-if="!isCollapsed" name="i-tabler-chevron-up" class="size-3.5 text-(--ui-text-dimmed) shrink-0" />
+        </button>
       </UDropdownMenu>
     </div>
   </aside>
