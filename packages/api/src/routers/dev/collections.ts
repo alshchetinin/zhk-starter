@@ -92,6 +92,84 @@ function readCollectionsFromDisk(): DiskCollection[] {
   return collections.sort((a, b) => a.kebab.localeCompare(b.kebab));
 }
 
+/**
+ * Find files outside the collection's own 5 files that reference it.
+ * Checks: drizzle query usage (query.<camel>), bare table identifier in imports
+ * from @zhk/db/schema, kebab string literal in arrays, and direct import paths.
+ */
+function findExternalReferences(kebab: string): string[] {
+  const camel = kebab
+    .split("-")
+    .map((p, i) => (i === 0 ? p : p[0]!.toUpperCase() + p.slice(1)))
+    .join("");
+
+  const routerVar = camel + "Router";
+
+  // Files we either delete outright or auto-unregister from — ignore those
+  const ownFiles = new Set([
+    path.join(REPO_ROOT, `packages/db/src/schema/${kebab}.ts`),
+    path.join(REPO_ROOT, `packages/api/src/routers/${kebab}.ts`),
+    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/index.vue`),
+    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/create.vue`),
+    path.join(REPO_ROOT, `apps/admin/app/pages/${kebab}/[id].vue`),
+    path.join(REPO_ROOT, "packages/db/src/schema/index.ts"),
+    path.join(REPO_ROOT, "packages/api/src/routers/index.ts"),
+    path.join(REPO_ROOT, "apps/admin/app/composables/useNavigation.ts"),
+  ]);
+
+  const scanRoots = [
+    path.join(REPO_ROOT, "packages/api/src"),
+    path.join(REPO_ROOT, "packages/db/src"),
+    path.join(REPO_ROOT, "apps/admin/app"),
+    path.join(REPO_ROOT, "apps/web/app"),
+  ];
+
+  // Patterns that strongly suggest a dependency on this collection
+  const wordBoundary = new RegExp(
+    // drizzle query.<camel>, <routerVar>, or dotted .<camel>(
+    `(?:\\bquery\\.${camel}\\b|\\b${routerVar}\\b|\\b${camel}\\.\\w)`,
+  );
+  const kebabLiteral = new RegExp(`["']${kebab}["']`);
+  const importFromKebab = new RegExp(`from\\s+["'](?:\\./)?${kebab}(?:/[^"']*)?["']`);
+
+  const refs: string[] = [];
+
+  function walk(dir: string) {
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "node_modules" || entry.name === ".nuxt" || entry.name === "dist") continue;
+        walk(full);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!/\.(ts|vue)$/.test(entry.name)) continue;
+      if (ownFiles.has(full)) continue;
+
+      let content: string;
+      try {
+        content = fs.readFileSync(full, "utf-8");
+      } catch {
+        continue;
+      }
+
+      if (wordBoundary.test(content) || kebabLiteral.test(content) || importFromKebab.test(content)) {
+        refs.push(path.relative(REPO_ROOT, full));
+      }
+    }
+  }
+
+  for (const root of scanRoots) walk(root);
+
+  return refs.sort();
+}
+
 export const devCollectionsRouter = {
   list: devProcedure.handler(() => readCollectionsFromDisk()),
 
@@ -175,13 +253,30 @@ export const devCollectionsRouter = {
       return { kebab: input.kebab, ok: true, dbPushWarning };
     }),
 
-  delete: devProcedure
+  deleteCheck: devProcedure
     .input(z.object({ kebab: z.string().min(1) }))
+    .handler(({ input }) => {
+      return { kebab: input.kebab, references: findExternalReferences(input.kebab) };
+    }),
+
+  delete: devProcedure
+    .input(z.object({ kebab: z.string().min(1), force: z.boolean().default(false) }))
     .handler(async ({ input }) => {
       const found = readCollectionsFromDisk().find((c) => c.kebab === input.kebab);
       if (!found) {
         throw new ORPCError("NOT_FOUND", {
           message: `Коллекция "${input.kebab}" не найдена`,
+        });
+      }
+
+      const references = findExternalReferences(input.kebab);
+      if (references.length > 0 && !input.force) {
+        throw new ORPCError("CONFLICT", {
+          message:
+            `Коллекцию "${input.kebab}" нельзя удалить безопасно — на неё ссылаются ${references.length} файл(ов):\n` +
+            references.map((r) => `  ${r}`).join("\n") +
+            `\n\nПередайте force: true, чтобы удалить всё равно (после этого админка сломается до правок).`,
+          data: { references },
         });
       }
 

@@ -8,7 +8,8 @@ const queryClient = useQueryClient();
 const { data, isPending } = useQuery($orpc.dev.collections.list.queryOptions());
 
 const deleteMutation = useMutation({
-  mutationFn: (kebab: string) => $orpcClient.dev.collections.delete({ kebab }),
+  mutationFn: (args: { kebab: string; force: boolean }) =>
+    $orpcClient.dev.collections.delete(args),
   onSuccess: (res) => {
     toast.add({
       title: `Коллекция "${res.kebab}" удалена`,
@@ -24,12 +25,23 @@ const deleteMutation = useMutation({
   },
 });
 
-function confirmDelete(kebab: string, label: string | null) {
+async function confirmDelete(kebab: string, label: string | null) {
   const name = label ?? kebab;
-  const answer = window.confirm(
-    `Удалить коллекцию "${name}"?\n\nБудут удалены 5 файлов и убраны регистрации из schema/routers/navigation.\n\nТАБЛИЦА В БД СОХРАНИТСЯ — дропните вручную если нужно.`,
-  );
-  if (answer) deleteMutation.mutate(kebab);
+  const { references } = await $orpcClient.dev.collections.deleteCheck({ kebab });
+
+  const base = `Удалить коллекцию "${name}"?\n\nБудут удалены 5 файлов + регистрации.\nТаблица в БД сохранится.`;
+
+  if (references.length === 0) {
+    if (window.confirm(base)) deleteMutation.mutate({ kebab, force: false });
+    return;
+  }
+
+  const refList = references.slice(0, 15).map((r) => `  ${r}`).join("\n");
+  const more = references.length > 15 ? `\n  … и ещё ${references.length - 15}` : "";
+  const forceMsg =
+    `${base}\n\n⚠ Внешние ссылки на коллекцию (${references.length}):\n${refList}${more}\n\n` +
+    `Удаление сломает эти файлы. Продолжить (force)?`;
+  if (window.confirm(forceMsg)) deleteMutation.mutate({ kebab, force: true });
 }
 
 const sectionLabel = {
