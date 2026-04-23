@@ -104,6 +104,23 @@ const saveMutation = useMutation({
             v-model:og-image="form.ogImage"
             folder="homepage/og"
           />
+          <ContentHistoryPanel
+            v-if="data?.id"
+            entity-type="homepage"
+            :entity-id="data.id"
+            :current-snapshot="{
+              contentBlocks: form.contentBlocks,
+              metaTitle: form.metaTitle,
+              metaDescription: form.metaDescription,
+              ogImage: form.ogImage,
+            }"
+            @restore="(snap: any) => {
+              form.contentBlocks = snap.contentBlocks ?? [];
+              form.metaTitle = snap.metaTitle ?? '';
+              form.metaDescription = snap.metaDescription ?? '';
+              form.ogImage = snap.ogImage ?? null;
+            }"
+          />
         </div>
       </div>
     </template>
