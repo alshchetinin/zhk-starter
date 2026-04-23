@@ -26,6 +26,8 @@ const catalogItems: NavItem[] = [
   { label: "Квартиры", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
   { label: "Коммерция", icon: "i-tabler-shopping-cart", to: "/commerce", section: "commerce" },
   { label: "Планировки", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
+  { label: "Ипотека", icon: "i-tabler-coin", to: "/mortgage", section: "mortgage" },
+  { label: "Способы покупки", icon: "i-tabler-credit-card", to: "/purchase-methods", section: "purchase-methods" },
   { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
   { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
 ];

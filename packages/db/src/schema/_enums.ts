@@ -51,6 +51,22 @@ export const constructionProgressStatusEnum = pgEnum(
   ["draft", "published"],
 );
 
+export const mortgageProgramStatusEnum = pgEnum("mortgage_program_status", [
+  "active",
+  "archived",
+]);
+
+export const purchaseMethodKindEnum = pgEnum("purchase_method_kind", [
+  "mortgage",
+  "installment",
+  "maternal_capital",
+  "trade_in",
+  "military_mortgage",
+  "subsidy",
+  "cash",
+  "custom",
+]);
+
 export const ticketTypeEnum = pgEnum("ticket_type", [
   "lead",
   "callback",
