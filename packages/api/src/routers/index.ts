@@ -13,6 +13,9 @@ import { newsRouter } from "./news";
 import { pagesRouter } from "./pages";
 import { documentsRouter } from "./documents";
 import { promotionsRouter } from "./promotions";
+import { banksRouter } from "./banks";
+import { mortgageProgramsRouter } from "./mortgage-programs";
+import { purchaseMethodsRouter } from "./purchase-methods";
 import { contactsRouter } from "./contacts";
 import { homepageRouter } from "./homepage";
 import { constructionProgressRouter } from "./construction-progress";
@@ -42,6 +45,9 @@ export const appRouter = {
   pages: pagesRouter,
   documents: documentsRouter,
   promotions: promotionsRouter,
+  banks: banksRouter,
+  mortgagePrograms: mortgageProgramsRouter,
+  purchaseMethods: purchaseMethodsRouter,
   contacts: contactsRouter,
   homepage: homepageRouter,
   constructionProgress: constructionProgressRouter,
