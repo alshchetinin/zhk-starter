@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { promotionStatusEnum } from "./_enums";
 import type { ContentBlock } from "./_shared";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { apartments } from "./apartments";
 
@@ -17,10 +17,10 @@ export const promotions = pgTable("promotions", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name").notNull(),
   slug: text("slug"),
   description: text("description"),
@@ -44,9 +44,9 @@ export const promotions = pgTable("promotions", {
 });
 
 export const promotionsRelations = relations(promotions, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [promotions.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [promotions.siteId],
+    references: [sites.id],
   }),
   integration: one(integrations, {
     fields: [promotions.integrationId],

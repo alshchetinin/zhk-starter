@@ -1,5 +1,5 @@
 export * from "./_enums";
-export * from "./tenants";
+export * from "./sites";
 export * from "./integrations";
 export * from "./cities";
 export * from "./projects";
@@ -26,3 +26,4 @@ export * from "./contacts";
 export * from "./homepage";
 export * from "./construction-progress";
 export * from "./ticket-settings";
+export * from "./content-versions";

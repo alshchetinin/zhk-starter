@@ -2,16 +2,16 @@ import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { newsStatusEnum } from "./_enums";
 import type { ContentBlock } from "./_shared";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 
 export const news = pgTable("news", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   title: text("title").notNull(),
   slug: text("slug").notNull(),
   excerpt: text("excerpt"),
@@ -32,8 +32,8 @@ export const news = pgTable("news", {
 });
 
 export const newsRelations = relations(news, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [news.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [news.siteId],
+    references: [sites.id],
   }),
 }));

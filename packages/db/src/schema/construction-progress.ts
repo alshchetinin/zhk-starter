@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { date, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import type { ContentBlock } from "./_shared";
 import { constructionProgressStatusEnum } from "./_enums";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { projects } from "./projects";
 import { buildings } from "./buildings";
 
@@ -10,10 +10,10 @@ export const constructionProgress = pgTable("construction_progress", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   projectId: text("project_id")
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
@@ -40,9 +40,9 @@ export const constructionProgress = pgTable("construction_progress", {
 export const constructionProgressRelations = relations(
   constructionProgress,
   ({ one }) => ({
-    tenant: one(tenants, {
-      fields: [constructionProgress.tenantId],
-      references: [tenants.id],
+    site: one(sites, {
+      fields: [constructionProgress.siteId],
+      references: [sites.id],
     }),
     project: one(projects, {
       fields: [constructionProgress.projectId],

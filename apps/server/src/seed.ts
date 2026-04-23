@@ -16,6 +16,24 @@ async function seed() {
     process.exit(1);
   }
 
+  const existingSite = await db
+    .select({ id: schema.sites.id })
+    .from(schema.sites)
+    .where(eq(schema.sites.id, "default"))
+    .limit(1);
+
+  if (existingSite.length === 0) {
+    await db.insert(schema.sites).values({
+      id: "default",
+      slug: "main",
+      name: "Главный сайт",
+      isPrimary: true,
+    });
+    console.log("Default site created (id=default, slug=main, isPrimary=true)");
+  } else {
+    console.log("Default site already exists. Skipping.");
+  }
+
   const existing = await db
     .select({ id: schema.user.id })
     .from(schema.user)

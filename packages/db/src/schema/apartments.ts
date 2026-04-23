@@ -9,7 +9,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { apartmentStatusEnum } from "./_enums";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { projects } from "./projects";
 import { buildings } from "./buildings";
@@ -24,10 +24,10 @@ export const apartments = pgTable("apartments", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name").notNull(),
   apartmentNumber: text("apartment_number").notNull(),
   area: numeric("area", { precision: 10, scale: 2 }).notNull(),
@@ -70,9 +70,9 @@ export const apartments = pgTable("apartments", {
 });
 
 export const apartmentsRelations = relations(apartments, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [apartments.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [apartments.siteId],
+    references: [sites.id],
   }),
   project: one(projects, {
     fields: [apartments.projectId],

@@ -8,7 +8,7 @@ import {
   timestamp,
   integer,
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { projects } from "./projects";
 import { buildings } from "./buildings";
@@ -18,10 +18,10 @@ export const commerce = pgTable("commerce", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name"),
   category: text("category"),
   area: numeric("area", { precision: 10, scale: 2 }),
@@ -47,9 +47,9 @@ export const commerce = pgTable("commerce", {
 });
 
 export const commerceRelations = relations(commerce, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [commerce.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [commerce.siteId],
+    references: [sites.id],
   }),
   project: one(projects, {
     fields: [commerce.projectId],

@@ -9,7 +9,7 @@ import { createMacroServices } from "../services";
 
 export interface MacroIntegrationConfig {
   id: string;
-  tenantId: string;
+  siteId: string;
   domain: string;
   appSecret: string;
   apiDomain: string;
@@ -19,10 +19,10 @@ export async function getMacroData(
   integration: MacroIntegrationConfig,
   complexes: number[],
 ): Promise<ImportData> {
-  const { id: integrationId, tenantId, domain, appSecret, apiDomain } =
+  const { id: integrationId, siteId, domain, appSecret, apiDomain } =
     integration;
 
-  const services = createMacroServices({ integrationId, tenantId });
+  const services = createMacroServices({ integrationId, siteId });
 
   const floorPlans = await getMacroFloorPlans(
     integrationId,

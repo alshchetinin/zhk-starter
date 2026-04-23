@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { projects } from "./projects";
 import { buildings } from "./buildings";
@@ -9,10 +9,10 @@ export const nonResidentialFloors = pgTable("non_residential_floors", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   floorNumber: integer("floor_number"),
   floorImage: text("floor_image"),
   svgScheme: text("svg_scheme"),
@@ -32,9 +32,9 @@ export const nonResidentialFloors = pgTable("non_residential_floors", {
 export const nonResidentialFloorsRelations = relations(
   nonResidentialFloors,
   ({ one }) => ({
-    tenant: one(tenants, {
-      fields: [nonResidentialFloors.tenantId],
-      references: [tenants.id],
+    site: one(sites, {
+      fields: [nonResidentialFloors.siteId],
+      references: [sites.id],
     }),
     project: one(projects, {
       fields: [nonResidentialFloors.projectId],

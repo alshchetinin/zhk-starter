@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { ticketTypeEnum } from "./_enums";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { apartments } from "./apartments";
 
@@ -9,10 +9,10 @@ export const tickets = pgTable("tickets", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name"),
   phone: text("phone").notNull(),
   email: text("email"),
@@ -37,9 +37,9 @@ export const tickets = pgTable("tickets", {
 });
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [tickets.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [tickets.siteId],
+    references: [sites.id],
   }),
   apartment: one(apartments, {
     fields: [tickets.apartmentId],

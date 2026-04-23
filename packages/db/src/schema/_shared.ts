@@ -27,7 +27,7 @@ export const baseColumns = {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id").notNull().default("default"),
+  siteId: text("site_id").notNull().default("default"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
