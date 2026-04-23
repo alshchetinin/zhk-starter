@@ -7,7 +7,7 @@ export interface NavItem {
 }
 
 const mainItems: NavItem[] = [
-  { label: "Dashboard", icon: "i-tabler-layout-dashboard", to: "/" },
+  { label: "Дашборд", icon: "i-tabler-layout-dashboard", to: "/" },
 ];
 
 // Per-site content — changes when site switcher is changed
@@ -21,11 +21,11 @@ const contentItems: NavItem[] = [
 
 // Shared across all sites
 const catalogItems: NavItem[] = [
-  { label: "Projects", icon: "i-tabler-building", to: "/projects", section: "projects" },
-  { label: "Buildings", icon: "i-tabler-building-skyscraper", to: "/buildings", section: "buildings" },
-  { label: "Apartments", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
-  { label: "Commerce", icon: "i-tabler-shopping-cart", to: "/commerce", section: "commerce" },
-  { label: "Layouts", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
+  { label: "Проекты", icon: "i-tabler-building", to: "/projects", section: "projects" },
+  { label: "Дома", icon: "i-tabler-building-skyscraper", to: "/buildings", section: "buildings" },
+  { label: "Квартиры", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
+  { label: "Коммерция", icon: "i-tabler-shopping-cart", to: "/commerce", section: "commerce" },
+  { label: "Планировки", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
   { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
   { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
 ];
@@ -34,10 +34,12 @@ const catalogItems: NavItem[] = [
 const systemItems: NavItem[] = [
   { label: "Сайты", icon: "i-tabler-building-store", to: "/sites", adminOnly: true },
   { label: "Пользователи", icon: "i-tabler-users", to: "/users", adminOnly: true },
-  { label: "Integrations", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
+  { label: "Интеграции", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
 ];
 
 const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, systemItems];
+
+export { contentItems, catalogItems, mainItems, systemItems };
 
 export function useNavigation() {
   const route = useRoute();
