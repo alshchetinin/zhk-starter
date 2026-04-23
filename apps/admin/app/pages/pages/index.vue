@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -12,8 +12,8 @@ const debouncedSearch = refDebounced(search, 300);
 const statusFilter = ref<PageStatus>();
 
 const { data, isPending } = useQuery(
-  computed(() =>
-    $orpc.pages.list.queryOptions({
+  computed(() => ({
+    ...$orpc.pages.list.queryOptions({
       input: {
         page: page.value,
         pageSize,
@@ -21,8 +21,13 @@ const { data, isPending } = useQuery(
         status: statusFilter.value,
       },
     }),
-  ),
+    placeholderData: keepPreviousData,
+  })),
 );
+
+function prefetchPage(id: string) {
+  queryClient.prefetchQuery($orpc.pages.getById.queryOptions({ input: { id } }));
+}
 
 watch([debouncedSearch, statusFilter], () => {
   page.value = 1;
@@ -30,8 +35,24 @@ watch([debouncedSearch, statusFilter], () => {
 
 const deleteMutation = useMutation({
   mutationFn: (id: string) => $orpcClient.pages.delete({ id }),
+  onMutate: async (id) => {
+    const listKey = $orpc.pages.list.key();
+    await queryClient.cancelQueries({ queryKey: listKey });
+    const snapshots = queryClient.getQueriesData({ queryKey: listKey });
+    queryClient.setQueriesData({ queryKey: listKey }, (old: any) => {
+      if (!old?.data) return old;
+      return { ...old, data: old.data.filter((p: any) => p.id !== id), total: Math.max(0, (old.total ?? 0) - 1) };
+    });
+    return { snapshots };
+  },
+  onError: (_err, _id, ctx) => {
+    if (!ctx) return;
+    for (const [key, data] of ctx.snapshots) queryClient.setQueryData(key, data);
+  },
   onSuccess: () => {
     toast.add({ title: "Страница удалена", color: "success" });
+  },
+  onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.pages.key() });
   },
 });
@@ -78,6 +99,7 @@ const deleteMutation = useMutation({
         v-for="item in data.data"
         :key="item.id"
         class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
+        @mouseenter="prefetchPage(item.id)"
       >
         <!-- Content -->
         <div class="flex-1 min-w-0">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -12,8 +12,8 @@ const debouncedSearch = refDebounced(search, 300);
 const statusFilter = ref<NewsStatus>();
 
 const { data, isPending } = useQuery(
-  computed(() =>
-    $orpc.news.list.queryOptions({
+  computed(() => ({
+    ...$orpc.news.list.queryOptions({
       input: {
         page: page.value,
         pageSize,
@@ -21,8 +21,13 @@ const { data, isPending } = useQuery(
         status: statusFilter.value,
       },
     }),
-  ),
+    placeholderData: keepPreviousData,
+  })),
 );
+
+function prefetchNews(id: string) {
+  queryClient.prefetchQuery($orpc.news.getById.queryOptions({ input: { id } }));
+}
 
 watch([debouncedSearch, statusFilter], () => {
   page.value = 1;
@@ -30,8 +35,24 @@ watch([debouncedSearch, statusFilter], () => {
 
 const deleteMutation = useMutation({
   mutationFn: (id: string) => $orpcClient.news.delete({ id }),
+  onMutate: async (id) => {
+    const listKey = $orpc.news.list.key();
+    await queryClient.cancelQueries({ queryKey: listKey });
+    const snapshots = queryClient.getQueriesData({ queryKey: listKey });
+    queryClient.setQueriesData({ queryKey: listKey }, (old: any) => {
+      if (!old?.data) return old;
+      return { ...old, data: old.data.filter((n: any) => n.id !== id), total: Math.max(0, (old.total ?? 0) - 1) };
+    });
+    return { snapshots };
+  },
+  onError: (_err, _id, ctx) => {
+    if (!ctx) return;
+    for (const [key, data] of ctx.snapshots) queryClient.setQueryData(key, data);
+  },
   onSuccess: () => {
     toast.add({ title: "Новость удалена", color: "success" });
+  },
+  onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.news.key() });
   },
 });
@@ -78,6 +99,7 @@ const deleteMutation = useMutation({
         v-for="item in data.data"
         :key="item.id"
         class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
+        @mouseenter="prefetchNews(item.id)"
       >
         <!-- Cover image -->
         <NuxtLink

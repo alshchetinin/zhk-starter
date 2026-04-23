@@ -73,6 +73,25 @@ JSON конфиг (`BlockInfo`):
 - Иконки: `lucide:*` через `<Icon name="lucide:...">`
 - Richtext: `v-html` + `class="prose-web"`
 
+### Admin data-fetching (vue-query + oRPC)
+
+QueryClient в [apps/admin/app/plugins/vue-query.ts](apps/admin/app/plugins/vue-query.ts): staleTime 1 мин, gcTime 7 дн, persist в IndexedDB через idb-keyval. При несовместимости зависимостей — поднять `buster` в `persistQueryClient`, чтобы очистить старый кеш у пользователей.
+
+**Страница-список (`*/index.vue`):**
+- `placeholderData: keepPreviousData` в `useQuery` — нет мигания при пагинации/фильтрах
+- `@mouseenter` на строке вызывает `queryClient.prefetchQuery($orpc.<entity>.getById.queryOptions({input: {id}}))` — клик по строке открывает деталь мгновенно
+- Delete mutation — optimistic: в `onMutate` снять снапшот через `getQueriesData({queryKey: $orpc.<entity>.list.key()})`, отфильтровать `data` и уменьшить `total`, в `onError` откатить из снапшота, в `onSettled` — `invalidateQueries`
+
+**Страница-деталь (`*/[id].vue`) и edit-форма:**
+- Update mutation — optimistic: `setQueryData` на `$orpc.<entity>.getById.queryKey({input: {id}})` с новыми значениями формы, rollback в `onError`, `invalidateQueries` в `onSettled`
+- Тосты показываем в `onSuccess`, не в `onMutate` — чтобы не врать пользователю при ошибке
+
+**Ключи oRPC:**
+- `.key()` — partial match, для `invalidateQueries` / `setQueriesData` по всему роутеру сущности
+- `.queryKey({input})` — full match, для точечного `setQueryData` на конкретный `getById`
+
+Примеры реализации: [pages/index.vue](apps/admin/app/pages/pages/index.vue), [pages/[id].vue](apps/admin/app/pages/pages/[id].vue), [projects/[id]/edit.vue](apps/admin/app/pages/projects/[id]/edit.vue).
+
 ## Workflow: PNG → блок
 
 1. Пользователь кладёт PNG в `design/blocks/` (kebab-case.png)
