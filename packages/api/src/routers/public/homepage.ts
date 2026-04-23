@@ -1,11 +1,15 @@
 import { db } from "@zhk/db";
-import { publicProcedure } from "../../index";
+import { homepage } from "@zhk/db/schema";
+import { eq } from "drizzle-orm";
+import { publicSiteProcedure } from "../../index";
 import { enrichContentBlocks } from "./utils";
 import type { ContentBlock } from "../../shared/blocks";
 
 export const publicHomepageRouter = {
-  get: publicProcedure.handler(async () => {
-    const record = await db.query.homepage.findFirst();
+  get: publicSiteProcedure.handler(async ({ context }) => {
+    const record = await db.query.homepage.findFirst({
+      where: eq(homepage.siteId, context.siteId),
+    });
     if (!record) return null;
 
     const enriched = await enrichContentBlocks(
