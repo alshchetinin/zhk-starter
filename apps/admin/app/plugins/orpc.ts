@@ -10,7 +10,10 @@ export default defineNuxtPlugin({
     const rpcLink = new RPCLink({
       url: `${config.public.serverUrl}/rpc`,
       fetch(url, fetchOpts) {
-        return fetch(url, { ...fetchOpts, credentials: "include" });
+        const siteCookie = useCookie<string | null>("zhk-site-id");
+        const headers = new Headers(fetchOpts?.headers);
+        if (siteCookie.value) headers.set("x-site-id", siteCookie.value);
+        return fetch(url, { ...fetchOpts, headers, credentials: "include" });
       },
     });
 

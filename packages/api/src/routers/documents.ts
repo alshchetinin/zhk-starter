@@ -3,24 +3,24 @@ import { db } from "@zhk/db";
 import { documents, documentStatusEnum } from "@zhk/db/schema";
 import { and, count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
 
 export const documentsRouter = {
-  list: protectedProcedure
+  list: siteProcedure
     .input(
       paginationInput.extend({
         status: z.enum(documentStatusEnum.enumValues).optional(),
         search: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize, status, search } = input;
-      const conditions = [];
+      const conditions = [eq(documents.siteId, context.siteId)];
       if (status) conditions.push(eq(documents.status, status));
       if (search) conditions.push(ilike(documents.title, `%${search}%`));
-      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const where = and(...conditions);
 
       const [data, countResult] = await Promise.all([
         db.query.documents.findMany({
@@ -36,11 +36,11 @@ export const documentsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: protectedProcedure
+  getById: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.documents.findFirst({
-        where: eq(documents.id, input.id),
+        where: and(eq(documents.id, input.id), eq(documents.siteId, context.siteId)),
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Document not found" });
@@ -48,7 +48,7 @@ export const documentsRouter = {
       return item;
     }),
 
-  create: protectedProcedure
+  create: siteProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -60,10 +60,11 @@ export const documentsRouter = {
         metaDescription: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const [created] = await db
         .insert(documents)
         .values({
+          siteId: context.siteId,
           title: input.title,
           slug: input.slug,
           status: input.status,
@@ -76,7 +77,7 @@ export const documentsRouter = {
       return created;
     }),
 
-  update: protectedProcedure
+  update: siteProcedure
     .input(
       z.object({
         id: z.string(),
@@ -89,7 +90,7 @@ export const documentsRouter = {
         metaDescription: z.string().nullable().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(fields)) {
@@ -98,10 +99,10 @@ export const documentsRouter = {
         }
       }
 
+      const scope = and(eq(documents.id, id), eq(documents.siteId, context.siteId));
+
       if (Object.keys(updates).length === 0) {
-        const existing = await db.query.documents.findFirst({
-          where: eq(documents.id, id),
-        });
+        const existing = await db.query.documents.findFirst({ where: scope });
         if (!existing) {
           throw new ORPCError("NOT_FOUND", { message: "Document not found" });
         }
@@ -111,7 +112,7 @@ export const documentsRouter = {
       const [updated] = await db
         .update(documents)
         .set(updates)
-        .where(eq(documents.id, id))
+        .where(scope)
         .returning();
       if (!updated) {
         throw new ORPCError("NOT_FOUND", { message: "Document not found" });
@@ -119,12 +120,12 @@ export const documentsRouter = {
       return updated;
     }),
 
-  delete: protectedProcedure
+  delete: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const deleted = await db
         .delete(documents)
-        .where(eq(documents.id, input.id))
+        .where(and(eq(documents.id, input.id), eq(documents.siteId, context.siteId)))
         .returning({ id: documents.id });
       if (!deleted.length) {
         throw new ORPCError("NOT_FOUND", { message: "Document not found" });

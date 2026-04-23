@@ -27,6 +27,11 @@ const menuItems = computed(() => [
       />
     </div>
 
+    <!-- Site switcher -->
+    <div class="px-2 pt-3">
+      <AppSiteSwitcher :collapsed="isCollapsed" />
+    </div>
+
     <!-- Body -->
     <div class="flex-1 flex flex-col min-h-0 overflow-y-auto px-2 py-4 gap-4">
       <!-- Nav groups -->

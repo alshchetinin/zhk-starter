@@ -6,12 +6,12 @@ import {
 } from "@zhk/db/schema";
 import { and, count, eq, gte, lt } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
 
 export const constructionProgressRouter = {
-  list: protectedProcedure
+  list: siteProcedure
     .input(
       paginationInput.extend({
         projectId: z.string(),
@@ -22,9 +22,12 @@ export const constructionProgressRouter = {
         year: z.number().int().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize, projectId, buildingId, status, year } = input;
-      const conditions = [eq(constructionProgress.projectId, projectId)];
+      const conditions = [
+        eq(constructionProgress.siteId, context.siteId),
+        eq(constructionProgress.projectId, projectId),
+      ];
       if (buildingId) conditions.push(eq(constructionProgress.buildingId, buildingId));
       if (status) conditions.push(eq(constructionProgress.status, status));
       if (year) {
@@ -51,11 +54,14 @@ export const constructionProgressRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: protectedProcedure
+  getById: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.constructionProgress.findFirst({
-        where: eq(constructionProgress.id, input.id),
+        where: and(
+          eq(constructionProgress.id, input.id),
+          eq(constructionProgress.siteId, context.siteId),
+        ),
         with: { building: { columns: { id: true, name: true } } },
       });
       if (!item) {
@@ -66,7 +72,7 @@ export const constructionProgressRouter = {
       return item;
     }),
 
-  create: protectedProcedure
+  create: siteProcedure
     .input(
       z.object({
         projectId: z.string(),
@@ -81,10 +87,11 @@ export const constructionProgressRouter = {
           .default("draft"),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const [created] = await db
         .insert(constructionProgress)
         .values({
+          siteId: context.siteId,
           projectId: input.projectId,
           buildingId: input.buildingId ?? null,
           title: input.title,
@@ -98,7 +105,7 @@ export const constructionProgressRouter = {
       return created;
     }),
 
-  update: protectedProcedure
+  update: siteProcedure
     .input(
       z.object({
         id: z.string(),
@@ -113,7 +120,7 @@ export const constructionProgressRouter = {
           .optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(fields)) {
@@ -122,10 +129,13 @@ export const constructionProgressRouter = {
         }
       }
 
+      const scope = and(
+        eq(constructionProgress.id, id),
+        eq(constructionProgress.siteId, context.siteId),
+      );
+
       if (Object.keys(updates).length === 0) {
-        const existing = await db.query.constructionProgress.findFirst({
-          where: eq(constructionProgress.id, id),
-        });
+        const existing = await db.query.constructionProgress.findFirst({ where: scope });
         if (!existing) {
           throw new ORPCError("NOT_FOUND", {
             message: "Construction progress not found",
@@ -137,7 +147,7 @@ export const constructionProgressRouter = {
       const [updated] = await db
         .update(constructionProgress)
         .set(updates)
-        .where(eq(constructionProgress.id, id))
+        .where(scope)
         .returning();
       if (!updated) {
         throw new ORPCError("NOT_FOUND", {
@@ -147,12 +157,15 @@ export const constructionProgressRouter = {
       return updated;
     }),
 
-  delete: protectedProcedure
+  delete: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const deleted = await db
         .delete(constructionProgress)
-        .where(eq(constructionProgress.id, input.id))
+        .where(and(
+          eq(constructionProgress.id, input.id),
+          eq(constructionProgress.siteId, context.siteId),
+        ))
         .returning({ id: constructionProgress.id });
       if (!deleted.length) {
         throw new ORPCError("NOT_FOUND", {

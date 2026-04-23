@@ -27,6 +27,7 @@ const contentItems: NavItem[] = [
 const systemItems: NavItem[] = [
   { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets" },
   { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts" },
+  { label: "Сайты", icon: "i-tabler-building-store", to: "/sites" },
   { label: "Integrations", icon: "i-tabler-plug", to: "/integrations" },
 ];
 

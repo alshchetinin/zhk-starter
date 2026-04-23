@@ -22,7 +22,7 @@ async function resolveSiteId(context: HonoContext): Promise<string | null> {
     if (row[0]) return row[0].id;
   }
 
-  const host = context.req.header("host") ?? "";
+  const host = context.req.header("x-forwarded-host") ?? context.req.header("host") ?? "";
   const hostname = host.split(":")[0] ?? "";
   if (hostname) {
     const byDomain = await db

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { contacts } from "@zhk/db/schema";
-import { eq } from "drizzle-orm";
-import { protectedProcedure } from "../index";
+import { and, eq } from "drizzle-orm";
+import { siteProcedure } from "../index";
 
 const socialSchema = z.object({
   link: z.string().min(1),
@@ -32,12 +32,14 @@ const saveInput = z.object({
 });
 
 export const contactsRouter = {
-  get: protectedProcedure.handler(async () => {
-    const record = await db.query.contacts.findFirst();
+  get: siteProcedure.handler(async ({ context }) => {
+    const record = await db.query.contacts.findFirst({
+      where: eq(contacts.siteId, context.siteId),
+    });
     return record ?? null;
   }),
 
-  save: protectedProcedure.input(saveInput).handler(async ({ input }) => {
+  save: siteProcedure.input(saveInput).handler(async ({ input, context }) => {
     const data = {
       phone: input.phone,
       email: input.email || null,
@@ -50,20 +52,22 @@ export const contactsRouter = {
       offices: input.offices,
     };
 
-    const existing = await db.query.contacts.findFirst();
+    const existing = await db.query.contacts.findFirst({
+      where: eq(contacts.siteId, context.siteId),
+    });
 
     if (existing) {
       const [updated] = await db
         .update(contacts)
         .set(data)
-        .where(eq(contacts.id, existing.id))
+        .where(and(eq(contacts.id, existing.id), eq(contacts.siteId, context.siteId)))
         .returning();
       return updated;
     }
 
     const [created] = await db
       .insert(contacts)
-      .values(data)
+      .values({ ...data, siteId: context.siteId })
       .returning();
     return created;
   }),
