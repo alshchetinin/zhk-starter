@@ -35,7 +35,7 @@ export function generateSchemaTemplate(
   return `import { relations } from "drizzle-orm";
 import { ${drizzleImportList} } from "drizzle-orm/pg-core";
 import { baseColumns } from "./_shared";${contentBlockImport}
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 
 export const ${names.camel} = pgTable("${names.snake}", {
   ...baseColumns,
@@ -44,9 +44,9 @@ ${columnLines}
 });
 
 export const ${names.relationsVar} = relations(${names.camel}, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [${names.camel}.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [${names.camel}.siteId],
+    references: [sites.id],
   }),
 }));
 `;

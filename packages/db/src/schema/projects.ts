@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import type { InfraCategory, InfraPin } from "./_shared";
 import { projectStatusEnum } from "./_enums";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { cities } from "./cities";
 import { buildings } from "./buildings";
@@ -12,10 +12,10 @@ export const projects = pgTable("projects", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name").notNull(),
   address: text("address").notNull(),
   imageUrl: text("image_url"),
@@ -53,9 +53,9 @@ export const projects = pgTable("projects", {
 });
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [projects.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [projects.siteId],
+    references: [sites.id],
   }),
   city: one(cities, {
     fields: [projects.cityId],

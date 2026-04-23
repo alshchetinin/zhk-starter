@@ -3,12 +3,12 @@ import { db } from "@zhk/db";
 import { pages, pageStatusEnum } from "@zhk/db/schema";
 import { and, count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
 
 export const pagesRouter = {
-  list: protectedProcedure
+  list: siteProcedure
     .input(
       paginationInput.extend({
         status: z.enum(pageStatusEnum.enumValues).optional(),
@@ -16,13 +16,13 @@ export const pagesRouter = {
         projectId: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize, status, search, projectId } = input;
-      const conditions = [];
+      const conditions = [eq(pages.siteId, context.siteId)];
       if (status) conditions.push(eq(pages.status, status));
       if (search) conditions.push(ilike(pages.title, `%${search}%`));
       if (projectId) conditions.push(eq(pages.projectId, projectId));
-      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const where = and(...conditions);
 
       const [data, countResult] = await Promise.all([
         db.query.pages.findMany({
@@ -39,11 +39,11 @@ export const pagesRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: protectedProcedure
+  getById: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.pages.findFirst({
-        where: eq(pages.id, input.id),
+        where: and(eq(pages.id, input.id), eq(pages.siteId, context.siteId)),
         with: { project: { columns: { id: true, name: true } } },
       });
       if (!item) {
@@ -52,7 +52,7 @@ export const pagesRouter = {
       return item;
     }),
 
-  create: protectedProcedure
+  create: siteProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -65,10 +65,11 @@ export const pagesRouter = {
         ogImage: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const [created] = await db
         .insert(pages)
         .values({
+          siteId: context.siteId,
           title: input.title,
           slug: input.slug,
           status: input.status,
@@ -82,7 +83,7 @@ export const pagesRouter = {
       return created;
     }),
 
-  update: protectedProcedure
+  update: siteProcedure
     .input(
       z.object({
         id: z.string(),
@@ -96,7 +97,7 @@ export const pagesRouter = {
         ogImage: z.string().nullable().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(fields)) {
@@ -107,7 +108,7 @@ export const pagesRouter = {
 
       if (Object.keys(updates).length === 0) {
         const existing = await db.query.pages.findFirst({
-          where: eq(pages.id, id),
+          where: and(eq(pages.id, id), eq(pages.siteId, context.siteId)),
         });
         if (!existing) {
           throw new ORPCError("NOT_FOUND", { message: "Page not found" });
@@ -118,7 +119,7 @@ export const pagesRouter = {
       const [updated] = await db
         .update(pages)
         .set(updates)
-        .where(eq(pages.id, id))
+        .where(and(eq(pages.id, id), eq(pages.siteId, context.siteId)))
         .returning();
       if (!updated) {
         throw new ORPCError("NOT_FOUND", { message: "Page not found" });
@@ -126,12 +127,12 @@ export const pagesRouter = {
       return updated;
     }),
 
-  delete: protectedProcedure
+  delete: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const deleted = await db
         .delete(pages)
-        .where(eq(pages.id, input.id))
+        .where(and(eq(pages.id, input.id), eq(pages.siteId, context.siteId)))
         .returning({ id: pages.id });
       if (!deleted.length) {
         throw new ORPCError("NOT_FOUND", { message: "Page not found" });

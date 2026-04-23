@@ -129,6 +129,41 @@ export const aboutCompanyBlockSchema = baseBlockSchema.extend({
   data: aboutCompanyBlockDataSchema,
 });
 
+// --- Команда block ---
+
+export const temasBlockDataSchema = z.object({
+  title: z.string().min(1),
+  member: z.array(z.object({
+    name: z.string().min(1),
+    avatar: z.string().url(),
+  })).min(2).max(4),
+});
+
+export const temasBlockSchema = baseBlockSchema.extend({
+  type: z.literal("temas"),
+  data: temasBlockDataSchema,
+});
+
+// --- Карьера block ---
+
+export const careerBlockDataSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  buttonLabel: z.string().optional(),
+  buttonUrl: z.union([z.string().url(), z.literal("")]).optional(),
+  vacancies: z.array(z.object({
+    title: z.string().min(1),
+    location: z.string().min(1),
+    company: z.string().min(1),
+    url: z.union([z.string().url(), z.literal("")]).optional(),
+  })).min(1).max(12),
+});
+
+export const careerBlockSchema = baseBlockSchema.extend({
+  type: z.literal("career"),
+  data: careerBlockDataSchema,
+});
+
 // --- GENERATOR:BLOCK_SCHEMA ---
 
 // --- Project block base ---
@@ -194,6 +229,8 @@ export const contentBlockSchema = z.discriminatedUnion("type", [
   heroFullscreenBlockSchema,
   infrastructureTabsBlockSchema,
   aboutCompanyBlockSchema,
+  temasBlockSchema,
+  careerBlockSchema,
   // --- GENERATOR:UNION_MEMBER ---
   projectGalleryBlockSchema,
   projectStatsBlockSchema,
@@ -253,6 +290,18 @@ export const blockDefinitions: BlockDefinition[] = [
     label: "О компании",
     icon: "i-tabler-building-estate",
     description: "Секция о компании с описанием, изображением и статистикой",
+  },
+  {
+    type: "temas",
+    label: "Команда",
+    icon: "i-tabler-ghost-3",
+    description: "Блок с командой",
+  },
+  {
+    type: "career",
+    label: "Карьера",
+    icon: "i-tabler-briefcase",
+    description: "Секция с вакансиями компании",
   },
   // --- GENERATOR:BLOCK_DEFINITION ---
   {

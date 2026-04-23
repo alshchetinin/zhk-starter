@@ -270,7 +270,7 @@ async function runBatchSync(
 
   const macroConfig = {
     id: integration.id,
-    tenantId: integration.tenantId,
+    siteId: integration.siteId,
     domain: integration.domain!,
     appSecret,
     apiDomain: integration.apiDomain ?? "api.macroserver.ru",
@@ -284,7 +284,7 @@ async function runBatchSync(
   const result = await importAllData(
     importData,
     integration.id,
-    integration.tenantId,
+    integration.siteId,
   );
 
   if (result.success) {

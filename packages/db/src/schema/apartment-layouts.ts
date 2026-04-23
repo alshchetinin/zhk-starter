@@ -7,7 +7,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { apartmentLayoutTags } from "./apartment-layout-tags";
 
@@ -15,10 +15,10 @@ export const apartmentLayouts = pgTable("apartment_layouts", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name").notNull(),
   area: numeric("area", { precision: 10, scale: 2 }).notNull(),
   roomsCount: integer("rooms_count").notNull(),
@@ -44,9 +44,9 @@ export const apartmentLayouts = pgTable("apartment_layouts", {
 export const apartmentLayoutsRelations = relations(
   apartmentLayouts,
   ({ one, many }) => ({
-    tenant: one(tenants, {
-      fields: [apartmentLayouts.tenantId],
-      references: [tenants.id],
+    site: one(sites, {
+      fields: [apartmentLayouts.siteId],
+      references: [sites.id],
     }),
     integration: one(integrations, {
       fields: [apartmentLayouts.integrationId],

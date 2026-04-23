@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { sections } from "./sections";
 import { entrances } from "./entrances";
@@ -9,10 +9,10 @@ export const floorLayouts = pgTable("floor_layouts", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   layout: text("layout").notNull(),
   sectionId: text("section_id").references(() => sections.id),
   externalId: text("external_id"),
@@ -27,9 +27,9 @@ export const floorLayouts = pgTable("floor_layouts", {
 });
 
 export const floorLayoutsRelations = relations(floorLayouts, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [floorLayouts.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [floorLayouts.siteId],
+    references: [sites.id],
   }),
   section: one(sections, {
     fields: [floorLayouts.sectionId],
@@ -45,10 +45,10 @@ export const floors = pgTable("floors", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   sectionId: text("section_id").references(() => sections.id, {
     onDelete: "cascade",
   }),
@@ -69,9 +69,9 @@ export const floors = pgTable("floors", {
 });
 
 export const floorsRelations = relations(floors, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [floors.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [floors.siteId],
+    references: [sites.id],
   }),
   section: one(sections, {
     fields: [floors.sectionId],

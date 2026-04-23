@@ -1,0 +1,23 @@
+import { relations } from "drizzle-orm";
+import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const sites = pgTable("sites", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  isPrimary: boolean("is_primary").notNull().default(false),
+  cityId: text("city_id"),
+  customDomain: text("custom_domain").unique(),
+  settings: jsonb("settings").$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
+export const sitesRelations = relations(sites, () => ({}));

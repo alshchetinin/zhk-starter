@@ -3,22 +3,23 @@ import { db } from "@zhk/db";
 import { constructionProgress } from "@zhk/db/schema";
 import { and, count, eq } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicProcedure } from "../../index";
+import { publicSiteProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 import type { ContentBlock } from "../../shared/blocks";
 
 export const publicConstructionProgressRouter = {
-  list: publicProcedure
+  list: publicSiteProcedure
     .input(
       paginationInput.extend({
         projectId: z.string(),
         buildingId: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize, projectId, buildingId } = input;
       const conditions = [
+        eq(constructionProgress.siteId, context.siteId),
         eq(constructionProgress.projectId, projectId),
         eq(constructionProgress.status, "published"),
       ];
@@ -44,11 +45,12 @@ export const publicConstructionProgressRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: publicProcedure
+  getById: publicSiteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.constructionProgress.findFirst({
         where: and(
+          eq(constructionProgress.siteId, context.siteId),
           eq(constructionProgress.id, input.id),
           eq(constructionProgress.status, "published"),
         ),

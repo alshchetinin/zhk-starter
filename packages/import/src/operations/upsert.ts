@@ -10,7 +10,7 @@ import type { ImportTableName } from "../schema-map";
 const COLUMN_MAP: Record<string, string> = {
   external_id: "externalId",
   integration_id: "integrationId",
-  tenant_id: "tenantId",
+  tenant_id: "siteId",
   floor_number: "floorNumber",
   floors_count: "floorsCount",
   svg_scheme: "svgScheme",

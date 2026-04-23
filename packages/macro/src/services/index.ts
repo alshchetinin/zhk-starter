@@ -33,12 +33,12 @@ import {
 
 interface ServiceContext {
   integrationId: string;
-  tenantId: string;
+  siteId: string;
 }
 
 export function createMacroServices(ctx: ServiceContext) {
-  const { integrationId, tenantId } = ctx;
-  const base = { integration_id: integrationId, tenant_id: tenantId };
+  const { integrationId, siteId } = ctx;
+  const base = { integration_id: integrationId, tenant_id: siteId };
 
   function getCities(flats: MacroFlat[]): ImportCity[] {
     return getUniqueObjects(flats, (flat) => ({

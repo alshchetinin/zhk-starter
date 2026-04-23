@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: env.CORS_ORIGINS,
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "x-site-id", "x-site-slug", "x-forwarded-host"],
     credentials: true,
   }),
 );

@@ -3,16 +3,19 @@ import { db } from "@zhk/db";
 import { documents } from "@zhk/db/schema";
 import { and, eq, count } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicProcedure } from "../../index";
+import { publicSiteProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 
 export const publicDocumentsRouter = {
-  list: publicProcedure
+  list: publicSiteProcedure
     .input(paginationInput)
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize } = input;
-      const where = eq(documents.status, "published");
+      const where = and(
+        eq(documents.siteId, context.siteId),
+        eq(documents.status, "published"),
+      );
 
       const [data, countResult] = await Promise.all([
         db.query.documents.findMany({
@@ -28,11 +31,15 @@ export const publicDocumentsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getBySlug: publicProcedure
+  getBySlug: publicSiteProcedure
     .input(z.object({ slug: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.documents.findFirst({
-        where: and(eq(documents.slug, input.slug), eq(documents.status, "published")),
+        where: and(
+          eq(documents.siteId, context.siteId),
+          eq(documents.slug, input.slug),
+          eq(documents.status, "published"),
+        ),
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Document not found" });

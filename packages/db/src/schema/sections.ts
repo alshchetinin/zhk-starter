@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { buildings } from "./buildings";
 import { floors } from "./floors";
@@ -10,10 +10,10 @@ export const sections = pgTable("sections", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   buildingId: text("building_id").references(() => buildings.id, {
     onDelete: "cascade",
   }),
@@ -33,9 +33,9 @@ export const sections = pgTable("sections", {
 });
 
 export const sectionsRelations = relations(sections, ({ one, many }) => ({
-  tenant: one(tenants, {
-    fields: [sections.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [sections.siteId],
+    references: [sites.id],
   }),
   building: one(buildings, {
     fields: [sections.buildingId],

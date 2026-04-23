@@ -19,6 +19,9 @@ import { constructionProgressRouter } from "./construction-progress";
 import { ticketsRouter } from "./tickets";
 import { ticketSettingsRouter } from "./ticket-settings";
 import { publicRouter } from "./public/index";
+import { sitesRouter } from "./sites";
+import { usersRouter } from "./users";
+import { versionsRouter } from "./versions";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
@@ -43,6 +46,9 @@ export const appRouter = {
   constructionProgress: constructionProgressRouter,
   tickets: ticketsRouter,
   ticketSettings: ticketSettingsRouter,
+  sites: sitesRouter,
+  users: usersRouter,
+  versions: versionsRouter,
 };
 
 export type AppRouter = typeof appRouter;

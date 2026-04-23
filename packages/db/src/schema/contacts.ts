@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 
 export interface ContactSocial {
   link: string;
@@ -21,10 +21,10 @@ export const contacts = pgTable("contacts", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   phone: text("phone").notNull(),
   email: text("email"),
   address: text("address").notNull(),
@@ -44,8 +44,8 @@ export const contacts = pgTable("contacts", {
 });
 
 export const contactsRelations = relations(contacts, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [contacts.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [contacts.siteId],
+    references: [sites.id],
   }),
 }));

@@ -39,6 +39,10 @@ function getDefaultData(type: BlockType): Record<string, unknown> {
       return { projectId: "", mapHeight: 500, showCategories: true };
     case "about-company":
       return { title: "", description: undefined, buttonLabel: undefined, buttonUrl: undefined, image: null, stats: [] };
+    case "temas":
+      return { title: "", member: [] };
+    case "career":
+      return { title: "", description: undefined, buttonLabel: undefined, buttonUrl: undefined, vacancies: [] };
     // --- GENERATOR:DEFAULT_DATA ---
     default:
       return {};

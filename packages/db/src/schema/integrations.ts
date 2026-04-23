@@ -1,16 +1,16 @@
 import { relations } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { integrationStatusEnum, integrationTypeEnum } from "./_enums";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 
 export const integrations = pgTable("integrations", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   type: integrationTypeEnum("type"),
   domain: text("domain"),
   apiDomain: text("api_domain"),
@@ -30,8 +30,8 @@ export const integrations = pgTable("integrations", {
 });
 
 export const integrationsRelations = relations(integrations, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [integrations.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [integrations.siteId],
+    references: [sites.id],
   }),
 }));

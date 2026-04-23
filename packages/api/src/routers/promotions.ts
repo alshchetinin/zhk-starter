@@ -3,24 +3,24 @@ import { db } from "@zhk/db";
 import { promotions, promotionStatusEnum } from "@zhk/db/schema";
 import { and, count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
 
 export const promotionsRouter = {
-  list: protectedProcedure
+  list: siteProcedure
     .input(
       paginationInput.extend({
         status: z.enum(promotionStatusEnum.enumValues).optional(),
         search: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize, status, search } = input;
-      const conditions = [];
+      const conditions = [eq(promotions.siteId, context.siteId)];
       if (status) conditions.push(eq(promotions.status, status));
       if (search) conditions.push(ilike(promotions.name, `%${search}%`));
-      const where = conditions.length > 0 ? and(...conditions) : undefined;
+      const where = and(...conditions);
 
       const [data, countResult] = await Promise.all([
         db.query.promotions.findMany({
@@ -36,11 +36,11 @@ export const promotionsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: protectedProcedure
+  getById: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.promotions.findFirst({
-        where: eq(promotions.id, input.id),
+        where: and(eq(promotions.id, input.id), eq(promotions.siteId, context.siteId)),
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Promotion not found" });
@@ -48,7 +48,7 @@ export const promotionsRouter = {
       return item;
     }),
 
-  create: protectedProcedure
+  create: siteProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -64,10 +64,11 @@ export const promotionsRouter = {
         ogImage: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const [created] = await db
         .insert(promotions)
         .values({
+          siteId: context.siteId,
           name: input.name,
           slug: input.slug ?? null,
           description: input.description ?? null,
@@ -84,7 +85,7 @@ export const promotionsRouter = {
       return created;
     }),
 
-  update: protectedProcedure
+  update: siteProcedure
     .input(
       z.object({
         id: z.string(),
@@ -101,7 +102,7 @@ export const promotionsRouter = {
         ogImage: z.string().nullable().optional(),
       }),
     )
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(fields)) {
@@ -110,14 +111,12 @@ export const promotionsRouter = {
         }
       }
 
+      const scope = and(eq(promotions.id, id), eq(promotions.siteId, context.siteId));
+
       if (Object.keys(updates).length === 0) {
-        const existing = await db.query.promotions.findFirst({
-          where: eq(promotions.id, id),
-        });
+        const existing = await db.query.promotions.findFirst({ where: scope });
         if (!existing) {
-          throw new ORPCError("NOT_FOUND", {
-            message: "Promotion not found",
-          });
+          throw new ORPCError("NOT_FOUND", { message: "Promotion not found" });
         }
         return existing;
       }
@@ -125,7 +124,7 @@ export const promotionsRouter = {
       const [updated] = await db
         .update(promotions)
         .set(updates)
-        .where(eq(promotions.id, id))
+        .where(scope)
         .returning();
       if (!updated) {
         throw new ORPCError("NOT_FOUND", { message: "Promotion not found" });
@@ -133,12 +132,12 @@ export const promotionsRouter = {
       return updated;
     }),
 
-  delete: protectedProcedure
+  delete: siteProcedure
     .input(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const deleted = await db
         .delete(promotions)
-        .where(eq(promotions.id, input.id))
+        .where(and(eq(promotions.id, input.id), eq(promotions.siteId, context.siteId)))
         .returning({ id: promotions.id });
       if (!deleted.length) {
         throw new ORPCError("NOT_FOUND", { message: "Promotion not found" });

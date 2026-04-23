@@ -8,7 +8,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { tenants } from "./tenants";
+import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { projects } from "./projects";
 import { buildings } from "./buildings";
@@ -18,10 +18,10 @@ export const storage = pgTable("storage", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  tenantId: text("tenant_id")
+  siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => tenants.id),
+    .references(() => sites.id),
   name: text("name"),
   area: numeric("area", { precision: 10, scale: 2 }),
   price: numeric("price", { precision: 12, scale: 2 }),
@@ -45,9 +45,9 @@ export const storage = pgTable("storage", {
 });
 
 export const storageRelations = relations(storage, ({ one }) => ({
-  tenant: one(tenants, {
-    fields: [storage.tenantId],
-    references: [tenants.id],
+  site: one(sites, {
+    fields: [storage.siteId],
+    references: [sites.id],
   }),
   project: one(projects, {
     fields: [storage.projectId],

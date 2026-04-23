@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { integrations, tenants, projects } from "@zhk/db/schema";
+import { integrations, sites, projects } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { protectedProcedure } from "../index";
 import { encrypt, decrypt } from "../utils/encryption";
@@ -28,11 +28,11 @@ export const integrationRouter = {
     )
     .handler(async ({ input }) => {
       // Ensure default tenant exists
-      const tenant = await db.query.tenants.findFirst({
-        where: eq(tenants.id, "default"),
+      const tenant = await db.query.sites.findFirst({
+        where: eq(sites.id, "default"),
       });
       if (!tenant) {
-        await db.insert(tenants).values({
+        await db.insert(sites).values({
           id: "default",
           name: "Default",
           slug: "default",
@@ -197,7 +197,7 @@ async function runMacroSync(
 
   const macroConfig = {
     id: integration.id,
-    tenantId: integration.tenantId,
+    siteId: integration.siteId,
     domain: integration.domain!,
     appSecret,
     apiDomain: integration.apiDomain ?? "api.macroserver.ru",
@@ -209,7 +209,7 @@ async function runMacroSync(
   const result = await importAllData(
     importData,
     integration.id,
-    integration.tenantId,
+    integration.siteId,
   );
 
   if (result.success) {

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { homepage } from "@zhk/db/schema";
-import { eq } from "drizzle-orm";
-import { protectedProcedure } from "../index";
+import { and, eq } from "drizzle-orm";
+import { siteProcedure } from "../index";
 import { contentBlocksSchema } from "../shared/blocks";
 
 const saveInput = z.object({
@@ -13,12 +13,14 @@ const saveInput = z.object({
 });
 
 export const homepageRouter = {
-  get: protectedProcedure.handler(async () => {
-    const record = await db.query.homepage.findFirst();
+  get: siteProcedure.handler(async ({ context }) => {
+    const record = await db.query.homepage.findFirst({
+      where: eq(homepage.siteId, context.siteId),
+    });
     return record ?? null;
   }),
 
-  save: protectedProcedure.input(saveInput).handler(async ({ input }) => {
+  save: siteProcedure.input(saveInput).handler(async ({ input, context }) => {
     const data = {
       contentBlocks: input.contentBlocks,
       metaTitle: input.metaTitle ?? null,
@@ -26,20 +28,22 @@ export const homepageRouter = {
       ogImage: input.ogImage ?? null,
     };
 
-    const existing = await db.query.homepage.findFirst();
+    const existing = await db.query.homepage.findFirst({
+      where: eq(homepage.siteId, context.siteId),
+    });
 
     if (existing) {
       const [updated] = await db
         .update(homepage)
         .set(data)
-        .where(eq(homepage.id, existing.id))
+        .where(and(eq(homepage.id, existing.id), eq(homepage.siteId, context.siteId)))
         .returning();
       return updated;
     }
 
     const [created] = await db
       .insert(homepage)
-      .values(data)
+      .values({ ...data, siteId: context.siteId })
       .returning();
     return created;
   }),

@@ -3,16 +3,19 @@ import { db } from "@zhk/db";
 import { news } from "@zhk/db/schema";
 import { and, eq, count } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicProcedure } from "../../index";
+import { publicSiteProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 
 export const publicNewsRouter = {
-  list: publicProcedure
+  list: publicSiteProcedure
     .input(paginationInput)
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize } = input;
-      const where = eq(news.status, "published");
+      const where = and(
+        eq(news.siteId, context.siteId),
+        eq(news.status, "published"),
+      );
 
       const [data, countResult] = await Promise.all([
         db.query.news.findMany({
@@ -28,11 +31,15 @@ export const publicNewsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getBySlug: publicProcedure
+  getBySlug: publicSiteProcedure
     .input(z.object({ slug: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.news.findFirst({
-        where: and(eq(news.slug, input.slug), eq(news.status, "published")),
+        where: and(
+          eq(news.siteId, context.siteId),
+          eq(news.slug, input.slug),
+          eq(news.status, "published"),
+        ),
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "News not found" });

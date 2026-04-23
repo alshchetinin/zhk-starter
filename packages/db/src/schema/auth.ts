@@ -1,4 +1,10 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export interface EditorPermissions {
+  siteIds?: string[];
+  sections?: string[];
+  actions?: Array<"view" | "edit" | "publish">;
+}
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -6,7 +12,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  role: text("role").default("admin"),
+  role: text("role", { enum: ["admin", "editor"] }).default("admin").notNull(),
+  permissions: jsonb("permissions").$type<EditorPermissions>().default({}),
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires", { withTimezone: true }),

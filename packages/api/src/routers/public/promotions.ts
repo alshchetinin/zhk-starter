@@ -3,16 +3,19 @@ import { db } from "@zhk/db";
 import { promotions } from "@zhk/db/schema";
 import { and, eq, count } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicProcedure } from "../../index";
+import { publicSiteProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 
 export const publicPromotionsRouter = {
-  list: publicProcedure
+  list: publicSiteProcedure
     .input(paginationInput)
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const { page, pageSize } = input;
-      const where = eq(promotions.status, "published");
+      const where = and(
+        eq(promotions.siteId, context.siteId),
+        eq(promotions.status, "published"),
+      );
 
       const [data, countResult] = await Promise.all([
         db.query.promotions.findMany({
@@ -28,11 +31,15 @@ export const publicPromotionsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getBySlug: publicProcedure
+  getBySlug: publicSiteProcedure
     .input(z.object({ slug: z.string() }))
-    .handler(async ({ input }) => {
+    .handler(async ({ input, context }) => {
       const item = await db.query.promotions.findFirst({
-        where: and(eq(promotions.slug, input.slug), eq(promotions.status, "published")),
+        where: and(
+          eq(promotions.siteId, context.siteId),
+          eq(promotions.slug, input.slug),
+          eq(promotions.status, "published"),
+        ),
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Promotion not found" });
