@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { tickets, ticketTypeEnum } from "@zhk/db/schema";
-import { publicSiteProcedure } from "../../index";
+import { publicProcedure } from "../../index";
 
 async function sendTelegramNotification(
   botToken: string,
@@ -54,7 +54,7 @@ async function sendTelegramNotification(
 }
 
 export const publicTicketsRouter = {
-  create: publicSiteProcedure
+  create: publicProcedure
     .input(
       z.object({
         name: z.string().optional(),
@@ -68,12 +68,11 @@ export const publicTicketsRouter = {
         apartmentId: z.string().optional(),
       }),
     )
-    .handler(async ({ input, context }) => {
+    .handler(async ({ input }) => {
       const [created, settings] = await Promise.all([
         db
           .insert(tickets)
           .values({
-            siteId: context.siteId,
             name: input.name ?? null,
             phone: input.phone,
             email: input.email || null,

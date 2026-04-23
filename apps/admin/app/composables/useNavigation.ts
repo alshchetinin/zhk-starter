@@ -17,17 +17,17 @@ const contentItems: NavItem[] = [
   { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
   { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
   { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
-  { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
-  { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
 ];
 
-// Shared real-estate catalog — same across all sites
+// Shared across all sites
 const catalogItems: NavItem[] = [
   { label: "Projects", icon: "i-tabler-building", to: "/projects", section: "projects" },
   { label: "Buildings", icon: "i-tabler-building-skyscraper", to: "/buildings", section: "buildings" },
   { label: "Apartments", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
   { label: "Commerce", icon: "i-tabler-shopping-cart", to: "/commerce", section: "commerce" },
   { label: "Layouts", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
+  { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
+  { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
 ];
 
 // Admin-only system config
