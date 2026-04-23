@@ -12,4 +12,13 @@ const requireAuth = o.middleware(async ({ context, next }) => {
   return next({ context: { session: context.session } });
 });
 
+const requireSite = o.middleware(async ({ context, next }) => {
+  if (!context.siteId) {
+    throw new ORPCError("BAD_REQUEST", { message: "Site not resolved" });
+  }
+  return next({ context: { siteId: context.siteId } });
+});
+
 export const protectedProcedure = publicProcedure.use(requireAuth);
+export const siteProcedure = protectedProcedure.use(requireSite);
+export const publicSiteProcedure = publicProcedure.use(requireSite);
