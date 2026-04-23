@@ -10,7 +10,19 @@ const mainItems: NavItem[] = [
   { label: "Dashboard", icon: "i-tabler-layout-dashboard", to: "/" },
 ];
 
-const realtyItems: NavItem[] = [
+// Per-site content — changes when site switcher is changed
+const contentItems: NavItem[] = [
+  { label: "Главная", icon: "i-tabler-home-2", to: "/homepage", section: "homepage" },
+  { label: "Новости", icon: "i-tabler-news", to: "/news", section: "news" },
+  { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
+  { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
+  { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
+  { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
+  { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
+];
+
+// Shared real-estate catalog — same across all sites
+const catalogItems: NavItem[] = [
   { label: "Projects", icon: "i-tabler-building", to: "/projects", section: "projects" },
   { label: "Buildings", icon: "i-tabler-building-skyscraper", to: "/buildings", section: "buildings" },
   { label: "Apartments", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
@@ -18,23 +30,14 @@ const realtyItems: NavItem[] = [
   { label: "Layouts", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
 ];
 
-const contentItems: NavItem[] = [
-  { label: "Главная", icon: "i-tabler-home-2", to: "/homepage", section: "homepage" },
-  { label: "Новости", icon: "i-tabler-news", to: "/news", section: "news" },
-  { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
-  { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
-  { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
-];
-
+// Admin-only system config
 const systemItems: NavItem[] = [
-  { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
-  { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
   { label: "Сайты", icon: "i-tabler-building-store", to: "/sites", adminOnly: true },
   { label: "Пользователи", icon: "i-tabler-users", to: "/users", adminOnly: true },
   { label: "Integrations", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
 ];
 
-const allGroups: NavItem[][] = [mainItems, realtyItems, contentItems, systemItems];
+const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, systemItems];
 
 export function useNavigation() {
   const route = useRoute();
