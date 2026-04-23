@@ -90,7 +90,7 @@ const menuItems = computed(() => [
           <UTooltip v-else :text="item.label">
             <NuxtLink
               :to="item.to"
-              class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+              class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
               :class="isActive(item.to)
                 ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
                 : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
@@ -102,7 +102,7 @@ const menuItems = computed(() => [
       </nav>
 
       <!-- Sites -->
-      <div v-if="sites.length" class="mt-4">
+      <div v-if="sites.length" class="mt-3 pt-3 border-t border-(--ui-border)">
         <div
           v-if="!isCollapsed"
           class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
@@ -139,7 +139,7 @@ const menuItems = computed(() => [
           <UTooltip v-else :text="site.name">
             <button
               type="button"
-              class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+              class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
               :class="currentSiteId === site.id
                 ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
                 : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
@@ -171,7 +171,7 @@ const menuItems = computed(() => [
       </div>
 
       <!-- Shared catalog -->
-      <div v-if="visibleCatalogItems.length" class="mt-4">
+      <div v-if="visibleCatalogItems.length" class="mt-3 pt-3 border-t border-(--ui-border)">
         <div
           v-if="!isCollapsed"
           class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
@@ -194,7 +194,7 @@ const menuItems = computed(() => [
             <UTooltip v-else :text="item.label">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+                class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
                 :class="isActive(item.to)
                   ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
                   : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
@@ -207,7 +207,7 @@ const menuItems = computed(() => [
       </div>
 
       <!-- Admin system -->
-      <div v-if="visibleSystemItems.length" class="mt-4">
+      <div v-if="visibleSystemItems.length" class="mt-3 pt-3 border-t border-(--ui-border)">
         <div
           v-if="!isCollapsed"
           class="px-2.5 pb-1.5 text-[10.5px] font-medium uppercase tracking-[0.06em] text-(--ui-text-dimmed) select-none"
@@ -230,7 +230,7 @@ const menuItems = computed(() => [
             <UTooltip v-else :text="item.label">
               <NuxtLink
                 :to="item.to"
-                class="flex items-center justify-center h-9 mx-1 rounded-md transition-colors"
+                class="flex items-center justify-center h-8 w-8 mx-auto my-px rounded-md transition-colors"
                 :class="isActive(item.to)
                   ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted)'
                   : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
