@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { db } from "@zhk/db";
+import { media } from "@zhk/db/schema";
 import { protectedProcedure } from "../index";
 import { createPresignedPutUrl, getPublicUrl } from "../s3";
 
@@ -31,6 +33,16 @@ export const uploadsRouter = {
       const key = `${input.folder}/${crypto.randomUUID()}.${ext}`;
       const presignedUrl = await createPresignedPutUrl(key, input.contentType);
       const publicUrl = getPublicUrl(key);
+
+      await db.insert(media).values({
+        url: publicUrl,
+        key,
+        fileName: input.fileName,
+        contentType: input.contentType,
+        fileSize: input.fileSize,
+        folder: input.folder,
+      });
+
       return { presignedUrl, publicUrl, key };
     }),
 };

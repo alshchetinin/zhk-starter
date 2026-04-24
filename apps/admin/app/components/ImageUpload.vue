@@ -20,6 +20,12 @@ const toast = useToast();
 const uploading = ref(false);
 const uploadProgress = ref(0);
 const dropZoneRef = ref<HTMLLabelElement>();
+const showMediaPicker = ref(false);
+
+function onPick(url: string) {
+  model.value = url;
+  showMediaPicker.value = false;
+}
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop: (files) => {
@@ -148,6 +154,23 @@ function remove() {
         @change="handleFile"
       />
     </label>
+
+    <div v-if="!model" class="mt-2 flex justify-center">
+      <UButton
+        variant="ghost"
+        size="xs"
+        icon="i-tabler-photo-search"
+        :disabled="uploading"
+        @click.prevent="showMediaPicker = true"
+      >
+        Выбрать из библиотеки
+      </UButton>
+    </div>
+
+    <MediaPickerModal
+      v-model:open="showMediaPicker"
+      @select="onPick"
+    />
 
     <!-- Progress bar -->
     <div v-if="uploading" class="mt-2">

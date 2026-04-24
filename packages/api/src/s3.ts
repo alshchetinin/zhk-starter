@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "@zhk/env/server";
@@ -37,4 +37,11 @@ export async function createPresignedPutUrl(
 
 export function getPublicUrl(key: string): string {
   return `${env.S3_BASE_URL}/${key}`;
+}
+
+export async function deleteS3Object(key: string): Promise<void> {
+  const client = getS3Client();
+  await client.send(
+    new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
+  );
 }

@@ -34,6 +34,7 @@ const catalogItems: NavItem[] = [
 
 // Company-wide brand info
 const companyItems: NavItem[] = [
+  { label: "Медиа", icon: "i-tabler-photo", to: "/media" },
   { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
   { label: "Соцсети", icon: "i-tabler-brand-telegram", to: "/socials", adminOnly: true },
 ];
