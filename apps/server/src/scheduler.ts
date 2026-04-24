@@ -1,5 +1,5 @@
 import { db } from "@zhk/db";
-import { integrations } from "@zhk/db/schema";
+import { integrations, syncLogs } from "@zhk/db/schema";
 import { and, eq, isNotNull, lte, or, isNull, sql } from "drizzle-orm";
 import { runIntegrationSync } from "@zhk/api/services/sync";
 
@@ -22,8 +22,33 @@ export function startScheduler() {
       console.error("[scheduler] cleanup error:", err),
     );
   }, CLEANUP_INTERVAL_MS);
+  void resetStuckSyncs();
   void tick();
   void cleanupOldLogs();
+}
+
+async function resetStuckSyncs() {
+  const stuckLogs = await db
+    .update(syncLogs)
+    .set({
+      status: "cancelled",
+      finishedAt: new Date(),
+      error: "aborted: server restarted during sync",
+    })
+    .where(eq(syncLogs.status, "running"))
+    .returning({ id: syncLogs.id });
+
+  const stuckIntegrations = await db
+    .update(integrations)
+    .set({ status: "failed", cancelRequested: false })
+    .where(eq(integrations.status, "loading"))
+    .returning({ id: integrations.id });
+
+  if (stuckLogs.length || stuckIntegrations.length) {
+    console.log(
+      `[scheduler] reset on startup: ${stuckLogs.length} stuck logs, ${stuckIntegrations.length} stuck integrations`,
+    );
+  }
 }
 
 export function stopScheduler() {
