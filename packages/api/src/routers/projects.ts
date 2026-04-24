@@ -2,13 +2,18 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import {
   apartments,
-  apartmentPromotions,
+  buildings,
   commerce,
+  entrances,
+  floorLayouts,
+  floors,
   integrations,
   nonResidentialFloors,
   parking,
   projects,
+  sections,
   storage,
+  tickets,
 } from "@zhk/db/schema";
 import { and, count, eq, ilike, inArray, isNotNull, isNull, ne, or } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
@@ -188,25 +193,83 @@ export const projectsRouter = {
       }
 
       await db.transaction(async (tx) => {
-        const projectApartments = await tx
+        const buildingRows = await tx
+          .select({ id: buildings.id })
+          .from(buildings)
+          .where(eq(buildings.projectId, input.id));
+        const buildingIds = buildingRows.map((b) => b.id);
+
+        const sectionRows = buildingIds.length
+          ? await tx
+              .select({ id: sections.id })
+              .from(sections)
+              .where(inArray(sections.buildingId, buildingIds))
+          : [];
+        const sectionIds = sectionRows.map((s) => s.id);
+
+        const floorRows = sectionIds.length
+          ? await tx
+              .select({ id: floors.id })
+              .from(floors)
+              .where(inArray(floors.sectionId, sectionIds))
+          : [];
+        const floorIds = floorRows.map((f) => f.id);
+
+        const entranceRows = buildingIds.length
+          ? await tx
+              .select({ id: entrances.id })
+              .from(entrances)
+              .where(inArray(entrances.buildingId, buildingIds))
+          : [];
+        const entranceIds = entranceRows.map((e) => e.id);
+
+        const apartmentMatchers = [eq(apartments.projectId, input.id)];
+        if (buildingIds.length)
+          apartmentMatchers.push(inArray(apartments.buildingId, buildingIds));
+        if (sectionIds.length)
+          apartmentMatchers.push(inArray(apartments.sectionId, sectionIds));
+        if (entranceIds.length)
+          apartmentMatchers.push(inArray(apartments.entranceId, entranceIds));
+        if (floorIds.length)
+          apartmentMatchers.push(inArray(apartments.floorId, floorIds));
+
+        const apartmentRows = await tx
           .select({ id: apartments.id })
           .from(apartments)
-          .where(eq(apartments.projectId, input.id));
-        const apartmentIds = projectApartments.map((a) => a.id);
+          .where(or(...apartmentMatchers));
+        const apartmentIds = apartmentRows.map((a) => a.id);
 
         if (apartmentIds.length) {
           await tx
-            .delete(apartmentPromotions)
-            .where(inArray(apartmentPromotions.apartmentId, apartmentIds));
+            .update(tickets)
+            .set({ apartmentId: null })
+            .where(inArray(tickets.apartmentId, apartmentIds));
+          await tx
+            .delete(apartments)
+            .where(inArray(apartments.id, apartmentIds));
         }
 
-        await tx.delete(apartments).where(eq(apartments.projectId, input.id));
         await tx.delete(commerce).where(eq(commerce.projectId, input.id));
         await tx.delete(parking).where(eq(parking.projectId, input.id));
         await tx.delete(storage).where(eq(storage.projectId, input.id));
         await tx
           .delete(nonResidentialFloors)
           .where(eq(nonResidentialFloors.projectId, input.id));
+
+        if (sectionIds.length) {
+          await tx
+            .delete(floorLayouts)
+            .where(inArray(floorLayouts.sectionId, sectionIds));
+        }
+        if (floorIds.length) {
+          await tx.delete(floors).where(inArray(floors.id, floorIds));
+        }
+        if (entranceIds.length) {
+          await tx
+            .delete(entrances)
+            .where(inArray(entrances.id, entranceIds));
+        }
+
         await tx.delete(projects).where(eq(projects.id, input.id));
       });
 
