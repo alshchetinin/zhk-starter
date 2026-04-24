@@ -32,3 +32,4 @@ export * from "./homepage";
 export * from "./construction-progress";
 export * from "./ticket-settings";
 export * from "./content-versions";
+export * from "./modals";

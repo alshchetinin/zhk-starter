@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { navItems } from "~/composables/useNavigation";
+
+const ModalProvider = defineAsyncComponent(() => import("~/components/ModalProvider.vue"));
+const { activeModalSlug } = useModalAction();
+const shouldMountModal = ref(false);
+watch(activeModalSlug, (slug) => {
+  if (slug) shouldMountModal.value = true;
+});
 </script>
 
 <template>
@@ -9,5 +16,6 @@ import { navItems } from "~/composables/useNavigation";
       <slot />
     </main>
     <WebFooter :nav-items="navItems" />
+    <ModalProvider v-if="shouldMountModal" />
   </div>
 </template>

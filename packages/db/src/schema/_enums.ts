@@ -67,6 +67,8 @@ export const purchaseMethodKindEnum = pgEnum("purchase_method_kind", [
   "custom",
 ]);
 
+export const modalStatusEnum = pgEnum("modal_status", ["draft", "published"]);
+
 export const ticketTypeEnum = pgEnum("ticket_type", [
   "lead",
   "callback",

@@ -17,6 +17,7 @@ const contentItems: NavItem[] = [
   { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
   { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
   { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
+  { label: "Модальные окна", icon: "i-tabler-app-window", to: "/modals", section: "modals" },
 ];
 
 // Shared across all sites
@@ -49,6 +50,7 @@ const devItems: NavItem[] = import.meta.dev
   ? [
       { label: "Блоки", icon: "i-tabler-puzzle", to: "/dev/blocks", adminOnly: true },
       { label: "Коллекции", icon: "i-tabler-stack-2", to: "/dev/collections", adminOnly: true },
+      { label: "Документация", icon: "i-tabler-book", to: "/dev/docs", adminOnly: true },
     ]
   : [];
 

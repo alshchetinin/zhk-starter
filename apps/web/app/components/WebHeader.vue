@@ -28,6 +28,8 @@ watch(
     isMobileMenuOpen.value = false;
   },
 );
+
+const { open: openModal } = useModalAction();
 </script>
 
 <template>
@@ -72,6 +74,14 @@ watch(
         >
           {{ primaryContact.phone }}
         </a>
+        <button
+          type="button"
+          class="hidden md:inline-flex items-center text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"
+          @click="openModal('zakazat-zvonok')"
+        >
+          Заказать звонок
+        </button>
+
         <UiButton as-child variant="primary" class="hidden md:inline-flex">
           <NuxtLink to="/projects">
             Выбрать квартиру
