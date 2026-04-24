@@ -31,9 +31,11 @@ function clearSubmitTimers() {
   submitTimers = [];
 }
 
+const DEFAULT_PHONE_MASK = "+7 (###) ###-##-##";
+
 const FALLBACK_FIELDS: ModalField[] = [
   { id: "fallback-name", type: "name", label: "Имя", placeholder: "Имя", required: true },
-  { id: "fallback-phone", type: "phone", label: "Телефон", placeholder: "+7 (###) ###-##-##", required: true },
+  { id: "fallback-phone", type: "phone", label: "Телефон", placeholder: DEFAULT_PHONE_MASK, required: true },
 ];
 
 const effectiveFields = computed<ModalField[]>(() => {
@@ -94,7 +96,7 @@ watch(activeModalSlug, async (slug) => {
   } finally {
     isLoading.value = false;
   }
-});
+}, { immediate: true });
 
 watch(dialogOpen, (open) => {
   if (!open) {
@@ -271,8 +273,8 @@ const errorTransitionProps = {
                   <input
                     v-maska
                     type="tel"
-                    :data-maska="field.mask || '+7 (###) ###-##-##'"
-                    :placeholder="field.placeholder || field.mask || '+7 (###) ###-##-##'"
+                    :data-maska="field.mask || DEFAULT_PHONE_MASK"
+                    :placeholder="field.placeholder || field.mask || DEFAULT_PHONE_MASK"
                     :value="getFieldValue(field)"
                     :class="inputClasses(field.id)"
                     @maska="setFieldValue(field, ($event.target as HTMLInputElement).value)"
