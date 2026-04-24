@@ -18,17 +18,18 @@ const { data: building } = useQuery(
 );
 
 // ---------------- Types ----------------
-type FormApartment = {
+// Стояк = одна колонка шахматки. Сегменты определяют какая планировка
+// на каком диапазоне этажей в этом стояке.
+type FormSegment = {
   id: string;
-  number: number;
+  startFloor: number;
+  endFloor: number;
   roomsCount: number;
   area: number;
 };
 type FormStack = {
   id: string;
-  startFloor: number;
-  endFloor: number;
-  apartments: FormApartment[];
+  segments: FormSegment[];
 };
 type NumberingScheme = "floor-prefix" | "sequential" | "section-prefix";
 
@@ -48,15 +49,18 @@ const draft = useStorage<{
   savedAt: number;
 } | null>(draftKey, null, undefined, { serializer: StorageSerializers.object });
 
-function freshApt(number = 1, roomsCount = 1, area = 40): FormApartment {
-  return { id: crypto.randomUUID(), number, roomsCount, area };
+function freshSegment(
+  startFloor = 1,
+  endFloor = 9,
+  roomsCount = 1,
+  area = 40,
+): FormSegment {
+  return { id: crypto.randomUUID(), startFloor, endFloor, roomsCount, area };
 }
 function freshStack(startFloor = 1, endFloor = 9): FormStack {
   return {
     id: crypto.randomUUID(),
-    startFloor,
-    endFloor,
-    apartments: [freshApt(1, 1, 40), freshApt(2, 2, 60)],
+    segments: [freshSegment(startFloor, endFloor, 1, 40)],
   };
 }
 
@@ -99,10 +103,23 @@ function clearDraft() {
 }
 
 // ---------------- Mutations on stacks ----------------
+function stackRange(stack: FormStack): { lo: number; hi: number } {
+  if (!stack.segments.length) return { lo: 1, hi: 1 };
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const s of stack.segments) {
+    lo = Math.min(lo, s.startFloor, s.endFloor);
+    hi = Math.max(hi, s.startFloor, s.endFloor);
+  }
+  return { lo, hi };
+}
+
 function addStack() {
-  const last = stacks[stacks.length - 1];
-  const start = last ? last.endFloor + 1 : 1;
-  stacks.push(freshStack(start, start + 5));
+  const lastRanges = stacks.map(stackRange);
+  const maxEnd = lastRanges.length
+    ? Math.max(...lastRanges.map((r) => r.hi))
+    : 0;
+  stacks.push(freshStack(maxEnd + 1, maxEnd + 9));
 }
 function removeStack(idx: number) {
   if (stacks.length === 1) return;
@@ -111,29 +128,27 @@ function removeStack(idx: number) {
 function duplicateStack(idx: number) {
   const src = stacks[idx];
   if (!src) return;
-  const span = src.endFloor - src.startFloor + 1;
   const copy: FormStack = {
     id: crypto.randomUUID(),
-    startFloor: src.endFloor + 1,
-    endFloor: src.endFloor + span,
-    apartments: src.apartments.map((a) => ({ ...a, id: crypto.randomUUID() })),
+    segments: src.segments.map((s) => ({ ...s, id: crypto.randomUUID() })),
   };
   stacks.splice(idx + 1, 0, copy);
 }
-function addApartment(stack: FormStack) {
-  const nextNumber = (stack.apartments.at(-1)?.number ?? 0) + 1;
-  stack.apartments.push(freshApt(nextNumber, 1, 40));
+function addSegment(stack: FormStack) {
+  const last = stack.segments.at(-1);
+  const start = last ? last.endFloor + 1 : 1;
+  stack.segments.push(freshSegment(start, start + 4, 2, 60));
 }
-function removeApartment(stack: FormStack, idx: number) {
-  if (stack.apartments.length === 1) return;
-  stack.apartments.splice(idx, 1);
+function removeSegment(stack: FormStack, idx: number) {
+  if (stack.segments.length === 1) return;
+  stack.segments.splice(idx, 1);
 }
-function moveApartment(stack: FormStack, idx: number, dir: -1 | 1) {
+function moveSegment(stack: FormStack, idx: number, dir: -1 | 1) {
   const j = idx + dir;
-  if (j < 0 || j >= stack.apartments.length) return;
-  const tmp = stack.apartments[idx]!;
-  stack.apartments[idx] = stack.apartments[j]!;
-  stack.apartments[j] = tmp;
+  if (j < 0 || j >= stack.segments.length) return;
+  const tmp = stack.segments[idx]!;
+  stack.segments[idx] = stack.segments[j]!;
+  stack.segments[j] = tmp;
 }
 
 // ---------------- Presets ----------------
@@ -143,38 +158,26 @@ const presets: { label: string; icon: string; factory: () => FormStack }[] = [
     icon: "i-tabler-home",
     factory: () => ({
       id: crypto.randomUUID(),
-      startFloor: 1,
-      endFloor: 10,
-      apartments: [
-        freshApt(1, 0, 28),
-        freshApt(2, 0, 28),
-        freshApt(3, 0, 30),
-        freshApt(4, 0, 30),
-      ],
+      segments: [freshSegment(1, 10, 0, 28)],
     }),
   },
   {
-    label: "Двухкомнатная башня 1–25",
+    label: "2к-башня 1–25",
     icon: "i-tabler-building-skyscraper",
     factory: () => ({
       id: crypto.randomUUID(),
-      startFloor: 1,
-      endFloor: 25,
-      apartments: [freshApt(1, 2, 55), freshApt(2, 2, 65)],
+      segments: [freshSegment(1, 25, 2, 60)],
     }),
   },
   {
-    label: "Смешанный 1к/2к/3к 2–16",
+    label: "Смешанный 1к/2к/4к",
     icon: "i-tabler-layout-grid",
     factory: () => ({
       id: crypto.randomUUID(),
-      startFloor: 2,
-      endFloor: 16,
-      apartments: [
-        freshApt(1, 1, 38),
-        freshApt(2, 2, 58),
-        freshApt(3, 2, 62),
-        freshApt(4, 3, 85),
+      segments: [
+        freshSegment(1, 9, 1, 40),
+        freshSegment(10, 12, 2, 60),
+        freshSegment(13, 16, 4, 100),
       ],
     }),
   },
@@ -249,79 +252,75 @@ type PreviewFloor = {
   apartments: PreviewCell[];
 };
 
-// Iterate floors TOP-DOWN across all stacks so numbering is per-floor
-// (stack order defines position on each floor).
-type NumberedCell = PreviewCell;
-function buildFloorNumbering(): {
-  byFloor: Map<number, NumberedCell[]>;
-  byKey: Map<string, NumberedCell>;
-} {
-  const byFloor = new Map<number, NumberedCell[]>();
-  const byKey = new Map<string, NumberedCell>();
-  if (!stacks.length) return { byFloor, byKey };
-  const lo = Math.min(...stacks.map((s) => Math.min(s.startFloor, s.endFloor)));
-  const hi = Math.max(...stacks.map((s) => Math.max(s.startFloor, s.endFloor)));
-  let seq = 0;
-  for (let f = lo; f <= hi; f++) {
-    let pos = 0;
-    const cells: NumberedCell[] = [];
-    for (const stack of stacks) {
-      const sLo = Math.min(stack.startFloor, stack.endFloor);
-      const sHi = Math.max(stack.startFloor, stack.endFloor);
-      if (f < sLo || f > sHi) continue;
-      for (const apt of stack.apartments) {
-        pos += 1;
-        seq += 1;
-        const cell: NumberedCell = {
-          stackId: stack.id,
-          apartmentId: apt.id,
-          apartmentNumber: computeApartmentNumber(stack, apt, f, seq, pos),
-          roomsCount: apt.roomsCount,
-          area: apt.area,
-          conflict: occupiedFloors.value.has(f),
-        };
-        cells.push(cell);
-        byKey.set(`${stack.id}-${f}-${apt.id}`, cell);
-      }
-    }
-    if (cells.length) byFloor.set(f, cells);
-  }
-  return { byFloor, byKey };
-}
-
-const preview = computed<PreviewFloor[]>(() => {
-  const { byFloor } = buildFloorNumbering();
-  return [...byFloor.entries()]
-    .sort((a, b) => b[0] - a[0])
-    .map(([floorNumber, apartments]) => ({ floorNumber, apartments }));
-});
-
-// Preview grid: stacks as columns, floors as rows
+// ---------------- Preview ----------------
 type PreviewGridCell = PreviewCell | null;
 type PreviewGridRow = {
   floorNumber: number;
-  byStack: PreviewCell[][]; // index corresponds to stacks order
+  byStack: PreviewGridCell[]; // index = stack order, null если стояк не покрывает этот этаж
 };
+
+// Find segment of stack covering a given floor. Если нет — null.
+function segmentAtFloor(
+  stack: FormStack,
+  floor: number,
+): FormSegment | null {
+  for (const s of stack.segments) {
+    const lo = Math.min(s.startFloor, s.endFloor);
+    const hi = Math.max(s.startFloor, s.endFloor);
+    if (floor >= lo && floor <= hi) return s;
+  }
+  return null;
+}
 
 const previewGrid = computed<PreviewGridRow[]>(() => {
   if (!stacks.length) return [];
-  const { byKey } = buildFloorNumbering();
-  const globalLo = Math.min(...stacks.map((s) => Math.min(s.startFloor, s.endFloor)));
-  const globalHi = Math.max(...stacks.map((s) => Math.max(s.startFloor, s.endFloor)));
+  let globalLo = Infinity;
+  let globalHi = -Infinity;
+  for (const s of stacks) {
+    const r = stackRange(s);
+    globalLo = Math.min(globalLo, r.lo);
+    globalHi = Math.max(globalHi, r.hi);
+  }
+
   const rows: PreviewGridRow[] = [];
+  let seq = 0;
+  // Iterate top-down so number matches visual order for sequential scheme
   for (let f = globalHi; f >= globalLo; f--) {
-    const byStack: PreviewCell[][] = stacks.map((stack) => {
-      const lo = Math.min(stack.startFloor, stack.endFloor);
-      const hi = Math.max(stack.startFloor, stack.endFloor);
-      if (f < lo || f > hi) return [];
-      return stack.apartments
-        .map((apt) => byKey.get(`${stack.id}-${f}-${apt.id}`))
-        .filter((c): c is PreviewCell => !!c);
+    let pos = 0;
+    const byStack: PreviewGridCell[] = stacks.map((stack) => {
+      const seg = segmentAtFloor(stack, f);
+      if (!seg) return null;
+      pos += 1;
+      seq += 1;
+      return {
+        stackId: stack.id,
+        apartmentId: seg.id,
+        apartmentNumber: computeApartmentNumber(
+          stack,
+          // legacy signature compat — передаём seg как apt-like
+          { id: seg.id, roomsCount: seg.roomsCount, area: seg.area } as any,
+          f,
+          seq,
+          pos,
+        ),
+        roomsCount: seg.roomsCount,
+        area: seg.area,
+        conflict: occupiedFloors.value.has(f),
+      };
     });
     rows.push({ floorNumber: f, byStack });
   }
   return rows;
 });
+
+const preview = computed(() =>
+  previewGrid.value
+    .filter((r) => r.byStack.some((c) => c))
+    .map((r) => ({
+      floorNumber: r.floorNumber,
+      apartments: r.byStack.filter((c): c is PreviewCell => !!c),
+    })),
+);
 
 const totalApartments = computed(() =>
   preview.value.reduce((sum, f) => sum + f.apartments.length, 0),
@@ -330,7 +329,7 @@ const totalApartments = computed(() =>
 const uniqueLayoutsCount = computed(() => {
   const set = new Set<string>();
   for (const s of stacks)
-    for (const a of s.apartments) set.add(`${a.roomsCount}-${a.area}`);
+    for (const seg of s.segments) set.add(`${seg.roomsCount}-${seg.area}`);
   return set.size;
 });
 
@@ -353,36 +352,30 @@ const stackErrors = computed(() => {
   const errors: Record<string, string[]> = {};
   for (const s of stacks) {
     const errs: string[] = [];
-    if (s.startFloor > s.endFloor) errs.push("Этажи: начало больше конца");
-    if (!s.apartments.length) errs.push("Нет квартир");
-    for (const a of s.apartments) {
-      if (a.area <= 0) errs.push("Площадь должна быть > 0");
-      if (a.number < 1) errs.push("Номер должен быть ≥ 1");
+    if (!s.segments.length) errs.push("Нет сегментов");
+    // Пересечения сегментов внутри стояка
+    const seen = new Map<number, string>();
+    for (const seg of s.segments) {
+      if (seg.startFloor > seg.endFloor) errs.push("Диапазон: начало > конца");
+      if (seg.area <= 0) errs.push("Площадь должна быть > 0");
+      const lo = Math.min(seg.startFloor, seg.endFloor);
+      const hi = Math.max(seg.startFloor, seg.endFloor);
+      for (let f = lo; f <= hi; f++) {
+        if (seen.has(f) && seen.get(f) !== seg.id) {
+          errs.push(`Сегменты пересекаются на этаже ${f}`);
+          break;
+        }
+        seen.set(f, seg.id);
+      }
     }
-    // dup numbers within stack
-    const nums = s.apartments.map((a) => a.number);
-    if (new Set(nums).size !== nums.length) errs.push("Повторяются номера");
-    if (errs.length) errors[s.id] = errs;
+    if (errs.length) errors[s.id] = [...new Set(errs)];
   }
   return errors;
 });
 
-const overlapErrors = computed(() => {
-  const errs: string[] = [];
-  const seen = new Map<number, string>();
-  for (const s of stacks) {
-    const lo = Math.min(s.startFloor, s.endFloor);
-    const hi = Math.max(s.startFloor, s.endFloor);
-    for (let f = lo; f <= hi; f++) {
-      if (seen.has(f) && seen.get(f) !== s.id) {
-        errs.push(`Этаж ${f} пересекается между стояками`);
-        break;
-      }
-      seen.set(f, s.id);
-    }
-  }
-  return errs;
-});
+// Нет cross-stack overlap: два разных стояка могут быть на одном этаже —
+// это разные колонки в шахматке. Оставляем пусто.
+const overlapErrors = computed<string[]>(() => []);
 
 const conflictCount = computed(
   () => preview.value.filter((f) => f.apartments.some((a) => a.conflict)).length,
@@ -436,27 +429,23 @@ const previewCollapsed = ref(false);
 // ---------------- Submit ----------------
 const createMut = useMutation({
   mutationFn: () => {
-    const payloadStacks = stacks.map((s) => ({
-      startFloor: s.startFloor,
-      endFloor: s.endFloor,
-      apartments: s.apartments.map((a) => {
-        const customNumbers: Record<string, string> = {};
-        const lo = Math.min(s.startFloor, s.endFloor);
-        const hi = Math.max(s.startFloor, s.endFloor);
-        for (let f = lo; f <= hi; f++) {
-          const cell = preview.value
-            .find((p) => p.floorNumber === f)
-            ?.apartments.find((x) => x.apartmentId === a.id);
-          if (cell) customNumbers[String(f)] = cell.apartmentNumber;
-        }
-        return {
-          number: a.number,
-          roomsCount: a.roomsCount,
-          area: a.area,
-          customNumbers,
-        };
-      }),
-    }));
+    const flat: {
+      floorNumber: number;
+      apartmentNumber: string;
+      roomsCount: number;
+      area: number;
+    }[] = [];
+    for (const row of previewGrid.value) {
+      for (const cell of row.byStack) {
+        if (!cell) continue;
+        flat.push({
+          floorNumber: row.floorNumber,
+          apartmentNumber: cell.apartmentNumber,
+          roomsCount: cell.roomsCount,
+          area: cell.area,
+        });
+      }
+    }
 
     return $orpcClient.sections.createStructure({
       buildingId: buildingId.value,
@@ -464,7 +453,7 @@ const createMut = useMutation({
       sectionName: useExistingSection.value
         ? undefined
         : sectionName.value.trim(),
-      stacks: payloadStacks,
+      apartments: flat,
     });
   },
   onSuccess: (res) => {
@@ -611,7 +600,7 @@ const schemeItems = computed(() => numberingSchemeItems);
             class="p-3 overflow-auto max-h-[calc(100vh-140px)]"
           >
             <div class="inline-block min-w-full">
-              <!-- Header row: stacks as column groups -->
+              <!-- Header: one column per stack -->
               <div
                 class="flex items-end sticky top-0 bg-(--ui-bg) pb-1.5 border-b border-(--ui-border) z-10"
               >
@@ -619,25 +608,22 @@ const schemeItems = computed(() => numberingSchemeItems);
                 <div
                   v-for="(stack, si) in stacks"
                   :key="stack.id"
-                  class="px-1.5 flex items-center gap-1.5 border-l border-(--ui-border) first:border-l-0 min-w-[120px]"
+                  class="w-20 shrink-0 px-1 flex items-center gap-1.5 justify-center"
                 >
                   <span
-                    class="size-2 rounded-sm"
+                    class="size-2 rounded-sm shrink-0"
                     :class="stackAccent(si).bar"
                   />
-                  <span class="text-[11px] font-medium">Стояк #{{ si + 1 }}</span>
-                  <span class="text-[10px] text-(--ui-text-dimmed) ml-auto">
-                    {{ stack.apartments.length }} кв.
-                  </span>
+                  <span class="text-[11px] font-medium">#{{ si + 1 }}</span>
                 </div>
               </div>
 
-              <!-- Floor rows -->
+              <!-- Floor rows — fixed 56px row, fixed 80px per stack cell -->
               <div>
                 <div
                   v-for="row in previewGrid"
                   :key="row.floorNumber"
-                  class="flex items-stretch min-h-[56px] hover:bg-(--ui-bg-elevated)/30 transition-colors"
+                  class="flex items-stretch h-14 hover:bg-(--ui-bg-elevated)/30 transition-colors"
                 >
                   <div
                     class="w-10 shrink-0 flex items-center justify-center text-xs font-semibold text-(--ui-text-dimmed) tabular-nums border-r border-(--ui-border)"
@@ -645,35 +631,34 @@ const schemeItems = computed(() => numberingSchemeItems);
                     {{ row.floorNumber }}
                   </div>
                   <div
-                    v-for="(cells, si) in row.byStack"
+                    v-for="(cell, si) in row.byStack"
                     :key="si"
-                    class="px-1.5 py-1 flex items-center gap-1 border-l border-(--ui-border) first:border-l-0 min-w-[120px]"
+                    class="w-20 shrink-0 p-1 border-l border-(--ui-border) first:border-l-0"
                   >
                     <button
-                      v-for="apt in cells"
-                      :key="apt.apartmentId"
-                      :title="`№${apt.apartmentNumber} · ${roomsLabel(apt.roomsCount)} · ${apt.area} м²${apt.conflict ? ' · КОНФЛИКТ' : ''}`"
-                      class="group flex flex-col items-start justify-center h-12 px-2 rounded-md border bg-(--ui-bg) text-left transition hover:-translate-y-0.5 hover:shadow-sm flex-1 min-w-[52px]"
+                      v-if="cell"
+                      :title="`№${cell.apartmentNumber} · ${roomsLabel(cell.roomsCount)} · ${cell.area} м²${cell.conflict ? ' · КОНФЛИКТ' : ''}`"
+                      class="w-full h-full flex flex-col items-center justify-center rounded-md border bg-(--ui-bg) text-center transition hover:-translate-y-0.5 hover:shadow-sm overflow-hidden"
                       :class="[
-                        apt.conflict
+                        cell.conflict
                           ? 'border-red-400 bg-red-50 dark:bg-red-950/40'
                           : stackAccent(si).cell,
-                        highlightedAptId === apt.apartmentId
+                        highlightedAptId === cell.apartmentId
                           ? 'ring-2 ring-(--ui-primary)'
                           : '',
                       ]"
-                      @click="onPreviewClick(apt)"
+                      @click="onPreviewClick(cell)"
                     >
-                      <span class="text-[11px] font-semibold tabular-nums leading-tight">
-                        {{ apt.apartmentNumber }}
+                      <span class="text-[11px] font-semibold tabular-nums leading-none">
+                        {{ cell.apartmentNumber }}
                       </span>
-                      <span class="text-[10px] text-(--ui-text-dimmed) leading-tight">
-                        {{ roomsLabel(apt.roomsCount) }} · {{ apt.area }}м²
+                      <span class="text-[9px] text-(--ui-text-dimmed) leading-none mt-0.5 truncate w-full px-0.5">
+                        {{ roomsLabel(cell.roomsCount) }} · {{ cell.area }}
                       </span>
                     </button>
                     <div
-                      v-if="!cells.length"
-                      class="h-12 w-full rounded-md border border-dashed border-(--ui-border)/60"
+                      v-else
+                      class="w-full h-full rounded-md border border-dashed border-(--ui-border)/50"
                     />
                   </div>
                 </div>
@@ -820,43 +805,32 @@ const schemeItems = computed(() => numberingSchemeItems);
               :key="stack.id"
               class="relative"
             >
-              <!-- Colored accent bar -->
               <div
                 class="absolute left-0 top-0 bottom-0 w-0.5"
                 :class="stackAccent(si).bar"
               />
 
-              <!-- Stack header row -->
-              <div
-                class="flex items-center gap-2 px-3 py-2 text-xs"
-              >
+              <div class="flex items-center gap-2 px-3 py-2 text-xs">
                 <span
-                  class="font-medium text-(--ui-text-muted) tabular-nums min-w-[1.75rem]"
+                  class="font-medium tabular-nums min-w-[1.75rem]"
                   :class="stackAccent(si).dot.replace('bg-', 'text-')"
                 >
                   #{{ si + 1 }}
                 </span>
-                <span class="text-(--ui-text-dimmed)">этажи</span>
-                <UInput
-                  v-model.number="stack.startFloor"
-                  type="number"
-                  size="xs"
-                  class="w-16"
-                />
-                <span class="text-(--ui-text-dimmed)">—</span>
-                <UInput
-                  v-model.number="stack.endFloor"
-                  type="number"
-                  size="xs"
-                  class="w-16"
-                />
+                <span class="text-(--ui-text-dimmed)">
+                  этажи {{ stackRange(stack).lo }}–{{ stackRange(stack).hi }}
+                </span>
                 <span class="text-(--ui-text-dimmed) ml-auto tabular-nums">
-                  {{ Math.max(0, stack.endFloor - stack.startFloor + 1) }} ×
-                  {{ stack.apartments.length }} =
+                  {{ stack.segments.length }} сегм. ·
                   <span class="text-(--ui-text) font-medium">{{
-                    Math.max(0, stack.endFloor - stack.startFloor + 1) *
-                    stack.apartments.length
+                    stack.segments.reduce(
+                      (acc, s) =>
+                        acc +
+                        Math.max(0, s.endFloor - s.startFloor + 1),
+                      0,
+                    )
                   }}</span>
+                  кв.
                 </span>
                 <button
                   class="p-1 rounded text-(--ui-text-dimmed) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
@@ -882,13 +856,14 @@ const schemeItems = computed(() => numberingSchemeItems);
                 {{ stackErrors[stack.id].join(" · ") }}
               </div>
 
-              <!-- Apartments table -->
+              <!-- Segments -->
               <div class="pl-3 pr-2 pb-2 pt-0.5">
-                <!-- column headers -->
                 <div
-                  class="grid grid-cols-[22px_1fr_1fr_auto] gap-1.5 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
+                  class="grid grid-cols-[22px_44px_44px_1fr_1fr_auto] gap-1.5 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
                 >
                   <div></div>
+                  <div>с</div>
+                  <div>по</div>
                   <div>Комн.</div>
                   <div>м²</div>
                   <div></div>
@@ -896,12 +871,12 @@ const schemeItems = computed(() => numberingSchemeItems);
 
                 <TransitionGroup name="apt" tag="div">
                   <div
-                    v-for="(apt, ai) in stack.apartments"
-                    :key="apt.id"
-                    :data-apt-id="apt.id"
-                    class="grid grid-cols-[22px_1fr_1fr_auto] gap-1.5 items-center px-1 py-0.5 rounded transition-colors"
+                    v-for="(seg, ai) in stack.segments"
+                    :key="seg.id"
+                    :data-apt-id="seg.id"
+                    class="grid grid-cols-[22px_44px_44px_1fr_1fr_auto] gap-1.5 items-center px-1 py-0.5 rounded transition-colors"
                     :class="
-                      highlightedAptId === apt.id
+                      highlightedAptId === seg.id
                         ? 'bg-(--ui-primary)/10 ring-1 ring-(--ui-primary)/40'
                         : 'hover:bg-(--ui-bg-elevated)'
                     "
@@ -910,38 +885,48 @@ const schemeItems = computed(() => numberingSchemeItems);
                       <button
                         class="h-4 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === 0"
-                        @click="moveApartment(stack, ai, -1)"
+                        @click="moveSegment(stack, ai, -1)"
                       >
                         <UIcon name="i-tabler-chevron-up" class="size-3" />
                       </button>
                       <button
                         class="h-4 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
-                        :disabled="ai === stack.apartments.length - 1"
-                        @click="moveApartment(stack, ai, 1)"
+                        :disabled="ai === stack.segments.length - 1"
+                        @click="moveSegment(stack, ai, 1)"
                       >
                         <UIcon name="i-tabler-chevron-down" class="size-3" />
                       </button>
                     </div>
                     <UInput
-                      v-model.number="apt.roomsCount"
+                      v-model.number="seg.startFloor"
+                      type="number"
+                      size="xs"
+                    />
+                    <UInput
+                      v-model.number="seg.endFloor"
+                      type="number"
+                      size="xs"
+                    />
+                    <UInput
+                      v-model.number="seg.roomsCount"
                       type="number"
                       min="0"
                       size="xs"
                     />
                     <UInput
-                      v-model.number="apt.area"
+                      v-model.number="seg.area"
                       type="number"
                       step="0.01"
                       min="0"
                       size="xs"
                       @keyup.enter="
-                        ai === stack.apartments.length - 1 && addApartment(stack)
+                        ai === stack.segments.length - 1 && addSegment(stack)
                       "
                     />
                     <button
-                      v-if="stack.apartments.length > 1"
+                      v-if="stack.segments.length > 1"
                       class="p-1 rounded text-(--ui-text-dimmed) hover:text-red-500 transition"
-                      @click="removeApartment(stack, ai)"
+                      @click="removeSegment(stack, ai)"
                     >
                       <UIcon name="i-tabler-x" class="size-3" />
                     </button>
@@ -951,10 +936,10 @@ const schemeItems = computed(() => numberingSchemeItems);
 
                 <button
                   class="mt-1 flex items-center gap-1 text-[11px] text-(--ui-text-dimmed) hover:text-(--ui-text) transition px-1 py-0.5"
-                  @click="addApartment(stack)"
+                  @click="addSegment(stack)"
                 >
                   <UIcon name="i-tabler-plus" class="size-3" />
-                  Квартира
+                  Сегмент
                 </button>
               </div>
             </div>
