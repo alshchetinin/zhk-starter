@@ -62,4 +62,89 @@ export const commerceRouter = {
       }
       return item;
     }),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        category: z.string().nullable().optional(),
+        area: z.number().positive().nullable().optional(),
+        price: z.number().nonnegative().nullable().optional(),
+        floorNumber: z.number().int().nullable().optional(),
+        layoutImage: z.string().nullable().optional(),
+        isPublished: z.boolean().optional(),
+        projectId: z.string(),
+        buildingId: z.string().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const [created] = await db
+        .insert(commerce)
+        .values({
+          name: input.name,
+          category: input.category ?? null,
+          area: input.area != null ? String(input.area) : null,
+          price: input.price != null ? String(input.price) : null,
+          floorNumber: input.floorNumber ?? null,
+          layoutImage: input.layoutImage ?? null,
+          isPublished: input.isPublished ?? true,
+          projectId: input.projectId,
+          buildingId: input.buildingId ?? null,
+        })
+        .returning();
+      return created;
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        category: z.string().nullable().optional(),
+        area: z.number().positive().nullable().optional(),
+        price: z.number().nonnegative().nullable().optional(),
+        floorNumber: z.number().int().nullable().optional(),
+        layoutImage: z.string().nullable().optional(),
+        isPublished: z.boolean().optional(),
+        buildingId: z.string().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const existing = await db.query.commerce.findFirst({
+        where: eq(commerce.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Commerce not found" });
+      }
+      const { id, ...fields } = input;
+      const updates: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(fields)) {
+        if (value === undefined) continue;
+        if (key === "area" || key === "price") {
+          updates[key] = value == null ? null : String(value);
+        } else {
+          updates[key] = value;
+        }
+      }
+      if (Object.keys(updates).length === 0) return existing;
+      const [updated] = await db
+        .update(commerce)
+        .set(updates)
+        .where(eq(commerce.id, input.id))
+        .returning();
+      return updated;
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const existing = await db.query.commerce.findFirst({
+        where: eq(commerce.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Commerce not found" });
+      }
+      await db.delete(commerce).where(eq(commerce.id, input.id));
+      return { success: true };
+    }),
 };

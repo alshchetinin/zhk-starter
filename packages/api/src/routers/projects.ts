@@ -78,6 +78,32 @@ export const projectsRouter = {
       };
     }),
 
+  create: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        address: z.string().default(""),
+        status: z.enum(["active", "completed", "planning", "hidden"]).default("planning"),
+        cityId: z.string().nullable().optional(),
+        coordinates: z.string().nullable().optional(),
+        location: z.string().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const [created] = await db
+        .insert(projects)
+        .values({
+          name: input.name,
+          address: input.address ?? "",
+          status: input.status,
+          cityId: input.cityId ?? null,
+          coordinates: input.coordinates ?? null,
+          location: input.location ?? null,
+        })
+        .returning();
+      return created;
+    }),
+
   createBatch: protectedProcedure
     .input(
       z.object({

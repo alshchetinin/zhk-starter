@@ -77,4 +77,106 @@ export const apartmentLayoutsRouter = {
 
       return updated;
     }),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        area: z.number().positive(),
+        roomsCount: z.number().int().min(0),
+        floorRange: z.string().nullable().optional(),
+        priceRange: z.string().nullable().optional(),
+        defaultLayoutImage: z.string().nullable().optional(),
+        furnishedLayoutImage: z.string().nullable().optional(),
+        threeDLayoutImage: z.string().nullable().optional(),
+        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
+        ceilingHeight: z.number().positive().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const [created] = await db
+        .insert(apartmentLayouts)
+        .values({
+          name: input.name,
+          area: String(input.area),
+          roomsCount: input.roomsCount,
+          floorRange: input.floorRange ?? null,
+          priceRange: input.priceRange ?? null,
+          defaultLayoutImage: input.defaultLayoutImage ?? null,
+          furnishedLayoutImage: input.furnishedLayoutImage ?? null,
+          threeDLayoutImage: input.threeDLayoutImage ?? null,
+          sunPosition: input.sunPosition ?? null,
+          ceilingHeight:
+            input.ceilingHeight != null ? String(input.ceilingHeight) : null,
+        })
+        .returning();
+      return created;
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        area: z.number().positive().optional(),
+        roomsCount: z.number().int().min(0).optional(),
+        floorRange: z.string().nullable().optional(),
+        priceRange: z.string().nullable().optional(),
+        defaultLayoutImage: z.string().nullable().optional(),
+        furnishedLayoutImage: z.string().nullable().optional(),
+        threeDLayoutImage: z.string().nullable().optional(),
+        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
+        ceilingHeight: z.number().positive().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const existing = await db.query.apartmentLayouts.findFirst({
+        where: eq(apartmentLayouts.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
+      }
+
+      const { id, ...fields } = input;
+      const updates: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(fields)) {
+        if (value === undefined) continue;
+        if (key === "area" || key === "ceilingHeight") {
+          updates[key] = value == null ? null : String(value);
+        } else {
+          updates[key] = value;
+        }
+      }
+      if (Object.keys(updates).length === 0) return existing;
+
+      const [updated] = await db
+        .update(apartmentLayouts)
+        .set(updates)
+        .where(eq(apartmentLayouts.id, input.id))
+        .returning();
+      return updated;
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const existing = await db.query.apartmentLayouts.findFirst({
+        where: eq(apartmentLayouts.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
+      }
+
+      // Detach from apartments first so we don't violate FK
+      await db
+        .update(apartments)
+        .set({ apartmentLayoutId: null })
+        .where(eq(apartments.apartmentLayoutId, input.id));
+
+      await db
+        .delete(apartmentLayouts)
+        .where(eq(apartmentLayouts.id, input.id));
+
+      return { success: true };
+    }),
 };

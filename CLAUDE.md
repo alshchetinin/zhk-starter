@@ -95,6 +95,15 @@ QueryClient в [apps/admin/app/plugins/vue-query.ts](apps/admin/app/plugins/vue-
 
 Примеры реализации: [pages/index.vue](apps/admin/app/pages/pages/index.vue), [pages/[id].vue](apps/admin/app/pages/pages/[id].vue), [projects/[id]/edit.vue](apps/admin/app/pages/projects/[id]/edit.vue).
 
+## Ручное создание сущностей недвижимости
+
+CRUD через UI доступен для: projects, buildings, sections, apartment-layouts, apartments, commerce, parking, storage.
+
+- **Ручные vs импорт**: `integrationId = null` — создано в UI, `integrationId != null` — из Profitbase/Macro sync.
+- **Sync перезаписывает импортированные записи**. UI показывает badge «Импорт» и warning-алерт на записях с `integrationId`.
+- **Каскадные удаления**: Project → Buildings → Sections → Floors → Apartments + Commerce/Parking/Storage. Project и Building каскадят вниз; Section — floors+apartments; листья — напрямую.
+- **Общий компонент для нежилых**: [NonResidentialList](apps/admin/app/components/NonResidentialList.vue) используется в страницах commerce/parking/storage с параметрами `kind`, `title`, `withCategory`.
+
 ## Workflow: PNG → блок
 
 1. Пользователь кладёт PNG в `design/blocks/` (kebab-case.png)
