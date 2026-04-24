@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { SOCIAL_TYPE_ICONS } from "@zhk/api/shared/socials";
 import type { NavItem } from "~/composables/useNavigation";
+import { telHref } from "~/utils/phone";
 
 defineProps<{
   navItems: NavItem[];
@@ -10,19 +12,6 @@ const currentYear = new Date().getFullYear();
 
 function socialsFor(contact: (typeof footerContacts.value)[number]) {
   return contact.socials?.length ? contact.socials : siteSocials.value;
-}
-
-const socialIcons: Record<string, string> = {
-  vk: "lucide:at-sign",
-  telegram: "lucide:send",
-  whatsapp: "lucide:message-circle",
-  ok: "lucide:circle-dot",
-  youtube: "lucide:youtube",
-  dzen: "lucide:flame",
-};
-
-function telHref(phone: string) {
-  return `tel:${phone.replace(/[^+\d]/g, "")}`;
 }
 </script>
 
@@ -94,7 +83,7 @@ function telHref(phone: string) {
                   rel="noopener"
                   class="text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
                 >
-                  <Icon :name="socialIcons[s.type] ?? 'lucide:link'" class="size-5" />
+                  <Icon :name="SOCIAL_TYPE_ICONS[s.type] ?? 'lucide:link'" class="size-5" />
                 </a>
               </div>
             </div>

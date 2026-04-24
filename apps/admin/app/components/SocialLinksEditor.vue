@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { SOCIAL_TYPE_OPTIONS } from "@zhk/api/shared/socials";
 
 const props = defineProps<{
   siteId: string | null;
@@ -20,15 +21,6 @@ const items = ref<Array<{ type: string; link: string }>>([]);
 watch(data, (v) => {
   if (v) items.value = v.map((r) => ({ type: r.type, link: r.link }));
 }, { immediate: true });
-
-const typeOptions = [
-  { label: "VK", value: "vk" },
-  { label: "Telegram", value: "telegram" },
-  { label: "WhatsApp", value: "whatsapp" },
-  { label: "Одноклассники", value: "ok" },
-  { label: "YouTube", value: "youtube" },
-  { label: "Дзен", value: "dzen" },
-];
 
 const saveMutation = useMutation({
   mutationFn: () =>
@@ -81,7 +73,7 @@ const saveMutation = useMutation({
           <UFormField label="Соцсеть" required>
             <USelect
               :model-value="item.type"
-              :items="typeOptions"
+              :items="SOCIAL_TYPE_OPTIONS"
               class="w-full"
               @update:model-value="update('type', $event)"
             />

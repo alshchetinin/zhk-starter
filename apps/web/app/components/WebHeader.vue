@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavItem } from "~/composables/useNavigation";
+import { telHref } from "~/utils/phone";
 
 defineProps<{
   navItems: NavItem[];
@@ -66,7 +67,7 @@ watch(
       <div class="flex items-center gap-4">
         <a
           v-if="primaryContact?.phone"
-          :href="`tel:${primaryContact.phone.replace(/[^+\d]/g, '')}`"
+          :href="telHref(primaryContact.phone)"
           class="hidden md:inline-flex text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"
         >
           {{ primaryContact.phone }}

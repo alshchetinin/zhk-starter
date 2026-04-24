@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
+import { SOCIAL_TYPE_ICONS, type SocialLinkType } from "@zhk/api/shared/socials";
+import { telHref } from "~/utils/phone";
 
 const props = defineProps<{
   title?: string;
@@ -10,16 +12,14 @@ const props = defineProps<{
 const { orpc } = useOrpc();
 const { socials: siteSocials } = useSiteContacts();
 
-function socialsFor(c: { socials?: { type: string; link: string }[] | null }) {
+function socialsFor(c: { socials?: { type: SocialLinkType; link: string }[] | null }) {
   return c.socials && c.socials.length ? c.socials : siteSocials.value;
 }
-const idsKey = computed(() => [...props.contactIds].sort().join(","));
 
 const { data, suspense } = useQuery(
   computed(() => ({
     ...orpc.public.contacts.getByIds.queryOptions({ input: { ids: props.contactIds } }),
     enabled: props.contactIds.length > 0,
-    queryKey: ["contacts-block", idsKey.value],
   })),
 );
 
@@ -36,15 +36,6 @@ const mapCoordinates = computed(() => {
   const first = items.value.find((c) => c.coordinates);
   return first?.coordinates ?? null;
 });
-
-const socialIcons: Record<string, string> = {
-  vk: "lucide:at-sign",
-  telegram: "lucide:send",
-  whatsapp: "lucide:message-circle",
-  ok: "lucide:circle-dot",
-  youtube: "lucide:youtube",
-  dzen: "lucide:flame",
-};
 </script>
 
 <template>
@@ -70,7 +61,7 @@ const socialIcons: Record<string, string> = {
           <div class="mt-4 flex flex-col gap-2 text-sm">
             <a
               v-if="c.phone"
-              :href="`tel:${c.phone.replace(/[^+\d]/g, '')}`"
+              :href="telHref(c.phone)"
               class="font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)]"
             >
               {{ c.phone }}
@@ -96,7 +87,7 @@ const socialIcons: Record<string, string> = {
               rel="noopener"
               class="flex size-9 items-center justify-center rounded-full border border-[var(--web-border)] text-[var(--web-text-secondary)] transition hover:border-[var(--web-accent)] hover:text-[var(--web-accent)]"
             >
-              <Icon :name="socialIcons[s.type] ?? 'lucide:link'" class="size-4" />
+              <Icon :name="SOCIAL_TYPE_ICONS[s.type] ?? 'lucide:link'" class="size-4" />
             </a>
           </div>
         </div>

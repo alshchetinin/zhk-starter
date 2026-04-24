@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { contacts } from "@zhk/db/schema";
+import { contacts, SOCIAL_LINK_TYPES } from "@zhk/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure, siteProcedure } from "../index";
 
 const socialSchema = z.object({
   link: z.string().min(1),
-  type: z.enum(["vk", "telegram", "whatsapp", "ok", "youtube", "dzen"]),
+  type: z.enum(SOCIAL_LINK_TYPES),
 });
 
 const baseFields = {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { SOCIAL_TYPE_OPTIONS, type SocialLinkType } from "@zhk/api/shared/socials";
+
 export type ContactSocial = {
-  type: "vk" | "telegram" | "whatsapp" | "ok" | "youtube" | "dzen";
+  type: SocialLinkType;
   link: string;
 };
 
@@ -19,15 +21,6 @@ export type ContactFormValue = {
 };
 
 const model = defineModel<ContactFormValue>({ required: true });
-
-const socialTypeOptions = [
-  { label: "VK", value: "vk" },
-  { label: "Telegram", value: "telegram" },
-  { label: "WhatsApp", value: "whatsapp" },
-  { label: "Одноклассники", value: "ok" },
-  { label: "YouTube", value: "youtube" },
-  { label: "Дзен", value: "dzen" },
-];
 
 function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K]) {
   model.value = { ...model.value, [key]: value };
@@ -109,7 +102,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
             <UFormField label="Соцсеть" required>
               <USelect
                 :model-value="item.type"
-                :items="socialTypeOptions"
+                :items="SOCIAL_TYPE_OPTIONS"
                 class="w-full"
                 @update:model-value="update('type', $event)"
               />
