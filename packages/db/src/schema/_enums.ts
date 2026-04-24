@@ -21,7 +21,10 @@ export const integrationStatusEnum = pgEnum("integration_status", [
   "success",
 ]);
 
-export const integrationTypeEnum = pgEnum("integration_type", ["macro"]);
+export const integrationTypeEnum = pgEnum("integration_type", [
+  "macro",
+  "profitbase",
+]);
 
 export const syncLogTriggerEnum = pgEnum("sync_log_trigger", [
   "manual",

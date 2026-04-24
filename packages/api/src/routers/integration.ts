@@ -88,6 +88,119 @@ export const integrationRouter = {
       return { ...created, appSecret: "••••••••" };
     }),
 
+  setupProfitbase: protectedProcedure
+    .input(
+      z.object({
+        apiKey: z.string().min(1),
+        accountId: z.string().min(1),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const tenant = await db.query.sites.findFirst({
+        where: eq(sites.id, "default"),
+      });
+      if (!tenant) {
+        await db.insert(sites).values({
+          id: "default",
+          name: "Default",
+          slug: "default",
+        });
+      }
+
+      const encryptedKey = encrypt(input.apiKey);
+      const existing = await db.query.integrations.findFirst();
+
+      if (existing) {
+        if (existing.type && existing.type !== "profitbase") {
+          throw new ORPCError("CONFLICT", {
+            message: `Интеграция другого типа (${existing.type}) уже настроена.`,
+          });
+        }
+        const [updated] = await db
+          .update(integrations)
+          .set({
+            type: "profitbase",
+            profitbaseApiKey: encryptedKey,
+            profitbaseAccountId: input.accountId,
+            isActive: true,
+          })
+          .where(eq(integrations.id, existing.id))
+          .returning();
+        return { ...updated, profitbaseApiKey: "••••••••" };
+      }
+
+      const [created] = await db
+        .insert(integrations)
+        .values({
+          type: "profitbase",
+          profitbaseApiKey: encryptedKey,
+          profitbaseAccountId: input.accountId,
+          isActive: true,
+        })
+        .returning();
+
+      return { ...created, profitbaseApiKey: "••••••••" };
+    }),
+
+  verifyProfitbaseConnection: protectedProcedure.handler(async () => {
+    const integration = await db.query.integrations.findFirst();
+    if (
+      !integration?.profitbaseApiKey ||
+      !integration.profitbaseAccountId
+    ) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Profitbase integration not configured",
+      });
+    }
+
+    const apiKey = decrypt(integration.profitbaseApiKey);
+    const { verifyConnection } = await import("@zhk/profitbase");
+    const result = await verifyConnection({
+      apiKey,
+      accountId: integration.profitbaseAccountId,
+    });
+
+    await db
+      .update(integrations)
+      .set({ lastVerifiedAt: new Date() })
+      .where(eq(integrations.id, integration.id));
+
+    return { ok: true, ...result };
+  }),
+
+  getProfitbaseProjects: protectedProcedure.handler(async () => {
+    const integration = await db.query.integrations.findFirst();
+    if (
+      !integration?.profitbaseApiKey ||
+      !integration.profitbaseAccountId
+    ) {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Profitbase integration not configured",
+      });
+    }
+
+    const apiKey = decrypt(integration.profitbaseApiKey);
+    const { getProfitbaseProjects } = await import("@zhk/profitbase");
+    const [pbProjects, existingProjects] = await Promise.all([
+      getProfitbaseProjects({
+        apiKey,
+        accountId: integration.profitbaseAccountId,
+      }),
+      db.query.projects.findMany({
+        where: eq(projects.integrationId, integration.id),
+        columns: { externalId: true },
+      }),
+    ]);
+
+    return {
+      projects: pbProjects,
+      integrationId: integration.id,
+      existingProjectIds: existingProjects
+        .map((p) => (p.externalId ? parseInt(p.externalId, 10) : null))
+        .filter((id): id is number => id != null && !Number.isNaN(id)),
+    };
+  }),
+
   verifyConnection: protectedProcedure.handler(async () => {
     const integration = await db.query.integrations.findFirst();
 

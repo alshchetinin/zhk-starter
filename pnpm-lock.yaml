@@ -279,6 +279,9 @@ importers:
       '@zhk/macro':
         specifier: workspace:*
         version: link:../macro
+      '@zhk/profitbase':
+        specifier: workspace:*
+        version: link:../profitbase
       dotenv:
         specifier: 'catalog:'
         version: 17.3.1
@@ -407,6 +410,19 @@ importers:
       '@zhk/db':
         specifier: workspace:*
         version: link:../db
+    devDependencies:
+      '@zhk/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/profitbase:
+    dependencies:
+      '@zhk/macro':
+        specifier: workspace:*
+        version: link:../macro
     devDependencies:
       '@zhk/config':
         specifier: workspace:*
