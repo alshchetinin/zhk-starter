@@ -56,6 +56,45 @@ const hasSyncableProjects = computed(() =>
   data.value?.data.some((p) => p.macroComplexId && p.lastSyncStatus !== "loading") ?? false,
 );
 
+const showDeleteId = ref<string | null>(null);
+const projectToDelete = computed(() =>
+  data.value?.data.find((p) => p.id === showDeleteId.value) ?? null,
+);
+
+type ProjectsListData = typeof data extends { value: infer V } ? V : never;
+
+const deleteMutation = useMutation({
+  mutationFn: (id: string) => $orpcClient.projects.delete({ id }),
+  onMutate: async (id) => {
+    await queryClient.cancelQueries({ queryKey: $orpc.projects.list.key() });
+    const snapshots = queryClient.getQueriesData<ProjectsListData>({
+      queryKey: $orpc.projects.list.key(),
+    });
+    for (const [key, prev] of snapshots) {
+      if (!prev) continue;
+      queryClient.setQueryData(key, {
+        ...prev,
+        data: prev.data.filter((p) => p.id !== id),
+        total: Math.max(0, prev.total - 1),
+      });
+    }
+    return { snapshots };
+  },
+  onError: (_err, _id, ctx) => {
+    for (const [key, prev] of ctx?.snapshots ?? []) {
+      queryClient.setQueryData(key, prev);
+    }
+    toast.add({ title: "Не удалось удалить проект", color: "error" });
+  },
+  onSuccess: () => {
+    toast.add({ title: "Проект удалён", color: "success" });
+    showDeleteId.value = null;
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
+  },
+});
+
 function formatDate(date: string | Date | null | undefined) {
   if (!date) return null;
   return new Date(date).toLocaleString("ru-RU");
@@ -185,6 +224,17 @@ function formatDate(date: string | Date | null | undefined) {
           </div>
 
         </div>
+
+        <div class="shrink-0 flex items-start">
+          <UButton
+            variant="ghost"
+            color="error"
+            icon="i-tabler-trash"
+            size="sm"
+            class="rounded-xl"
+            @click.stop="showDeleteId = project.id"
+          />
+        </div>
       </div>
     </div>
 
@@ -204,6 +254,38 @@ function formatDate(date: string | Date | null | undefined) {
     <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
       <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
     </div>
+
+    <UModal
+      :open="projectToDelete != null"
+      title="Удалить проект?"
+      @update:open="(v) => { if (!v) showDeleteId = null }"
+    >
+      <template #body>
+        <p class="text-sm text-(--ui-text-muted)">
+          Проект <b>{{ projectToDelete?.name }}</b> будет удалён вместе со всеми
+          квартирами, коммерцией, паркингом и кладовыми. Действие необратимо.
+        </p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton
+            variant="outline"
+            class="rounded-xl"
+            @click="showDeleteId = null"
+          >
+            Отмена
+          </UButton>
+          <UButton
+            color="error"
+            :loading="deleteMutation.isPending.value"
+            class="rounded-xl"
+            @click="projectToDelete && deleteMutation.mutate(projectToDelete.id)"
+          >
+            Удалить
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
   </PageContainer>
 </template>

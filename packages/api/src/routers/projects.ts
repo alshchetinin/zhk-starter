@@ -1,6 +1,15 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { integrations, projects } from "@zhk/db/schema";
+import {
+  apartments,
+  apartmentPromotions,
+  commerce,
+  integrations,
+  nonResidentialFloors,
+  parking,
+  projects,
+  storage,
+} from "@zhk/db/schema";
 import { and, count, eq, ilike, inArray, isNotNull, isNull, ne, or } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
@@ -178,7 +187,29 @@ export const projectsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Project not found" });
       }
 
-      await db.delete(projects).where(eq(projects.id, input.id));
+      await db.transaction(async (tx) => {
+        const projectApartments = await tx
+          .select({ id: apartments.id })
+          .from(apartments)
+          .where(eq(apartments.projectId, input.id));
+        const apartmentIds = projectApartments.map((a) => a.id);
+
+        if (apartmentIds.length) {
+          await tx
+            .delete(apartmentPromotions)
+            .where(inArray(apartmentPromotions.apartmentId, apartmentIds));
+        }
+
+        await tx.delete(apartments).where(eq(apartments.projectId, input.id));
+        await tx.delete(commerce).where(eq(commerce.projectId, input.id));
+        await tx.delete(parking).where(eq(parking.projectId, input.id));
+        await tx.delete(storage).where(eq(storage.projectId, input.id));
+        await tx
+          .delete(nonResidentialFloors)
+          .where(eq(nonResidentialFloors.projectId, input.id));
+        await tx.delete(projects).where(eq(projects.id, input.id));
+      });
+
       return { success: true };
     }),
 
