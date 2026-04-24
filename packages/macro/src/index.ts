@@ -5,6 +5,7 @@ export type {
   ImportData,
   ImportProject,
   ImportBuilding,
+  ImportSection,
   ImportApartment,
   ImportApartmentLayout,
   ApartmentStatus,
