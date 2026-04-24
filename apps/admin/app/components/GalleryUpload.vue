@@ -19,6 +19,12 @@ const toast = useToast();
 const uploading = ref(false);
 const uploadProgress = ref<Record<string, number>>({});
 const dropZoneRef = ref<HTMLLabelElement>();
+const showMediaPicker = ref(false);
+
+function onPickMultiple(urls: string[]) {
+  if (urls.length) model.value = [...model.value, ...urls];
+  showMediaPicker.value = false;
+}
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop: (files) => {
@@ -152,6 +158,24 @@ function removeImage(index: number) {
         @change="handleFiles"
       />
     </label>
+
+    <div class="flex justify-center">
+      <UButton
+        variant="ghost"
+        size="xs"
+        icon="i-tabler-photo-search"
+        :disabled="uploading"
+        @click.prevent="showMediaPicker = true"
+      >
+        Выбрать из библиотеки
+      </UButton>
+    </div>
+
+    <MediaPickerModal
+      v-model:open="showMediaPicker"
+      multiple
+      @select-multiple="onPickMultiple"
+    />
 
     <!-- Upload progress -->
     <div v-if="Object.keys(uploadProgress).length" class="space-y-2">

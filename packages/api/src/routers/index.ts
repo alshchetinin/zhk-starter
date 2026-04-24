@@ -28,6 +28,7 @@ import { usersRouter } from "./users";
 import { versionsRouter } from "./versions";
 import { devRouter } from "./dev/index";
 import { modalsRouter } from "./modals";
+import { mediaRouter } from "./media";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
@@ -61,6 +62,7 @@ export const appRouter = {
   versions: versionsRouter,
   dev: devRouter,
   modals: modalsRouter,
+  media: mediaRouter,
 };
 
 export type AppRouter = typeof appRouter;
