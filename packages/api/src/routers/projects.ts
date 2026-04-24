@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import {
+  apartmentLayouts,
   apartments,
   buildings,
   commerce,
@@ -15,6 +16,7 @@ import {
   storage,
   tickets,
 } from "@zhk/db/schema";
+import { notInArray } from "drizzle-orm";
 import { and, count, eq, ilike, inArray, isNotNull, isNull, ne, or } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
@@ -271,6 +273,22 @@ export const projectsRouter = {
         }
 
         await tx.delete(projects).where(eq(projects.id, input.id));
+
+        const stillReferenced = await tx
+          .selectDistinct({ id: apartments.apartmentLayoutId })
+          .from(apartments)
+          .where(isNotNull(apartments.apartmentLayoutId));
+        const usedLayoutIds = stillReferenced
+          .map((r) => r.id)
+          .filter((id): id is string => id != null);
+
+        if (usedLayoutIds.length) {
+          await tx
+            .delete(apartmentLayouts)
+            .where(notInArray(apartmentLayouts.id, usedLayoutIds));
+        } else {
+          await tx.delete(apartmentLayouts);
+        }
       });
 
       return { success: true };
