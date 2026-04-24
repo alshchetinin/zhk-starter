@@ -2,6 +2,7 @@ export * from "./_enums";
 export * from "./_shared";
 export * from "./sites";
 export * from "./integrations";
+export * from "./sync-logs";
 export * from "./cities";
 export * from "./projects";
 export * from "./buildings";

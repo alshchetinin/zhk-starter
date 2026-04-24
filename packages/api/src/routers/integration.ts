@@ -1,10 +1,12 @@
 import { ORPCError } from "@orpc/server";
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { integrations, sites, projects } from "@zhk/db/schema";
-import { eq } from "drizzle-orm";
+import { integrations, sites, projects, syncLogs } from "@zhk/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 import { protectedProcedure } from "../index";
 import { encrypt, decrypt } from "../utils/encryption";
+import { runIntegrationSync } from "../services/sync";
+import { sendTelegramMessage } from "../services/notify";
 
 export const integrationRouter = {
   get: protectedProcedure.handler(async () => {
@@ -167,62 +169,159 @@ export const integrationRouter = {
         });
       }
 
-      await db
-        .update(integrations)
-        .set({ status: "loading" })
-        .where(eq(integrations.id, input.integrationId));
-
-      runMacroSync(integration, input.complexes).catch(async (err) => {
-        console.error("[sync] Failed:", err);
-        await db
-          .update(integrations)
-          .set({ status: "failed" })
-          .where(eq(integrations.id, input.integrationId));
+      runIntegrationSync(integration, {
+        trigger: "manual",
+        complexes: input.complexes,
+      }).catch((err) => {
+        console.error("[sync] Unhandled error:", err);
       });
 
       return { status: "loading" as const, integrationId: input.integrationId };
     }),
+
+  updateSyncSettings: protectedProcedure
+    .input(
+      z.object({
+        integrationId: z.string(),
+        autoSyncEnabled: z.boolean().optional(),
+        syncIntervalMinutes: z.number().int().min(5).max(1440).optional(),
+        pausedUntil: z.date().nullable().optional(),
+        syncWindowStart: z.number().int().min(0).max(23).nullable().optional(),
+        syncWindowEnd: z.number().int().min(0).max(23).nullable().optional(),
+        retryAttempts: z.number().int().min(0).max(10).optional(),
+        retryDelayMinutes: z.number().int().min(1).max(1440).optional(),
+        logsRetentionDays: z.number().int().min(1).max(365).optional(),
+        notifyLevel: z.enum(["none", "errors", "all"]).optional(),
+        notifyTelegramBotToken: z.string().nullable().optional(),
+        notifyTelegramChatId: z.string().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const { integrationId, ...patch } = input;
+      const existing = await db.query.integrations.findFirst({
+        where: eq(integrations.id, integrationId),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Integration not found" });
+      }
+
+      const update: Partial<typeof integrations.$inferInsert> = { ...patch };
+
+      if (patch.autoSyncEnabled === true && !existing.nextSyncAt) {
+        update.nextSyncAt = new Date();
+      }
+      if (patch.autoSyncEnabled === false) {
+        update.nextSyncAt = null;
+      }
+
+      const [updated] = await db
+        .update(integrations)
+        .set(update)
+        .where(eq(integrations.id, integrationId))
+        .returning();
+
+      return { ...updated, appSecret: updated.appSecret ? "••••••••" : null };
+    }),
+
+  pauseSync: protectedProcedure
+    .input(
+      z.object({
+        integrationId: z.string(),
+        until: z.date().nullable(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      await db
+        .update(integrations)
+        .set({ pausedUntil: input.until })
+        .where(eq(integrations.id, input.integrationId));
+      return { ok: true };
+    }),
+
+  testNotification: protectedProcedure
+    .input(z.object({ integrationId: z.string() }))
+    .handler(async ({ input }) => {
+      const integration = await db.query.integrations.findFirst({
+        where: eq(integrations.id, input.integrationId),
+      });
+      if (!integration) {
+        throw new ORPCError("NOT_FOUND", { message: "Integration not found" });
+      }
+      if (
+        !integration.notifyTelegramBotToken ||
+        !integration.notifyTelegramChatId
+      ) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "Telegram not configured",
+        });
+      }
+      const result = await sendTelegramMessage(
+        integration.notifyTelegramBotToken,
+        integration.notifyTelegramChatId,
+        `✅ Тестовое уведомление\nИнтеграция: ${integration.domain ?? integration.id}`,
+      );
+      if (!result.ok) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: result.error ?? "Failed to send",
+        });
+      }
+      return { ok: true };
+    }),
+
+  cancelRunningSync: protectedProcedure
+    .input(z.object({ integrationId: z.string() }))
+    .handler(async ({ input }) => {
+      await db
+        .update(integrations)
+        .set({ cancelRequested: true })
+        .where(eq(integrations.id, input.integrationId));
+      return { ok: true };
+    }),
+
+  listLogs: protectedProcedure
+    .input(
+      z.object({
+        integrationId: z.string().optional(),
+        status: z
+          .enum(["running", "success", "failed", "cancelled"])
+          .optional(),
+        limit: z.number().int().min(1).max(100).default(50),
+        offset: z.number().int().min(0).default(0),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const conditions = [];
+      if (input.integrationId)
+        conditions.push(eq(syncLogs.integrationId, input.integrationId));
+      if (input.status) conditions.push(eq(syncLogs.status, input.status));
+
+      const where = conditions.length ? and(...conditions) : undefined;
+
+      const [items, countRow] = await Promise.all([
+        db.query.syncLogs.findMany({
+          where,
+          orderBy: (t, { desc }) => [desc(t.startedAt)],
+          limit: input.limit,
+          offset: input.offset,
+        }),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(syncLogs)
+          .where(where),
+      ]);
+
+      return { items, total: countRow[0]?.count ?? 0 };
+    }),
+
+  getLogById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const log = await db.query.syncLogs.findFirst({
+        where: eq(syncLogs.id, input.id),
+      });
+      if (!log) {
+        throw new ORPCError("NOT_FOUND", { message: "Log not found" });
+      }
+      return log;
+    }),
 };
-
-async function runMacroSync(
-  integration: typeof integrations.$inferSelect,
-  complexes: number[],
-) {
-  const { getMacroData } = await import("@zhk/macro");
-  const { importAllData } = await import("@zhk/import");
-
-  const appSecret = integration.appSecret
-    ? decrypt(integration.appSecret)
-    : integration.appSecret!;
-
-  const macroConfig = {
-    id: integration.id,
-    siteId: integration.siteId,
-    domain: integration.domain!,
-    appSecret,
-    apiDomain: integration.apiDomain ?? "api.macroserver.ru",
-  };
-
-  console.log(`[sync] Starting sync for integration ${integration.id}...`);
-
-  const importData = await getMacroData(macroConfig, complexes);
-  const result = await importAllData(
-    importData,
-    integration.id,
-    integration.siteId,
-  );
-
-  if (result.success) {
-    await db
-      .update(integrations)
-      .set({ status: "success" })
-      .where(eq(integrations.id, integration.id));
-    console.log(`[sync] Integration ${integration.id} completed successfully`);
-  } else {
-    await db
-      .update(integrations)
-      .set({ status: "failed" })
-      .where(eq(integrations.id, integration.id));
-    console.error(`[sync] Integration ${integration.id} failed: ${result.error}`);
-  }
-}
