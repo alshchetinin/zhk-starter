@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import {
+  apartmentLayouts,
   apartments,
   entrances,
   floorLayouts,
@@ -108,6 +109,152 @@ export const sectionsRouter = {
         .where(eq(sections.id, input.id))
         .returning();
       return updated;
+    }),
+
+  createStructure: protectedProcedure
+    .input(
+      z.object({
+        buildingId: z.string(),
+        sectionId: z.string().nullable().optional(),
+        sectionName: z.string().min(1).optional(),
+        stacks: z
+          .array(
+            z.object({
+              startFloor: z.number().int(),
+              endFloor: z.number().int(),
+              apartments: z
+                .array(
+                  z.object({
+                    number: z.number().int().min(1),
+                    roomsCount: z.number().int().min(0),
+                    area: z.number().positive(),
+                    customNumbers: z.record(z.string(), z.string()).optional(),
+                  }),
+                )
+                .min(1),
+            }),
+          )
+          .min(1),
+      }),
+    )
+    .handler(async ({ input }) => {
+      if (!input.sectionId && !input.sectionName) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: "sectionId or sectionName required",
+        });
+      }
+
+      const result = await db.transaction(async (tx) => {
+        // 1. Section — use existing or create
+        let sectionId = input.sectionId;
+        if (!sectionId) {
+          const maxEnd = Math.max(...input.stacks.map((s) => s.endFloor));
+          const [created] = await tx
+            .insert(sections)
+            .values({
+              name: input.sectionName!,
+              buildingId: input.buildingId,
+              floorsCount: maxEnd,
+            })
+            .returning();
+          sectionId = created.id;
+        }
+
+        // 2. Dedupe layouts across all stacks
+        const layoutKey = (rooms: number, area: number) =>
+          `${rooms}-${area}`;
+        const layoutName = (rooms: number, area: number) =>
+          rooms === 0 ? `Студия ${area}м²` : `${rooms}к ${area}м²`;
+
+        const uniqueLayouts = new Map<
+          string,
+          { roomsCount: number; area: number }
+        >();
+        for (const stack of input.stacks) {
+          for (const apt of stack.apartments) {
+            uniqueLayouts.set(layoutKey(apt.roomsCount, apt.area), {
+              roomsCount: apt.roomsCount,
+              area: apt.area,
+            });
+          }
+        }
+
+        const layoutIdByKey = new Map<string, string>();
+        if (uniqueLayouts.size > 0) {
+          const inserted = await tx
+            .insert(apartmentLayouts)
+            .values(
+              [...uniqueLayouts.values()].map((l) => ({
+                name: layoutName(l.roomsCount, l.area),
+                roomsCount: l.roomsCount,
+                area: String(l.area),
+              })),
+            )
+            .returning();
+          // Map by key in insertion order
+          const values = [...uniqueLayouts.entries()];
+          for (let i = 0; i < inserted.length; i++) {
+            layoutIdByKey.set(values[i]![0], inserted[i]!.id);
+          }
+        }
+
+        // 3. For each stack: expand floors, create floor rows and apartments
+        let totalApartments = 0;
+        let totalFloors = 0;
+
+        for (const stack of input.stacks) {
+          const lo = Math.min(stack.startFloor, stack.endFloor);
+          const hi = Math.max(stack.startFloor, stack.endFloor);
+          const floorNumbers: number[] = [];
+          for (let f = lo; f <= hi; f++) floorNumbers.push(f);
+
+          const floorRows = await tx
+            .insert(floors)
+            .values(
+              floorNumbers.map((n) => ({
+                sectionId: sectionId!,
+                floorNumber: n,
+              })),
+            )
+            .returning({ id: floors.id, floorNumber: floors.floorNumber });
+          totalFloors += floorRows.length;
+
+          const aptValues: (typeof apartments.$inferInsert)[] = [];
+          for (const fr of floorRows) {
+            for (const apt of stack.apartments) {
+              const key = `${fr.floorNumber}`;
+              const customNumber = apt.customNumbers?.[key];
+              const autoNumber = `${fr.floorNumber! * 100 + apt.number}`;
+              const number = customNumber?.trim() || autoNumber;
+              aptValues.push({
+                name: `Квартира ${number}`,
+                apartmentNumber: number,
+                area: String(apt.area),
+                price: "0",
+                floorNumber: fr.floorNumber!,
+                roomsCount: apt.roomsCount,
+                status: "free",
+                isPublished: true,
+                sectionId: sectionId!,
+                buildingId: input.buildingId,
+                floorId: fr.id,
+                apartmentLayoutId: layoutIdByKey.get(
+                  layoutKey(apt.roomsCount, apt.area),
+                )!,
+              });
+            }
+          }
+
+          if (aptValues.length) {
+            await tx.insert(apartments).values(aptValues);
+            totalApartments += aptValues.length;
+          }
+        }
+
+        return { sectionId, totalApartments, totalFloors };
+      });
+
+      return result;
     }),
 
   delete: protectedProcedure

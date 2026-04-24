@@ -269,13 +269,25 @@ const isSectionSubmitting = computed(
           <h2 class="text-lg font-semibold">
             Секции ({{ building.sections?.length ?? 0 }})
           </h2>
-          <UButton
-            icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-            @click="openCreateSection"
-          >
-            Добавить секцию
-          </UButton>
+          <div class="flex gap-2">
+            <NuxtLink :to="`/sections/create?buildingId=${id}`">
+              <UButton
+                icon="i-tabler-stack-2"
+                variant="outline"
+                color="neutral"
+                class="rounded-xl"
+              >
+                Заполнить секцию
+              </UButton>
+            </NuxtLink>
+            <UButton
+              icon="i-tabler-plus"
+              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+              @click="openCreateSection"
+            >
+              Пустая секция
+            </UButton>
+          </div>
         </div>
         <div
           v-if="building.sections?.length"
