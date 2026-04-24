@@ -140,7 +140,7 @@ const deleteMutation = useMutation({
 
           <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4">
             <h3 class="text-sm font-semibold">Поля формы</h3>
-            <ModalsModalFieldsEditor v-model="form.fields" />
+            <ModalFieldsEditor v-model="form.fields" />
           </div>
         </div>
 
