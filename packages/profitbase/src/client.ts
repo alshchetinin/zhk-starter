@@ -39,6 +39,10 @@ export interface ProfitbaseProperty {
   projectId: number;
   projectName: string;
   developmentEndQuarter?: { year: number; quarter: number };
+  // Назначение помещения в Profitbase v4 — различает квартиру/паркинг/кладовую/коммерцию.
+  typePurpose?: string | null;
+  layout_type?: string | null;
+  preset?: { name?: string | null; alias?: string | null } | string | null;
 }
 
 function baseUrl(accountId: string): string {
@@ -86,15 +90,18 @@ async function authenticate(config: ProfitbaseConfig): Promise<string> {
 async function apiFetch(
   config: ProfitbaseConfig,
   path: string,
-  params: Record<string, string | number> = {},
+  params: Record<string, string | number | boolean | string[]> = {},
 ): Promise<unknown> {
   const token = await authenticate(config);
-  const qs = new URLSearchParams({
-    access_token: token,
-    ...Object.fromEntries(
-      Object.entries(params).map(([k, v]) => [k, String(v)]),
-    ),
-  });
+  const qs = new URLSearchParams();
+  qs.set("access_token", token);
+  for (const [k, v] of Object.entries(params)) {
+    if (Array.isArray(v)) {
+      for (const item of v) qs.append(`${k}[]`, String(item));
+    } else {
+      qs.set(k, String(v));
+    }
+  }
 
   for (let attempt = 0; attempt < 3; attempt++) {
     await throttle();
@@ -137,6 +144,22 @@ export async function getHouses(
   return data.data ?? [];
 }
 
+export interface ProfitbasePropertyType {
+  id: number;
+  alias: string;
+  name: string;
+}
+
+export async function getPropertyTypes(
+  config: ProfitbaseConfig,
+): Promise<ProfitbasePropertyType[]> {
+  const raw = (await apiFetch(config, "/property-types")) as
+    | { data?: ProfitbasePropertyType[] }
+    | ProfitbasePropertyType[];
+  if (Array.isArray(raw)) return raw;
+  return raw.data ?? [];
+}
+
 export async function getProperties(
   config: ProfitbaseConfig,
   projectIds: number[] = [],
@@ -145,8 +168,16 @@ export async function getProperties(
     ? projectIds
     : (await getProjects(config)).map((p) => p.id);
 
+  const propertyTypes = await getPropertyTypes(config);
+  const aliases = propertyTypes.map((t) => t.alias).filter(Boolean);
+  console.log(
+    `[profitbase] property type aliases:`,
+    propertyTypes.map((t) => `${t.alias}="${t.name}"`),
+  );
+
   const all: ProfitbaseProperty[] = [];
   const pageSize = 100;
+  let loggedSample = false;
 
   for (const projectId of targets) {
     let offset = 0;
@@ -157,8 +188,24 @@ export async function getProperties(
         full: true,
         limit: pageSize,
         offset,
+        ...(aliases.length ? { propertyTypeAliases: aliases } : {}),
       })) as { data: ProfitbaseProperty[] };
       const chunk = data.data ?? [];
+      if (!loggedSample && chunk.length) {
+        const byPurpose = new Map<string, ProfitbaseProperty>();
+        for (const p of chunk) {
+          const key = p.typePurpose ?? "null";
+          if (!byPurpose.has(key)) byPurpose.set(key, p);
+        }
+        console.log(
+          `[profitbase] typePurpose samples:`,
+          Array.from(byPurpose.entries()).map(
+            ([purpose, p]) =>
+              `${purpose}: id=${p.id} number=${p.number} layout_type=${p.layout_type}`,
+          ),
+        );
+        loggedSample = true;
+      }
       all.push(...chunk);
       if (chunk.length < pageSize) break;
       offset += pageSize;

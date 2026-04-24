@@ -2,7 +2,10 @@ import type {
   ImportApartment,
   ImportApartmentLayout,
   ImportBuilding,
+  ImportCommercial,
   ImportData,
+  ImportNonResidentialFloor,
+  ImportNonResidentialRealty,
   ImportProject,
   ImportSection,
   ApartmentStatus,
@@ -23,6 +26,30 @@ const STATUS_MAP: Record<string, ApartmentStatus> = {
 
 function mapStatus(raw: string): ApartmentStatus {
   return STATUS_MAP[raw.toUpperCase()] ?? "free";
+}
+
+type PropertyKind = "apartment" | "commerce" | "parking" | "storage";
+
+function presetText(p: ProfitbaseProperty): string {
+  if (!p.preset) return "";
+  if (typeof p.preset === "string") return p.preset;
+  return [p.preset.name, p.preset.alias].filter(Boolean).join(" ");
+}
+
+function classify(p: ProfitbaseProperty): PropertyKind {
+  const purpose = (p.typePurpose ?? "").toLowerCase();
+  const hints = `${purpose} ${p.layout_type ?? ""} ${presetText(p)}`.toLowerCase();
+
+  if (/parking|garage|паркинг|машино/.test(hints)) return "parking";
+  if (/storage|cellar|кладов|pantry/.test(hints)) return "storage";
+  if (/commerc|office|retail|коммерц|офис|магазин/.test(hints)) return "commerce";
+  if (/apartment|flat|living|квартир|жил/.test(hints)) return "apartment";
+  // Fallback: если тип назначения не распознан — считаем квартирой.
+  return "apartment";
+}
+
+function nonResFloorId(p: ProfitbaseProperty): string {
+  return `${p.house_id}-nrf-${p.floor ?? 0}`;
 }
 
 export interface ProfitbaseAdapterInput {
@@ -63,12 +90,24 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
       ...base,
     }));
 
-  const residential = input.properties.filter(
-    (p) =>
-      p.propertyType?.toLowerCase() !== "commercial" &&
-      p.house_id != null &&
-      p.projectId != null,
+  const validProps = input.properties.filter(
+    (p) => p.house_id != null && p.projectId != null,
   );
+
+  const classified = validProps.map((p) => ({ p, kind: classify(p) }));
+  const residential = classified
+    .filter((x) => x.kind === "apartment")
+    .map((x) => x.p);
+  const parkingProps = classified
+    .filter((x) => x.kind === "parking")
+    .map((x) => x.p);
+  const storageProps = classified
+    .filter((x) => x.kind === "storage")
+    .map((x) => x.p);
+  const commerceProps = classified
+    .filter((x) => x.kind === "commerce")
+    .map((x) => x.p);
+  const commercialAll = [...parkingProps, ...storageProps, ...commerceProps];
 
   function sectionKey(p: (typeof residential)[number]): string {
     const s = p.sectionNumber ?? p.sectionName ?? "default";
@@ -134,20 +173,6 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
     };
   });
 
-  const withoutLayoutCode = residential.filter((p) => !p.layoutCode).length;
-  const withoutImage = residential.filter(
-    (p) => !p.planImages?.length,
-  ).length;
-  console.log(
-    `[profitbase] properties=${residential.length} layouts=${apartment_layouts.length} withoutLayoutCode=${withoutLayoutCode} withoutPlanImages=${withoutImage}`,
-  );
-  if (apartment_layouts.length && !apartment_layouts.some((l) => l.default_layout_image)) {
-    console.log(
-      `[profitbase] sample property planImages:`,
-      JSON.stringify(residential[0]?.planImages ?? null),
-    );
-  }
-
   const apartments: ImportApartment[] = residential.map((p) => ({
     external_id: p.id.toString(),
     name: `№ ${p.number}`,
@@ -170,5 +195,81 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
     ...base,
   }));
 
-  return { projects, buildings, sections, apartment_layouts, apartments };
+  // Нежилые этажи: уникальные (house_id, floor) по всем нежилым лотам
+  const nonResFloorSet = new Map<string, ProfitbaseProperty>();
+  for (const p of commercialAll) {
+    const id = nonResFloorId(p);
+    if (!nonResFloorSet.has(id)) nonResFloorSet.set(id, p);
+  }
+
+  const non_residential_floors: ImportNonResidentialFloor[] = Array.from(
+    nonResFloorSet.values(),
+  ).map((p) => ({
+    external_id: nonResFloorId(p),
+    floor_number: p.floor ?? 0,
+    external_project_id: p.projectId!.toString(),
+    external_building_id: p.house_id!.toString(),
+    ...base,
+  }));
+
+  const commerce: ImportCommercial[] = commerceProps.map((p) => ({
+    external_id: p.id.toString(),
+    name: `№ ${p.number}`,
+    area: p.area?.area_total ?? 0,
+    price: p.price?.value ?? 0,
+    old_price: 0,
+    floor_number: p.floor ?? 0,
+    status: mapStatus(p.status),
+    is_published: true,
+    is_popular: false,
+    commerce_number: p.number,
+    category: p.typePurpose ?? null,
+    layout_image: p.planImages?.[0]?.source ?? null,
+    external_project_id: p.projectId!.toString(),
+    external_building_id: p.house_id!.toString(),
+    external_floor_id: nonResFloorId(p),
+    ...base,
+  }));
+
+  const mapNonResidential = (
+    props: ProfitbaseProperty[],
+  ): ImportNonResidentialRealty[] =>
+    props.map((p) => ({
+      external_id: p.id.toString(),
+      name: `№ ${p.number}`,
+      area: p.area?.area_total ?? 0,
+      price: p.price?.value ?? 0,
+      old_price: 0,
+      floor_number: p.floor ?? 0,
+      status: mapStatus(p.status),
+      is_published: true,
+      is_popular: false,
+      external_project_id: p.projectId!.toString(),
+      external_building_id: p.house_id!.toString(),
+      external_floor_id: nonResFloorId(p),
+      ...base,
+    }));
+
+  const parking = mapNonResidential(parkingProps);
+  const storage = mapNonResidential(storageProps);
+
+  const withoutLayoutCode = residential.filter((p) => !p.layoutCode).length;
+  const withoutImage = residential.filter(
+    (p) => !p.planImages?.length,
+  ).length;
+  console.log(
+    `[profitbase] apartments=${apartments.length} layouts=${apartment_layouts.length} commerce=${commerce.length} parking=${parking.length} storage=${storage.length} non_res_floors=${non_residential_floors.length} withoutLayoutCode=${withoutLayoutCode} withoutPlanImages=${withoutImage}`,
+  );
+
+  return {
+    projects,
+    buildings,
+    sections,
+    apartment_layouts,
+    apartments,
+    commerce,
+    parking,
+    storage,
+    non_residential_floors,
+  };
 }

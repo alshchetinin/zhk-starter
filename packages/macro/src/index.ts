@@ -8,6 +8,10 @@ export type {
   ImportSection,
   ImportApartment,
   ImportApartmentLayout,
+  ImportCommercial,
+  ImportNonResidentialFloor,
+  ImportNonResidentialRealty,
   ApartmentStatus,
   MacroComplex,
+  MacroFlat,
 } from "./types";

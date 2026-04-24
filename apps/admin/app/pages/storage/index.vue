@@ -30,7 +30,7 @@ function clearFilters() {
 
 const { data, isPending } = useQuery(
   computed(() =>
-    $orpc.commerce.list.queryOptions({
+    $orpc.storage.list.queryOptions({
       input: {
         page: page.value,
         pageSize,
@@ -41,12 +41,11 @@ const { data, isPending } = useQuery(
 );
 
 const columns = [
-  { accessorKey: "name", header: "Name" },
-  { id: "category", header: "Category" },
-  { accessorKey: "area", header: "Area m²" },
-  { id: "price", header: "Price" },
-  { accessorKey: "floorNumber", header: "Floor" },
-  { id: "project", header: "Project" },
+  { accessorKey: "name", header: "Номер" },
+  { accessorKey: "area", header: "Площадь, м²" },
+  { id: "price", header: "Цена" },
+  { accessorKey: "floorNumber", header: "Этаж" },
+  { id: "project", header: "Проект" },
 ];
 
 function formatPrice(price: string | number | null) {
@@ -56,7 +55,7 @@ function formatPrice(price: string | number | null) {
 
 function prefetch(id: string) {
   queryClient.prefetchQuery(
-    $orpc.commerce.getById.queryOptions({ input: { id } }),
+    $orpc.storage.getById.queryOptions({ input: { id } }),
   );
 }
 </script>
@@ -64,34 +63,32 @@ function prefetch(id: string) {
 <template>
   <PageContainer>
     <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Commerce</h1>
+      <h1 class="text-2xl font-bold">Кладовки</h1>
       <UButton
         icon="i-tabler-filter"
         variant="outline"
         color="neutral"
         @click="filterOpen = true"
       >
-        Filters
+        Фильтры
         <UBadge v-if="activeFiltersCount" :label="String(activeFiltersCount)" size="sm" color="primary" class="ml-1" />
       </UButton>
     </div>
 
-    <!-- Filter Drawer -->
-    <USlideover v-model:open="filterOpen" title="Filters" side="right">
+    <USlideover v-model:open="filterOpen" title="Фильтры" side="right">
       <template #body>
         <div class="flex flex-col gap-5 p-4">
           <div>
-            <label class="mb-1.5 block text-sm font-medium">Project</label>
+            <label class="mb-1.5 block text-sm font-medium">Проект</label>
             <USelect
               v-model="projectFilter"
               :items="projectItems"
-              placeholder="All Projects"
+              placeholder="Все проекты"
             />
           </div>
-
           <div class="flex gap-2 mt-2">
-            <UButton block @click="filterOpen = false">Apply</UButton>
-            <UButton block variant="outline" color="neutral" @click="clearFilters">Clear</UButton>
+            <UButton block @click="filterOpen = false">Применить</UButton>
+            <UButton block variant="outline" color="neutral" @click="clearFilters">Сбросить</UButton>
           </div>
         </div>
       </template>
@@ -102,19 +99,12 @@ function prefetch(id: string) {
       :columns="columns"
       :loading="isPending"
       :ui="{ tr: 'cursor-pointer hover:bg-(--ui-bg-elevated)' }"
-      @select="(row: any) => router.push(`/commerce/${row.original.id}`)"
+      @select="(row: any) => router.push(`/storage/${row.original.id}`)"
     >
       <template #name-cell="{ row }">
         <span class="font-medium" @mouseenter="prefetch(row.original.id)">
           {{ row.original.name ?? '—' }}
         </span>
-      </template>
-
-      <template #category-cell="{ row }">
-        <UBadge v-if="row.original.category" variant="subtle" color="neutral">
-          {{ row.original.category }}
-        </UBadge>
-        <span v-else class="text-(--ui-text-muted)">—</span>
       </template>
 
       <template #price-cell="{ row }">
@@ -126,6 +116,7 @@ function prefetch(id: string) {
           v-if="row.original.project"
           :to="`/projects/${row.original.project.id}`"
           class="text-primary hover:underline"
+          @click.stop
         >
           {{ row.original.project.name }}
         </NuxtLink>
