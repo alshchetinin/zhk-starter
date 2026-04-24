@@ -23,6 +23,25 @@ export const integrationStatusEnum = pgEnum("integration_status", [
 
 export const integrationTypeEnum = pgEnum("integration_type", ["macro"]);
 
+export const syncLogTriggerEnum = pgEnum("sync_log_trigger", [
+  "manual",
+  "scheduled",
+  "retry",
+]);
+
+export const syncLogStatusEnum = pgEnum("sync_log_status", [
+  "running",
+  "success",
+  "failed",
+  "cancelled",
+]);
+
+export const syncNotifyLevelEnum = pgEnum("sync_notify_level", [
+  "none",
+  "errors",
+  "all",
+]);
+
 export const newsStatusEnum = pgEnum("news_status", [
   "draft",
   "published",

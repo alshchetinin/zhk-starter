@@ -7,6 +7,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
+import { startScheduler } from "./scheduler";
 
 const app = new Hono();
 
@@ -45,5 +46,6 @@ app.get("/", (c) => c.text("OK"));
 const port = 3000;
 console.log(`Server running on http://localhost:${port}`);
 serve({ fetch: app.fetch, port });
+startScheduler();
 
 export default app;

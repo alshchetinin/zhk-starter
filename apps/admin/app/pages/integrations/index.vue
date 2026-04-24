@@ -169,13 +169,33 @@ const createBatchMutation = useMutation({
     </div>
 
     <template v-else>
-      <div class="mb-6">
-        <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-          Интеграции
-        </h1>
-        <p class="text-(--ui-text-muted) text-sm mt-1">
-          Настройка подключения к CRM-системам
-        </p>
+      <div class="mb-6 flex items-start justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
+            Интеграции
+          </h1>
+          <p class="text-(--ui-text-muted) text-sm mt-1">
+            Настройка подключения к CRM-системам
+          </p>
+        </div>
+        <div v-if="hasIntegration" class="flex gap-2">
+          <UButton
+            variant="outline"
+            icon="i-tabler-settings"
+            class="rounded-xl"
+            to="/integrations/settings"
+          >
+            Синхронизация
+          </UButton>
+          <UButton
+            variant="outline"
+            icon="i-tabler-history"
+            class="rounded-xl"
+            to="/integrations/logs"
+          >
+            Логи
+          </UButton>
+        </div>
       </div>
 
       <div class="max-w-2xl space-y-6">
