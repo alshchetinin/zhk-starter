@@ -1,5 +1,5 @@
 import { db } from "@zhk/db";
-import { integrations, syncLogs } from "@zhk/db/schema";
+import { integrations, projects, syncLogs } from "@zhk/db/schema";
 import type { SyncLogStats, SyncLogTrigger } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { decrypt } from "../utils/encryption";
@@ -37,6 +37,20 @@ export async function runIntegrationSync(
 
   try {
     const stats = await runByType(integration, opts.complexes ?? []);
+
+    const { recalculateProjectStatistics } = await import("@zhk/db/queries/statistics");
+    const projectRows = await db.query.projects.findMany({
+      where: eq(projects.integrationId, integration.id),
+      columns: { id: true },
+    });
+    const results = await Promise.allSettled(
+      projectRows.map((p) => recalculateProjectStatistics(p.id)),
+    );
+    results.forEach((r, i) => {
+      if (r.status === "rejected") {
+        console.error(`[sync] stats recalculation failed for ${projectRows[i]!.id}:`, r.reason);
+      }
+    });
 
     const finishedAt = new Date();
     const durationMs = finishedAt.getTime() - startedAt.getTime();

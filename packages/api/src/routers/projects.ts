@@ -55,14 +55,27 @@ export const projectsRouter = {
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
-      const project = await db.query.projects.findFirst({
-        where: eq(projects.id, input.id),
-        with: { city: true, buildings: true },
-      });
+      const { getProjectApartmentStats } = await import(
+        "@zhk/db/queries/statistics"
+      );
+      const [project, stats] = await Promise.all([
+        db.query.projects.findFirst({
+          where: eq(projects.id, input.id),
+          with: { city: true, buildings: true },
+        }),
+        getProjectApartmentStats(input.id),
+      ]);
       if (!project) {
         throw new ORPCError("NOT_FOUND", { message: "Project not found" });
       }
-      return project;
+      return {
+        ...project,
+        totalApartmentsCount: stats.total,
+        freeApartmentsCount: stats.free,
+        paidReservationCount: stats.paid,
+        corporateReservationCount: stats.corporate,
+        soldApartmentsCount: stats.sold,
+      };
     }),
 
   createBatch: protectedProcedure

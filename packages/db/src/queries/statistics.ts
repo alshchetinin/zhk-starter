@@ -4,11 +4,8 @@ import { apartments } from "../schema/apartments";
 import { projects } from "../schema/projects";
 import { buildings } from "../schema/buildings";
 
-export async function recalculateProjectStatistics(
-  projectId: string,
-): Promise<void> {
-  // Project-level stats
-  const [projectStats] = await db
+export async function getProjectApartmentStats(projectId: string) {
+  const [stats] = await db
     .select({
       total: sql<number>`count(*)::int`,
       free: sql<number>`count(*) filter (where ${apartments.status} = 'free')::int`,
@@ -18,19 +15,25 @@ export async function recalculateProjectStatistics(
     })
     .from(apartments)
     .where(eq(apartments.projectId, projectId));
+  return stats ?? { total: 0, free: 0, paid: 0, corporate: 0, sold: 0 };
+}
+
+export async function recalculateProjectStatistics(
+  projectId: string,
+): Promise<void> {
+  const projectStats = await getProjectApartmentStats(projectId);
 
   await db
     .update(projects)
     .set({
-      totalApartmentsCount: projectStats?.total ?? 0,
-      freeApartmentsCount: projectStats?.free ?? 0,
-      paidReservationCount: projectStats?.paid ?? 0,
-      corporateReservationCount: projectStats?.corporate ?? 0,
-      soldApartmentsCount: projectStats?.sold ?? 0,
+      totalApartmentsCount: projectStats.total,
+      freeApartmentsCount: projectStats.free,
+      paidReservationCount: projectStats.paid,
+      corporateReservationCount: projectStats.corporate,
+      soldApartmentsCount: projectStats.sold,
     })
     .where(eq(projects.id, projectId));
 
-  // Building-level stats
   const buildingStats = await db
     .select({
       buildingId: apartments.buildingId,
