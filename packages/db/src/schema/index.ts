@@ -27,6 +27,7 @@ export * from "./news";
 export * from "./pages";
 export * from "./documents";
 export * from "./contacts";
+export * from "./social-links";
 export * from "./homepage";
 export * from "./construction-progress";
 export * from "./ticket-settings";

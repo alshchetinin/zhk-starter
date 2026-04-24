@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { NavItem } from "~/composables/useNavigation";
+import { telHref } from "~/utils/phone";
 
 defineProps<{
   navItems: NavItem[];
@@ -17,6 +18,9 @@ if (import.meta.client) {
 
 const isMobileMenuOpen = ref(false);
 const route = useRoute();
+
+const { header: headerContacts } = useSiteContacts();
+const primaryContact = computed(() => headerContacts.value[0]);
 
 watch(
   () => route.path,
@@ -63,6 +67,13 @@ const { open: openModal } = useModalAction();
 
       <!-- CTA + mobile toggle -->
       <div class="flex items-center gap-4">
+        <a
+          v-if="primaryContact?.phone"
+          :href="telHref(primaryContact.phone)"
+          class="hidden md:inline-flex text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"
+        >
+          {{ primaryContact.phone }}
+        </a>
         <button
           type="button"
           class="hidden md:inline-flex items-center text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"

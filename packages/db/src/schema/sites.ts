@@ -1,6 +1,11 @@
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
+export interface SiteSettings {
+  contactsHeaderIds?: string[];
+  contactsFooterIds?: string[];
+}
+
 export const sites = pgTable("sites", {
   id: text("id")
     .primaryKey()
@@ -10,7 +15,7 @@ export const sites = pgTable("sites", {
   isPrimary: boolean("is_primary").notNull().default(false),
   cityId: text("city_id"),
   customDomain: text("custom_domain").unique(),
-  settings: jsonb("settings").$type<Record<string, unknown>>().default({}),
+  settings: jsonb("settings").$type<SiteSettings>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

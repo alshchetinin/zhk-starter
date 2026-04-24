@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { contentItems, catalogItems, mainItems, systemItems, devItems } from "../composables/useNavigation";
+import { contentItems, catalogItems, companyItems, mainItems, systemItems, devItems } from "../composables/useNavigation";
 
 const { isCollapsed, toggle } = useSidebar();
 const { user } = useSession();
@@ -45,6 +45,7 @@ function filterByAccess<T extends { section?: string; adminOnly?: boolean }>(ite
 
 const navSections = computed(() => [
   { label: "Каталог", items: filterByAccess(catalogItems) },
+  { label: "Компания", items: filterByAccess(companyItems) },
   { label: "Разработка", items: filterByAccess(devItems) },
   { label: "Система", items: filterByAccess(systemItems) },
 ].filter((s) => s.items.length > 0));
