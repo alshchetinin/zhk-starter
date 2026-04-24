@@ -365,29 +365,17 @@ function onPreviewClick(cell: PreviewCell) {
   }, 50);
 }
 
-// ---------------- Colors per stack ----------------
-const stackPalette = [
-  "bg-sky-50 dark:bg-sky-950 border-l-sky-400",
-  "bg-emerald-50 dark:bg-emerald-950 border-l-emerald-400",
-  "bg-amber-50 dark:bg-amber-950 border-l-amber-400",
-  "bg-violet-50 dark:bg-violet-950 border-l-violet-400",
-  "bg-rose-50 dark:bg-rose-950 border-l-rose-400",
-  "bg-teal-50 dark:bg-teal-950 border-l-teal-400",
+// ---------------- Colors per stack (Linear-style: thin accent bar only) ----------------
+const stackAccents = [
+  { bar: "bg-sky-500", dot: "bg-sky-500", cell: "border-sky-400/60" },
+  { bar: "bg-emerald-500", dot: "bg-emerald-500", cell: "border-emerald-400/60" },
+  { bar: "bg-amber-500", dot: "bg-amber-500", cell: "border-amber-400/60" },
+  { bar: "bg-violet-500", dot: "bg-violet-500", cell: "border-violet-400/60" },
+  { bar: "bg-rose-500", dot: "bg-rose-500", cell: "border-rose-400/60" },
+  { bar: "bg-teal-500", dot: "bg-teal-500", cell: "border-teal-400/60" },
 ];
-function stackColor(i: number) {
-  return stackPalette[i % stackPalette.length];
-}
-function stackCellColor(i: number) {
-  // preview cells
-  const cells = [
-    "bg-sky-100 border-sky-300 dark:bg-sky-900 dark:border-sky-700",
-    "bg-emerald-100 border-emerald-300 dark:bg-emerald-900 dark:border-emerald-700",
-    "bg-amber-100 border-amber-300 dark:bg-amber-900 dark:border-amber-700",
-    "bg-violet-100 border-violet-300 dark:bg-violet-900 dark:border-violet-700",
-    "bg-rose-100 border-rose-300 dark:bg-rose-900 dark:border-rose-700",
-    "bg-teal-100 border-teal-300 dark:bg-teal-900 dark:border-teal-700",
-  ];
-  return cells[i % cells.length];
+function stackAccent(i: number) {
+  return stackAccents[i % stackAccents.length]!;
 }
 const stackIndexById = computed(() => {
   const m = new Map<string, number>();
@@ -478,362 +466,404 @@ const schemeItems = computed(() => numberingSchemeItems);
 </script>
 
 <template>
-  <PageContainer>
-    <UBreadcrumb
-      :items="[
-        { label: 'Дома', to: '/buildings', icon: 'i-tabler-building-skyscraper' },
-        { label: building?.name ?? '...', to: `/buildings/${buildingId}` },
-        { label: 'Заполнить секцию' },
-      ]"
-      class="mb-6"
-    />
-
-    <div class="flex items-start justify-between mb-6 gap-4">
-      <div>
-        <h1 class="text-2xl font-bold">Заполнить секцию</h1>
-        <p v-if="draft?.savedAt" class="text-xs text-(--ui-text-muted) mt-1">
-          Черновик сохранён {{ new Date(draft.savedAt).toLocaleTimeString("ru-RU") }}
-        </p>
+  <div class="mx-auto max-w-[1400px] px-6 py-5">
+    <!-- Compact header -->
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center gap-3 min-w-0">
+        <button
+          class="text-(--ui-text-muted) hover:text-(--ui-text) transition"
+          @click="router.push(`/buildings/${buildingId}`)"
+        >
+          <UIcon name="i-tabler-arrow-left" class="size-4" />
+        </button>
+        <div class="flex items-center gap-1.5 text-xs text-(--ui-text-muted) min-w-0">
+          <NuxtLink to="/buildings" class="hover:text-(--ui-text)">Дома</NuxtLink>
+          <UIcon name="i-tabler-chevron-right" class="size-3" />
+          <NuxtLink
+            :to="`/buildings/${buildingId}`"
+            class="hover:text-(--ui-text) truncate"
+          >
+            {{ building?.name ?? "…" }}
+          </NuxtLink>
+          <UIcon name="i-tabler-chevron-right" class="size-3 shrink-0" />
+          <span class="text-(--ui-text) font-medium truncate">Заполнить секцию</span>
+        </div>
       </div>
-      <div class="flex gap-2">
-        <UButton
+
+      <div class="flex items-center gap-3">
+        <span
+          v-if="draft?.savedAt"
+          class="text-[11px] text-(--ui-text-dimmed) flex items-center gap-1"
+        >
+          <UIcon name="i-tabler-cloud-check" class="size-3" />
+          {{ new Date(draft.savedAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) }}
+        </span>
+        <button
           v-if="draft"
-          variant="ghost"
-          color="neutral"
-          size="sm"
-          icon="i-tabler-trash"
+          class="text-[11px] text-(--ui-text-dimmed) hover:text-(--ui-text) transition"
           @click="clearDraft"
         >
           Очистить черновик
-        </UButton>
+        </button>
       </div>
     </div>
 
     <div
-      class="grid gap-6"
-      :class="previewCollapsed ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[1fr_400px]'"
+      class="grid gap-5"
+      :class="previewCollapsed ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[1fr_380px]'"
     >
-      <!-- FORM -->
-      <div class="space-y-6">
-        <!-- Section target -->
-        <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 space-y-3">
-          <div class="flex gap-2 flex-wrap">
-            <UButton
-              :variant="useExistingSection ? 'outline' : 'solid'"
-              :color="useExistingSection ? 'neutral' : 'primary'"
-              size="sm"
-              class="rounded-lg"
+      <!-- FORM column -->
+      <div class="min-w-0 space-y-4">
+        <!-- Section target: pill selector + inline fields -->
+        <section>
+          <div class="mb-2 flex items-center gap-1 rounded-md bg-(--ui-bg-elevated) p-0.5 w-fit text-xs">
+            <button
+              class="px-2.5 py-1 rounded transition"
+              :class="
+                !useExistingSection
+                  ? 'bg-(--ui-bg) text-(--ui-text) shadow-sm'
+                  : 'text-(--ui-text-muted) hover:text-(--ui-text)'
+              "
               @click="useExistingSection = false"
             >
               Новая секция
-            </UButton>
-            <UButton
-              :variant="useExistingSection ? 'solid' : 'outline'"
-              :color="useExistingSection ? 'primary' : 'neutral'"
-              size="sm"
+            </button>
+            <button
+              class="px-2.5 py-1 rounded transition"
+              :class="
+                useExistingSection
+                  ? 'bg-(--ui-bg) text-(--ui-text) shadow-sm'
+                  : 'text-(--ui-text-muted) hover:text-(--ui-text)'
+              "
               :disabled="!sectionItems.length"
-              class="rounded-lg"
               @click="useExistingSection = true"
             >
               Дополнить существующую
-            </UButton>
+            </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <UFormField v-if="!useExistingSection" label="Название секции" required>
-              <UInput v-model="sectionName" placeholder="Секция 1" autofocus />
-            </UFormField>
-            <UFormField v-else label="Секция" required>
-              <USelect
-                v-model="selectedSectionId"
-                :items="sectionItems"
-                placeholder="—"
-              />
-            </UFormField>
-            <UFormField label="Схема нумерации">
-              <USelect v-model="numberingScheme" :items="schemeItems" />
-            </UFormField>
+          <div class="grid grid-cols-[1fr_220px] gap-2">
+            <UInput
+              v-if="!useExistingSection"
+              v-model="sectionName"
+              placeholder="Название секции"
+              size="sm"
+              autofocus
+              :ui="{ base: 'border-(--ui-border) bg-(--ui-bg)' }"
+            />
+            <USelect
+              v-else
+              v-model="selectedSectionId"
+              :items="sectionItems"
+              placeholder="Выберите секцию"
+              size="sm"
+            />
+            <USelect
+              v-model="numberingScheme"
+              :items="schemeItems"
+              size="sm"
+              icon="i-tabler-hash"
+            />
           </div>
 
           <div
             v-if="useExistingSection && occupiedFloors.size"
-            class="text-xs text-(--ui-text-muted)"
+            class="mt-2 text-[11px] text-(--ui-text-dimmed)"
           >
-            Занятые этажи:
+            Занято:
             {{ [...occupiedFloors].sort((a: number, b: number) => a - b).join(", ") }}
+          </div>
+        </section>
+
+        <!-- Inline warnings -->
+        <div v-if="overlapErrors.length || conflictCount > 0" class="space-y-1.5">
+          <div
+            v-if="overlapErrors.length"
+            class="flex items-start gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-md px-3 py-2"
+          >
+            <UIcon name="i-tabler-alert-triangle" class="size-3.5 mt-0.5 shrink-0" />
+            <div>
+              <div class="font-medium">Пересечения стояков</div>
+              <div class="text-(--ui-text-muted)">{{ overlapErrors.join("; ") }}</div>
+            </div>
+          </div>
+          <div
+            v-if="conflictCount > 0"
+            class="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-md px-3 py-2"
+          >
+            <UIcon name="i-tabler-alert-circle" class="size-3.5 mt-0.5 shrink-0" />
+            <div>
+              <div class="font-medium">Конфликт с существующими квартирами</div>
+              <div class="text-(--ui-text-muted)">
+                На {{ conflictCount }} этажах уже есть квартиры
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Overlap warnings -->
-        <UAlert
-          v-if="overlapErrors.length"
-          color="error"
-          variant="subtle"
-          icon="i-tabler-alert-triangle"
-          title="Пересечения стояков"
-          :description="overlapErrors.join('; ')"
-        />
-        <UAlert
-          v-if="conflictCount > 0"
-          color="warning"
-          variant="subtle"
-          icon="i-tabler-alert-circle"
-          title="Конфликт с существующими квартирами"
-          :description="`На ${conflictCount} этажах уже есть квартиры. Снимите конфликт, сдвинув диапазон или выбрав новую секцию.`"
-        />
-
-        <!-- Presets -->
-        <div class="rounded-lg border border-dashed border-(--ui-border) p-3">
-          <div class="text-xs text-(--ui-text-muted) mb-2">Быстрые пресеты:</div>
-          <div class="flex flex-wrap gap-2">
-            <UButton
-              v-for="(p, i) in presets"
-              :key="i"
-              :icon="p.icon"
-              variant="outline"
-              color="neutral"
-              size="xs"
-              class="rounded-lg"
-              @click="applyPreset(i)"
-            >
-              {{ p.label }}
-            </UButton>
-          </div>
+        <!-- Presets as ghost chips -->
+        <div class="flex items-center gap-1.5 flex-wrap text-xs">
+          <span class="text-(--ui-text-dimmed) mr-1">Пресеты</span>
+          <button
+            v-for="(p, i) in presets"
+            :key="i"
+            class="flex items-center gap-1 px-2 py-1 rounded-md border border-(--ui-border) text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
+            @click="applyPreset(i)"
+          >
+            <UIcon :name="p.icon" class="size-3" />
+            {{ p.label }}
+          </button>
         </div>
 
         <!-- Stacks -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold">Стояки ({{ stacks.length }})</h2>
-            <UButton
-              icon="i-tabler-plus"
-              variant="outline"
-              color="neutral"
-              size="sm"
-              class="rounded-lg"
+        <section>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-baseline gap-2">
+              <h2 class="text-sm font-semibold tracking-tight">Стояки</h2>
+              <span class="text-xs text-(--ui-text-dimmed)">{{ stacks.length }}</span>
+            </div>
+            <button
+              class="flex items-center gap-1 text-xs text-(--ui-text-muted) hover:text-(--ui-text) transition"
               @click="addStack"
             >
-              Добавить стояк
-            </UButton>
+              <UIcon name="i-tabler-plus" class="size-3.5" />
+              Стояк
+            </button>
           </div>
 
           <TransitionGroup
             name="stack"
             tag="div"
-            class="space-y-4"
+            class="rounded-md border border-(--ui-border) divide-y divide-(--ui-border) bg-(--ui-bg)"
           >
             <div
               v-for="(stack, si) in stacks"
               :key="stack.id"
-              class="rounded-lg border border-l-4 border-(--ui-border) p-4 space-y-3 transition-all"
-              :class="stackColor(si)"
+              class="relative"
             >
-              <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-sm font-medium">#{{ si + 1 }}</span>
-                <span class="text-sm text-(--ui-text-muted)">этажи</span>
+              <!-- Colored accent bar -->
+              <div
+                class="absolute left-0 top-0 bottom-0 w-0.5"
+                :class="stackAccent(si).bar"
+              />
+
+              <!-- Stack header row -->
+              <div
+                class="flex items-center gap-2 px-3 py-2 text-xs"
+              >
+                <span
+                  class="font-medium text-(--ui-text-muted) tabular-nums min-w-[1.75rem]"
+                  :class="stackAccent(si).dot.replace('bg-', 'text-')"
+                >
+                  #{{ si + 1 }}
+                </span>
+                <span class="text-(--ui-text-dimmed)">этажи</span>
                 <UInput
                   v-model.number="stack.startFloor"
                   type="number"
-                  class="w-20"
-                  :ui="
-                    stack.startFloor > stack.endFloor ? { base: 'ring-red-500' } : {}
-                  "
+                  size="xs"
+                  class="w-16"
                 />
-                <span class="text-sm text-(--ui-text-muted)">—</span>
-                <UInput v-model.number="stack.endFloor" type="number" class="w-20" />
-                <span class="text-sm text-(--ui-text-muted) ml-auto">
-                  {{ Math.max(0, stack.endFloor - stack.startFloor + 1) }} эт. ×
-                  {{ stack.apartments.length }} кв. =
-                  <b>{{
+                <span class="text-(--ui-text-dimmed)">—</span>
+                <UInput
+                  v-model.number="stack.endFloor"
+                  type="number"
+                  size="xs"
+                  class="w-16"
+                />
+                <span class="text-(--ui-text-dimmed) ml-auto tabular-nums">
+                  {{ Math.max(0, stack.endFloor - stack.startFloor + 1) }} ×
+                  {{ stack.apartments.length }} =
+                  <span class="text-(--ui-text) font-medium">{{
                     Math.max(0, stack.endFloor - stack.startFloor + 1) *
                     stack.apartments.length
-                  }}</b>
+                  }}</span>
                 </span>
-                <UButton
-                  variant="ghost"
-                  size="xs"
-                  icon="i-tabler-copy"
-                  :title="'Дублировать стояк'"
+                <button
+                  class="p-1 rounded text-(--ui-text-dimmed) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
+                  title="Дублировать"
                   @click="duplicateStack(si)"
-                />
-                <UButton
+                >
+                  <UIcon name="i-tabler-copy" class="size-3.5" />
+                </button>
+                <button
                   v-if="stacks.length > 1"
-                  variant="ghost"
-                  size="xs"
-                  icon="i-tabler-trash"
-                  color="error"
-                  :title="'Удалить стояк'"
+                  class="p-1 rounded text-(--ui-text-dimmed) hover:text-red-500 hover:bg-(--ui-bg-elevated) transition"
+                  title="Удалить"
                   @click="removeStack(si)"
-                />
+                >
+                  <UIcon name="i-tabler-trash" class="size-3.5" />
+                </button>
               </div>
 
               <div
                 v-if="stackErrors[stack.id]"
-                class="text-xs text-red-600 dark:text-red-400"
+                class="px-3 pb-2 text-[11px] text-red-500"
               >
-                {{ stackErrors[stack.id].join("; ") }}
+                {{ stackErrors[stack.id].join(" · ") }}
               </div>
 
-              <div class="border-t border-(--ui-border) pt-3 space-y-2">
-                <div class="text-xs text-(--ui-text-muted) mb-1">
-                  Квартиры на этаже
+              <!-- Apartments table -->
+              <div class="pl-3 pr-2 pb-2 pt-0.5">
+                <!-- column headers -->
+                <div
+                  class="grid grid-cols-[28px_60px_70px_90px_1fr_auto] gap-2 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
+                >
+                  <div></div>
+                  <div>№</div>
+                  <div>Комн.</div>
+                  <div>м²</div>
+                  <div>Планировка</div>
+                  <div></div>
                 </div>
-                <TransitionGroup name="apt" tag="div" class="space-y-2">
+
+                <TransitionGroup name="apt" tag="div">
                   <div
                     v-for="(apt, ai) in stack.apartments"
                     :key="apt.id"
                     :data-apt-id="apt.id"
-                    class="flex items-center gap-2 rounded-md p-1.5 transition-shadow"
+                    class="grid grid-cols-[28px_60px_70px_90px_1fr_auto] gap-2 items-center px-1 py-0.5 rounded transition-colors"
                     :class="
                       highlightedAptId === apt.id
-                        ? 'bg-(--ui-primary)/10 ring-1 ring-(--ui-primary)'
-                        : ''
+                        ? 'bg-(--ui-primary)/10 ring-1 ring-(--ui-primary)/40'
+                        : 'hover:bg-(--ui-bg-elevated)'
                     "
                   >
-                    <div class="flex flex-col">
-                      <UButton
-                        variant="ghost"
-                        size="xs"
-                        icon="i-tabler-chevron-up"
+                    <div class="flex flex-col -my-1">
+                      <button
+                        class="h-4 px-1 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === 0"
                         @click="moveApartment(stack, ai, -1)"
-                      />
-                      <UButton
-                        variant="ghost"
-                        size="xs"
-                        icon="i-tabler-chevron-down"
+                      >
+                        <UIcon name="i-tabler-chevron-up" class="size-3" />
+                      </button>
+                      <button
+                        class="h-4 px-1 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === stack.apartments.length - 1"
                         @click="moveApartment(stack, ai, 1)"
-                      />
+                      >
+                        <UIcon name="i-tabler-chevron-down" class="size-3" />
+                      </button>
                     </div>
-                    <UFormField label="№" :ui="{ label: 'text-xs' }">
-                      <UInput
-                        v-model.number="apt.number"
-                        type="number"
-                        min="1"
-                        class="w-16"
-                      />
-                    </UFormField>
-                    <UFormField label="Комнат" :ui="{ label: 'text-xs' }">
-                      <UInput
-                        v-model.number="apt.roomsCount"
-                        type="number"
-                        min="0"
-                        class="w-20"
-                      />
-                    </UFormField>
-                    <UFormField label="Площадь, м²" :ui="{ label: 'text-xs' }">
-                      <UInput
-                        v-model.number="apt.area"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        class="w-24"
-                        @keyup.enter="
-                          ai === stack.apartments.length - 1 &&
-                            addApartment(stack)
-                        "
-                      />
-                    </UFormField>
-                    <UBadge
-                      variant="subtle"
-                      color="neutral"
-                      class="mb-0.5 self-end"
-                    >
-                      {{ roomsLabel(apt.roomsCount) }} · {{ apt.area }}м²
-                    </UBadge>
-                    <UButton
-                      v-if="stack.apartments.length > 1"
-                      variant="ghost"
+                    <UInput
+                      v-model.number="apt.number"
+                      type="number"
+                      min="1"
                       size="xs"
-                      icon="i-tabler-x"
-                      color="error"
-                      class="self-end mb-1.5 ml-auto"
-                      @click="removeApartment(stack, ai)"
                     />
+                    <UInput
+                      v-model.number="apt.roomsCount"
+                      type="number"
+                      min="0"
+                      size="xs"
+                    />
+                    <UInput
+                      v-model.number="apt.area"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      size="xs"
+                      @keyup.enter="
+                        ai === stack.apartments.length - 1 && addApartment(stack)
+                      "
+                    />
+                    <span class="text-[11px] text-(--ui-text-muted) tabular-nums">
+                      {{ roomsLabel(apt.roomsCount) }} · {{ apt.area }} м²
+                    </span>
+                    <button
+                      v-if="stack.apartments.length > 1"
+                      class="p-1 rounded text-(--ui-text-dimmed) hover:text-red-500 transition"
+                      @click="removeApartment(stack, ai)"
+                    >
+                      <UIcon name="i-tabler-x" class="size-3" />
+                    </button>
+                    <div v-else></div>
                   </div>
                 </TransitionGroup>
-                <UButton
-                  variant="ghost"
-                  size="xs"
-                  icon="i-tabler-plus"
+
+                <button
+                  class="mt-1 flex items-center gap-1 text-[11px] text-(--ui-text-dimmed) hover:text-(--ui-text) transition px-1 py-0.5"
                   @click="addApartment(stack)"
                 >
-                  Добавить квартиру
-                </UButton>
+                  <UIcon name="i-tabler-plus" class="size-3" />
+                  Квартира
+                </button>
               </div>
             </div>
           </TransitionGroup>
-        </div>
+        </section>
 
+        <!-- Bottom bar -->
         <div
-          class="flex items-center justify-between pt-4 border-t border-(--ui-border) flex-wrap gap-3"
+          class="flex items-center justify-between gap-3 pt-3 flex-wrap text-xs"
         >
-          <div class="text-sm text-(--ui-text-muted) flex flex-wrap items-center gap-3">
-            <span>
-              Будет создано: <b>{{ totalApartments }}</b> кв.,
-              <b>{{ uniqueLayoutsCount }}</b> планировок
+          <div class="flex flex-wrap items-center gap-2 text-(--ui-text-muted)">
+            <span class="tabular-nums">
+              <span class="text-(--ui-text) font-medium">{{ totalApartments }}</span>
+              кв. · <span class="text-(--ui-text) font-medium">{{ uniqueLayoutsCount }}</span> план.
             </span>
-            <span v-if="countsByRooms.length" class="flex gap-1.5 flex-wrap">
-              <UBadge
-                v-for="[rooms, n] in countsByRooms"
-                :key="rooms"
-                variant="subtle"
-                color="neutral"
-              >
-                {{ roomsLabel(rooms) }}: {{ n }}
-              </UBadge>
+            <span
+              v-for="[rooms, n] in countsByRooms"
+              :key="rooms"
+              class="text-(--ui-text-dimmed)"
+            >
+              · {{ roomsLabel(rooms) }} {{ n }}
             </span>
-            <span v-if="totalApartments > 0" class="text-xs">{{ eta }}</span>
+            <span v-if="totalApartments > 0" class="text-(--ui-text-dimmed)">
+              · {{ eta }}
+            </span>
           </div>
-          <div class="flex gap-2">
-            <UButton
-              variant="outline"
-              class="rounded-xl"
+          <div class="flex items-center gap-2">
+            <button
+              class="px-3 py-1.5 text-xs text-(--ui-text-muted) hover:text-(--ui-text) transition"
               @click="router.push(`/buildings/${buildingId}`)"
             >
               Отмена
-            </UButton>
-            <UButton
-              :loading="createMut.isPending.value"
-              :disabled="!canSubmit"
-              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+            </button>
+            <button
+              :disabled="!canSubmit || createMut.isPending.value"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-(--ui-bg-inverted) text-(--ui-text-inverted) text-xs font-medium disabled:opacity-40 hover:opacity-90 transition"
               @click="submit"
             >
+              <UIcon
+                v-if="createMut.isPending.value"
+                name="i-tabler-loader-2"
+                class="size-3.5 animate-spin"
+              />
               Создать
-              <span class="opacity-60 ml-1 text-xs">⌘↵</span>
-            </UButton>
+              <kbd class="text-[10px] opacity-60 font-mono">⌘↵</kbd>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- PREVIEW -->
-      <div v-if="!previewCollapsed" class="lg:sticky lg:top-4 self-start">
-        <div class="rounded-xl border border-(--ui-border) bg-(--ui-bg) shadow-sm">
+      <!-- PREVIEW column -->
+      <aside v-if="!previewCollapsed" class="lg:sticky lg:top-4 self-start">
+        <div class="rounded-md border border-(--ui-border) bg-(--ui-bg)">
           <div
-            class="border-b border-(--ui-border) px-4 py-3 flex items-center justify-between gap-2"
+            class="flex items-center justify-between gap-2 px-3 py-2 border-b border-(--ui-border)"
           >
-            <div>
-              <h3 class="text-sm font-semibold">Превью шахматки</h3>
-              <p class="text-xs text-(--ui-text-muted) mt-0.5">
-                {{ totalApartments }} кв., клик → подсветить в форме
-              </p>
+            <div class="flex items-baseline gap-2">
+              <h3 class="text-xs font-semibold tracking-tight">Превью</h3>
+              <span class="text-[11px] text-(--ui-text-dimmed) tabular-nums">
+                {{ totalApartments }} кв.
+              </span>
             </div>
-            <UButton
-              variant="ghost"
-              size="xs"
-              icon="i-tabler-layout-sidebar-right-collapse"
+            <button
+              class="p-1 rounded text-(--ui-text-dimmed) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
               @click="previewCollapsed = true"
-            />
+            >
+              <UIcon name="i-tabler-layout-sidebar-right-collapse" class="size-3.5" />
+            </button>
           </div>
-          <div class="space-y-1 p-2 max-h-[70vh] overflow-auto">
+          <div class="p-1.5 max-h-[calc(100vh-140px)] overflow-auto">
             <div
               v-for="floor in preview"
               :key="floor.floorNumber"
-              class="flex items-center gap-2 rounded-lg p-1.5"
+              class="flex items-center gap-1.5 px-1 py-0.5"
             >
               <div
-                class="flex size-8 shrink-0 items-center justify-center rounded-md bg-(--ui-bg-elevated) text-xs font-medium text-(--ui-text-muted)"
+                class="flex size-6 shrink-0 items-center justify-center rounded text-[10px] font-medium text-(--ui-text-dimmed) tabular-nums"
               >
                 {{ floor.floorNumber }}
               </div>
@@ -842,16 +872,16 @@ const schemeItems = computed(() => numberingSchemeItems);
                   v-for="(apt, i) in floor.apartments"
                   :key="i"
                   :title="`№${apt.apartmentNumber} · ${roomsLabel(apt.roomsCount)} · ${apt.area} м²${apt.conflict ? ' · КОНФЛИКТ' : ''}`"
-                  class="flex flex-col items-center justify-center size-12 rounded border text-[10px] transition hover:scale-110"
-                  :class="
+                  class="flex flex-col items-center justify-center size-11 rounded border bg-(--ui-bg) text-[10px] transition hover:-translate-y-0.5 hover:shadow-sm"
+                  :class="[
                     apt.conflict
-                      ? 'bg-red-100 border-red-400 dark:bg-red-900 dark:border-red-700'
-                      : stackCellColor(stackIndexById.get(apt.stackId) ?? 0)
-                  "
+                      ? 'border-red-400 bg-red-50 dark:bg-red-950/40'
+                      : stackAccent(stackIndexById.get(apt.stackId) ?? 0).cell,
+                  ]"
                   @click="onPreviewClick(apt)"
                 >
-                  <span class="font-medium">{{ apt.apartmentNumber }}</span>
-                  <span class="text-(--ui-text-muted)">
+                  <span class="font-medium tabular-nums">{{ apt.apartmentNumber }}</span>
+                  <span class="text-(--ui-text-dimmed) text-[9px]">
                     {{ roomsLabel(apt.roomsCount) }}
                   </span>
                 </button>
@@ -859,26 +889,24 @@ const schemeItems = computed(() => numberingSchemeItems);
             </div>
             <div
               v-if="!preview.length"
-              class="text-center text-xs text-(--ui-text-muted) py-4"
+              class="text-center text-[11px] text-(--ui-text-dimmed) py-6"
             >
-              Добавьте хотя бы один стояк
+              Добавьте стояк
             </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <UButton
+      <button
         v-else
-        class="self-start"
-        variant="outline"
-        color="neutral"
-        icon="i-tabler-layout-sidebar-right-expand"
+        class="self-start flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-(--ui-border) text-xs text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
         @click="previewCollapsed = false"
       >
-        Показать превью ({{ totalApartments }})
-      </UButton>
+        <UIcon name="i-tabler-layout-sidebar-right-expand" class="size-3.5" />
+        Превью ({{ totalApartments }})
+      </button>
     </div>
-  </PageContainer>
+  </div>
 </template>
 
 <style scoped>
