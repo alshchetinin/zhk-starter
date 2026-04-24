@@ -6,10 +6,12 @@ export function useSiteContacts() {
 
   const header = computed(() => query.data.value?.header ?? []);
   const footer = computed(() => query.data.value?.footer ?? []);
+  const socials = computed(() => query.data.value?.socials ?? []);
 
   return {
     header,
     footer,
+    socials,
     isPending: query.isPending,
     suspense: query.suspense,
   };

@@ -5,8 +5,12 @@ defineProps<{
   navItems: NavItem[];
 }>();
 
-const { footer: footerContacts } = useSiteContacts();
+const { footer: footerContacts, socials: siteSocials } = useSiteContacts();
 const currentYear = new Date().getFullYear();
+
+function socialsFor(contact: (typeof footerContacts.value)[number]) {
+  return contact.socials?.length ? contact.socials : siteSocials.value;
+}
 
 const socialIcons: Record<string, string> = {
   vk: "lucide:at-sign",
@@ -81,9 +85,9 @@ function telHref(phone: string) {
               <span v-if="c.workingHours" class="text-xs text-[var(--web-text-muted)]">
                 {{ c.workingHours }}
               </span>
-              <div v-if="c.socials?.length" class="mt-2 flex gap-3">
+              <div v-if="socialsFor(c).length" class="mt-2 flex gap-3">
                 <a
-                  v-for="s in c.socials"
+                  v-for="s in socialsFor(c)"
                   :key="s.link"
                   :href="s.link"
                   target="_blank"

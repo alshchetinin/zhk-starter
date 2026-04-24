@@ -93,7 +93,10 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
     </div>
 
     <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
-      <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Социальные сети</h2>
+      <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Свои соцсети</h2>
+      <p class="text-sm text-(--ui-text-muted) -mt-2">
+        Если оставить пустым — используются общие соцсети компании или сайта.
+      </p>
 
       <RepeaterField
         :model-value="model.socials"

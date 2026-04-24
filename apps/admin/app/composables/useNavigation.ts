@@ -35,6 +35,7 @@ const catalogItems: NavItem[] = [
 // Admin-only system config
 const systemItems: NavItem[] = [
   { label: "Сайты", icon: "i-tabler-building-store", to: "/sites", adminOnly: true },
+  { label: "Соцсети", icon: "i-tabler-brand-telegram", to: "/socials", adminOnly: true },
   { label: "Пользователи", icon: "i-tabler-users", to: "/users", adminOnly: true },
   { label: "Интеграции", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
 ];

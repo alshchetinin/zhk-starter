@@ -17,6 +17,7 @@ import { banksRouter } from "./banks";
 import { mortgageProgramsRouter } from "./mortgage-programs";
 import { purchaseMethodsRouter } from "./purchase-methods";
 import { contactsRouter } from "./contacts";
+import { socialLinksRouter } from "./social-links";
 import { homepageRouter } from "./homepage";
 import { constructionProgressRouter } from "./construction-progress";
 import { ticketsRouter } from "./tickets";
@@ -49,6 +50,7 @@ export const appRouter = {
   mortgagePrograms: mortgageProgramsRouter,
   purchaseMethods: purchaseMethodsRouter,
   contacts: contactsRouter,
+  socialLinks: socialLinksRouter,
   homepage: homepageRouter,
   constructionProgress: constructionProgressRouter,
   tickets: ticketsRouter,

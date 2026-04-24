@@ -1,8 +1,17 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { contacts, sites } from "@zhk/db/schema";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { contacts, sites, socialLinks } from "@zhk/db/schema";
+import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { publicSiteProcedure } from "../../index";
+
+async function resolveSiteSocials(siteId: string) {
+  const rows = await db.query.socialLinks.findMany({
+    where: or(eq(socialLinks.siteId, siteId), isNull(socialLinks.siteId)),
+    orderBy: [asc(socialLinks.sortOrder), asc(socialLinks.createdAt)],
+  });
+  const perSite = rows.filter((r) => r.siteId === siteId);
+  return perSite.length ? perSite : rows.filter((r) => r.siteId === null);
+}
 
 export const publicContactsRouter = {
   list: publicSiteProcedure.handler(async ({ context }) => {
@@ -13,10 +22,13 @@ export const publicContactsRouter = {
   }),
 
   layout: publicSiteProcedure.handler(async ({ context }) => {
-    const site = await db.query.sites.findFirst({
-      where: eq(sites.id, context.siteId),
-      columns: { settings: true },
-    });
+    const [site, siteSocials] = await Promise.all([
+      db.query.sites.findFirst({
+        where: eq(sites.id, context.siteId),
+        columns: { settings: true },
+      }),
+      resolveSiteSocials(context.siteId),
+    ]);
     const headerIds = site?.settings?.contactsHeaderIds ?? [];
     const footerIds = site?.settings?.contactsFooterIds ?? [];
     const allIds = Array.from(new Set([...headerIds, ...footerIds]));
@@ -34,7 +46,15 @@ export const publicContactsRouter = {
     const pick = (ids: string[]) =>
       ids.map((id) => byId.get(id)).filter((c): c is NonNullable<typeof c> => !!c);
 
-    return { header: pick(headerIds), footer: pick(footerIds) };
+    return {
+      header: pick(headerIds),
+      footer: pick(footerIds),
+      socials: siteSocials,
+    };
+  }),
+
+  siteSocials: publicSiteProcedure.handler(async ({ context }) => {
+    return resolveSiteSocials(context.siteId);
   }),
 
   getByIds: publicSiteProcedure

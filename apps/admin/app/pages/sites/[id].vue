@@ -124,6 +124,12 @@ const updateMutation = useMutation({
           Сохранить
         </UButton>
       </div>
+
+      <SocialLinksEditor
+        :site-id="id"
+        title="Соцсети этого сайта"
+        description="Если задать хотя бы одну ссылку, она заменит общие соцсети компании"
+      />
     </div>
   </PageContainer>
 </template>

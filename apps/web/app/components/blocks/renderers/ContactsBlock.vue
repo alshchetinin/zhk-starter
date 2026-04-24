@@ -8,6 +8,11 @@ const props = defineProps<{
 }>();
 
 const { orpc } = useOrpc();
+const { socials: siteSocials } = useSiteContacts();
+
+function socialsFor(c: { socials?: { type: string; link: string }[] | null }) {
+  return c.socials && c.socials.length ? c.socials : siteSocials.value;
+}
 const idsKey = computed(() => [...props.contactIds].sort().join(","));
 
 const { data, suspense } = useQuery(
@@ -82,9 +87,9 @@ const socialIcons: Record<string, string> = {
               {{ c.workingHours }}
             </span>
           </div>
-          <div v-if="c.socials?.length" class="mt-4 flex items-center gap-3">
+          <div v-if="socialsFor(c).length" class="mt-4 flex items-center gap-3">
             <a
-              v-for="s in c.socials"
+              v-for="s in socialsFor(c)"
               :key="s.link"
               :href="s.link"
               target="_blank"
