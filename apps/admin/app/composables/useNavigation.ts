@@ -45,6 +45,7 @@ const devItems: NavItem[] = import.meta.dev
   ? [
       { label: "Блоки", icon: "i-tabler-puzzle", to: "/dev/blocks", adminOnly: true },
       { label: "Коллекции", icon: "i-tabler-stack-2", to: "/dev/collections", adminOnly: true },
+      { label: "Документация", icon: "i-tabler-book", to: "/dev/docs", adminOnly: true },
     ]
   : [];
 
