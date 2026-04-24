@@ -5,6 +5,8 @@ import { projectsRouter } from "./projects";
 import { buildingsRouter } from "./buildings";
 import { apartmentsRouter } from "./apartments";
 import { commerceRouter } from "./commerce";
+import { parkingRouter } from "./parking";
+import { storageRouter } from "./storage";
 import { apartmentLayoutsRouter } from "./apartment-layouts";
 import { dashboardRouter } from "./dashboard";
 import { uploadsRouter } from "./uploads";
@@ -40,6 +42,8 @@ export const appRouter = {
   buildings: buildingsRouter,
   apartments: apartmentsRouter,
   commerce: commerceRouter,
+  parking: parkingRouter,
+  storage: storageRouter,
   apartmentLayouts: apartmentLayoutsRouter,
   dashboard: dashboardRouter,
   uploads: uploadsRouter,
