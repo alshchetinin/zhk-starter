@@ -69,51 +69,64 @@ export function createMacroServices(ctx: ServiceContext) {
   }
 
   function getProjects(flats: MacroFlat[]): ImportProject[] {
-    return getUniqueObjects(flats, (flat) => ({
-      external_id: flat.complex_id?.toString(),
-      name: flat.geo_complex_human ?? "Project Name",
-      address: "Адрес",
-      coordinates: flats[0]?.geo_coords,
-      status: "active",
-      external_city_id: flat.geo_city?.toString(),
-      ...base,
-    }));
+    return getUniqueObjects(flats, (flat) => {
+      if (!flat.complex_id) return null;
+      return {
+        external_id: flat.complex_id.toString(),
+        name: flat.geo_complex_human ?? "Project Name",
+        address: "Адрес",
+        coordinates: flats[0]?.geo_coords,
+        status: "active",
+        external_city_id: flat.geo_city?.toString(),
+        ...base,
+      };
+    });
   }
 
   function getBuildings(flats: MacroFlat[]): ImportBuilding[] {
-    return getUniqueObjects(flats, (flat) => ({
-      external_id: flat.parent_id?.toString(),
-      name:
-        flat.estate_public_house_name ??
-        `${flat.geo_complex_human} ${flat.geo_house}`,
-      external_project_id: flat.complex_id?.toString(),
-      completion_date: formatDate(flat.estate_inServiceDate_human),
-      ...base,
-    }));
+    return getUniqueObjects(flats, (flat) => {
+      if (!flat.parent_id || !flat.complex_id) return null;
+      return {
+        external_id: flat.parent_id.toString(),
+        name:
+          flat.estate_public_house_name ??
+          `${flat.geo_complex_human} ${flat.geo_house}`,
+        external_project_id: flat.complex_id.toString(),
+        completion_date: formatDate(flat.estate_inServiceDate_human),
+        ...base,
+      };
+    });
   }
 
   function getSections(flats: MacroFlat[]): ImportSection[] {
-    return getUniqueObjects(flats, (flat) => ({
-      external_building_id: flat.parent_id?.toString(),
-      floors_count:
-        flat.estate_floors_in_entrance ?? flat.estate_floors_in_house ?? 0,
-      name:
-        flat.geo_house_section ?? flat.geo_house_entrance?.toString(),
-      external_id: getSectionId(flat),
-      ...base,
-    }));
+    return getUniqueObjects(flats, (flat) => {
+      const sectionId = getSectionId(flat);
+      if (!flat.parent_id || !sectionId) return null;
+      return {
+        external_building_id: flat.parent_id.toString(),
+        floors_count:
+          flat.estate_floors_in_entrance ?? flat.estate_floors_in_house ?? 0,
+        name: flat.geo_house_section ?? flat.geo_house_entrance?.toString(),
+        external_id: sectionId,
+        ...base,
+      };
+    });
   }
 
   function getEntrances(flats: MacroFlat[]): ImportEntrance[] {
-    return getUniqueObjects(flats, (flat) => ({
-      external_building_id: flat.parent_id?.toString(),
-      name: flat.geo_house_entrance?.toString() ?? "1",
-      floors_count:
-        flat.estate_floors_in_entrance ?? flat.estate_floors_in_house ?? 0,
-      external_section_id: getSectionId(flat),
-      external_id: getSectionId(flat),
-      ...base,
-    }));
+    return getUniqueObjects(flats, (flat) => {
+      const sectionId = getSectionId(flat);
+      if (!flat.parent_id || !sectionId) return null;
+      return {
+        external_building_id: flat.parent_id.toString(),
+        name: flat.geo_house_entrance?.toString() ?? "1",
+        floors_count:
+          flat.estate_floors_in_entrance ?? flat.estate_floors_in_house ?? 0,
+        external_section_id: sectionId,
+        external_id: sectionId,
+        ...base,
+      };
+    });
   }
 
   function getFloors(

@@ -45,9 +45,15 @@ export const integrationRouter = {
       const existing = await db.query.integrations.findFirst();
 
       if (existing) {
+        if (existing.type && existing.type !== "macro") {
+          throw new ORPCError("CONFLICT", {
+            message: `Интеграция другого типа (${existing.type}) уже настроена. Удалите её перед подключением MacroCRM.`,
+          });
+        }
         const [updated] = await db
           .update(integrations)
           .set({
+            type: "macro",
             domain: input.domain,
             apiDomain: input.apiDomain,
             appSecret: encryptedSecret,
