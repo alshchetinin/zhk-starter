@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { permissionSections } from "~/composables/useNavigation";
 
 const route = useRoute();
 const router = useRouter();
-const { $orpc, $orpcClient } = useNuxtApp();
+const { $orpc, $orpcClient, $authClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 const { isAdmin, me, startImpersonation } = useCurrentUser();
@@ -32,21 +33,6 @@ const ACTION_LABELS: Record<"view" | "edit" | "publish", string> = {
   publish: "Публикация",
 };
 
-const ALL_SECTIONS = [
-  { id: "homepage", label: "Главная" },
-  { id: "news", label: "Новости" },
-  { id: "pages", label: "Страницы" },
-  { id: "promotions", label: "Акции" },
-  { id: "documents", label: "Документы" },
-  { id: "tickets", label: "Заявки" },
-  { id: "contacts", label: "Контакты" },
-  { id: "projects", label: "Projects" },
-  { id: "buildings", label: "Buildings" },
-  { id: "apartments", label: "Apartments" },
-  { id: "commerce", label: "Commerce" },
-  { id: "layouts", label: "Layouts" },
-];
-
 watch(
   () => userData.value?.id,
   (newId) => {
@@ -69,6 +55,27 @@ const roleMutation = useMutation({
   onSuccess: () => {
     toast.add({ title: "Роль обновлена", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.users.key() });
+  },
+});
+
+const banMutation = useMutation({
+  mutationFn: async () => {
+    const isBanned = userData.value?.banned;
+    const res = isBanned
+      ? await $authClient.admin.unbanUser({ userId: id.value })
+      : await $authClient.admin.banUser({ userId: id.value });
+    if (res.error) throw new Error(res.error.message);
+    return !isBanned;
+  },
+  onSuccess: (nowBanned) => {
+    toast.add({
+      title: nowBanned ? "Пользователь заблокирован" : "Пользователь разблокирован",
+      color: "success",
+    });
+    queryClient.invalidateQueries({ queryKey: $orpc.users.key() });
+  },
+  onError: (e) => {
+    toast.add({ title: "Ошибка", description: e.message, color: "error" });
   },
 });
 
@@ -173,7 +180,7 @@ function onSavePermissions() {
             <h4 class="text-sm font-medium mb-2">Разрешённые разделы</h4>
             <div class="flex flex-wrap gap-2">
               <button
-                v-for="sec in ALL_SECTIONS"
+                v-for="sec in permissionSections"
                 :key="sec.id"
                 type="button"
                 class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
@@ -215,6 +222,32 @@ function onSavePermissions() {
               {{ permissionsMutation.isPending.value ? "Сохранение…" : "Сохранить права" }}
             </button>
           </div>
+        </section>
+
+        <section
+          v-if="userData.id !== me?.id"
+          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 flex items-center justify-between gap-4"
+        >
+          <div>
+            <h3 class="text-lg font-semibold">
+              {{ userData.banned ? "Пользователь заблокирован" : "Статус доступа" }}
+            </h3>
+            <p class="text-sm text-(--ui-text-muted) mt-1">
+              {{ userData.banned
+                ? "Пользователь не сможет войти, пока вы его не разблокируете."
+                : "Блокировка запретит вход, но сохранит историю и контент пользователя." }}
+            </p>
+          </div>
+          <UButton
+            :color="userData.banned ? 'primary' : 'error'"
+            variant="outline"
+            :icon="userData.banned ? 'i-tabler-lock-open' : 'i-tabler-lock'"
+            class="rounded-xl shrink-0"
+            :loading="banMutation.isPending.value"
+            @click="banMutation.mutate()"
+          >
+            {{ userData.banned ? "Разблокировать" : "Заблокировать" }}
+          </UButton>
         </section>
       </div>
     </template>

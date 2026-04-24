@@ -60,6 +60,14 @@ const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, companyIt
 
 export { contentItems, catalogItems, companyItems, mainItems, systemItems, devItems };
 
+export const permissionSections: Array<{ id: string; label: string }> = [
+  ...contentItems,
+  ...catalogItems,
+  ...companyItems,
+]
+  .filter((i): i is NavItem & { section: string } => Boolean(i.section))
+  .map((i) => ({ id: i.section, label: i.label }));
+
 export function useNavigation() {
   const route = useRoute();
   const { $authClient } = useNuxtApp();
