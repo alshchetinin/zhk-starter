@@ -1,288 +1,138 @@
 <script setup lang="ts">
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
-const { data, isPending: loading } = useQuery(
-  $orpc.contacts.get.queryOptions(),
+const ALL_TAGS = "__all__";
+const tagFilter = ref<string>(ALL_TAGS);
+
+const { data, isPending } = useQuery(
+  computed(() =>
+    $orpc.contacts.list.queryOptions({
+      input: tagFilter.value !== ALL_TAGS ? { tag: tagFilter.value } : undefined,
+    }),
+  ),
 );
 
-const form = reactive({
-  phone: "",
-  email: "",
-  address: "",
-  workingHours: "",
-  coordinates: "",
-  mapLink: "",
-  location: "",
-  socials: [] as Array<{ type: string; link: string }>,
-  offices: [] as Array<{
-    title: string;
-    address: string;
-    phone: string;
-    email: string;
-    workingHours: string;
-    coordinates: string;
-    image: string;
-  }>,
+const allTags = computed(() => {
+  const set = new Set<string>();
+  for (const c of data.value ?? []) for (const t of c.tags) set.add(t);
+  return Array.from(set).sort();
 });
 
-whenever(data, (val) => {
-  if (!val) return;
-  form.phone = val.phone ?? "";
-  form.email = val.email ?? "";
-  form.address = val.address ?? "";
-  form.workingHours = val.workingHours ?? "";
-  form.coordinates = val.coordinates ?? "";
-  form.mapLink = val.mapLink ?? "";
-  form.location = val.location ?? "";
-  form.socials = (val.socials as typeof form.socials) ?? [];
-  form.offices = (val.offices as typeof form.offices) ?? [];
-}, { once: true, immediate: true });
+function prefetch(id: string) {
+  queryClient.prefetchQuery(
+    $orpc.contacts.getById.queryOptions({ input: { id } }),
+  );
+}
 
-const socialTypeOptions = [
-  { label: "VK", value: "vk" },
-  { label: "Telegram", value: "telegram" },
-  { label: "WhatsApp", value: "whatsapp" },
-  { label: "Одноклассники", value: "ok" },
-  { label: "YouTube", value: "youtube" },
-  { label: "Дзен", value: "dzen" },
-];
-
-const canSave = computed(() => form.phone.trim().length > 0 && form.address.trim().length > 0);
-
-const saveMutation = useMutation({
-  mutationFn: () =>
-    $orpcClient.contacts.save({
-      phone: form.phone.trim(),
-      email: form.email.trim() || undefined,
-      address: form.address.trim(),
-      workingHours: form.workingHours.trim() || undefined,
-      coordinates: form.coordinates.trim() || undefined,
-      mapLink: form.mapLink.trim() || undefined,
-      location: form.location.trim() || undefined,
-      socials: form.socials.filter((s) => s.link.trim()),
-      offices: form.offices.filter((o) => o.title.trim() && o.address.trim()),
-    }),
-  onSuccess: () => {
-    toast.add({ title: "Контакты сохранены", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.contacts.key() });
+const deleteMutation = useMutation({
+  mutationFn: (id: string) => $orpcClient.contacts.delete({ id }),
+  onMutate: async (id) => {
+    const listKey = $orpc.contacts.list.key();
+    await queryClient.cancelQueries({ queryKey: listKey });
+    const snapshots = queryClient.getQueriesData({ queryKey: listKey });
+    queryClient.setQueriesData({ queryKey: listKey }, (old: any) => {
+      if (!Array.isArray(old)) return old;
+      return old.filter((c: any) => c.id !== id);
+    });
+    return { snapshots };
   },
-  onError: () => {
-    toast.add({ title: "Ошибка сохранения", color: "error" });
+  onError: (_e, _id, ctx) => {
+    if (!ctx) return;
+    for (const [key, v] of ctx.snapshots) queryClient.setQueryData(key, v);
+    toast.add({ title: "Не удалось удалить", color: "error" });
+  },
+  onSuccess: () => toast.add({ title: "Контакт удалён", color: "success" }),
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: $orpc.contacts.key() });
   },
 });
 </script>
 
 <template>
   <PageContainer>
-    <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+    <div class="mb-6 flex items-center justify-between gap-3">
+      <h1 class="text-2xl font-bold">Контакты</h1>
+      <div class="flex items-center gap-3">
+        <USelect
+          v-if="allTags.length"
+          v-model="tagFilter"
+          :items="[{ label: 'Все теги', value: ALL_TAGS }, ...allTags.map((t) => ({ label: t, value: t }))]"
+          class="w-48"
+        />
+        <NuxtLink to="/contacts/new">
+          <UButton
+            icon="i-tabler-plus"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+          >
+            Новый контакт
+          </UButton>
+        </NuxtLink>
+      </div>
     </div>
 
-    <template v-else>
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-            Контакты
-          </h1>
-          <p class="text-(--ui-text-muted) text-sm mt-1">
-            Основные контактные данные компании
-          </p>
+    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
+      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <span>Загрузка...</span>
+    </div>
+
+    <div v-else-if="data?.length" class="grid grid-cols-1 gap-3">
+      <div
+        v-for="item in data"
+        :key="item.id"
+        class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
+        @mouseenter="prefetch(item.id)"
+      >
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <NuxtLink
+              :to="`/contacts/${item.id}`"
+              class="text-base font-semibold truncate hover:underline"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <UBadge
+              v-for="tag in item.tags"
+              :key="tag"
+              variant="subtle"
+              color="neutral"
+            >
+              {{ tag }}
+            </UBadge>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-(--ui-text-dimmed)">
+            <span v-if="item.phone"><UIcon name="i-tabler-phone" class="mr-1" />{{ item.phone }}</span>
+            <span v-if="item.email"><UIcon name="i-tabler-mail" class="mr-1" />{{ item.email }}</span>
+            <span v-if="item.address" class="truncate"><UIcon name="i-tabler-map-pin" class="mr-1" />{{ item.address }}</span>
+          </div>
         </div>
-        <UButton
-          :disabled="!canSave"
-          :loading="saveMutation.isPending.value"
-          icon="i-tabler-device-floppy"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-          @click="saveMutation.mutate()"
-        >
-          Сохранить
-        </UButton>
+
+        <div class="flex items-center gap-1 shrink-0">
+          <NuxtLink :to="`/contacts/${item.id}`">
+            <UButton variant="ghost" size="xs" icon="i-tabler-edit" class="rounded-lg" />
+          </NuxtLink>
+          <UButton
+            variant="ghost"
+            size="xs"
+            icon="i-tabler-trash"
+            color="error"
+            class="rounded-lg"
+            :loading="deleteMutation.isPending.value"
+            @click="deleteMutation.mutate(item.id)"
+          />
+        </div>
       </div>
+    </div>
 
-      <div class="max-w-2xl space-y-6">
-        <!-- Основная информация -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
-            Основная информация
-          </h2>
-
-          <UFormField label="Телефон" required>
-            <UInput
-              v-model="form.phone"
-              placeholder="+7 (999) 123-45-67"
-              icon="i-tabler-phone"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="Email">
-            <UInput
-              v-model="form.email"
-              placeholder="info@company.ru"
-              icon="i-tabler-mail"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="Адрес" required>
-            <UInput
-              v-model="form.address"
-              placeholder="г. Москва, ул. Примерная, д. 1"
-              icon="i-tabler-map-pin"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="Город / район">
-            <UInput
-              v-model="form.location"
-              placeholder="Москва"
-              icon="i-tabler-building-community"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="Часы работы">
-            <UInput
-              v-model="form.workingHours"
-              placeholder="Пн-Пт 9:00-18:00"
-              icon="i-tabler-clock"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
-
-        <!-- Карта -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
-            Карта
-          </h2>
-
-          <YandexMapPicker v-model="form.coordinates" />
-
-          <UFormField label="Ссылка на карту" description="Альтернатива координатам — прямая ссылка на карту">
-            <UInput
-              v-model="form.mapLink"
-              placeholder="https://yandex.ru/maps/..."
-              icon="i-tabler-link"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
-
-        <!-- Соцсети -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
-            Социальные сети
-          </h2>
-
-          <RepeaterField
-            v-model="form.socials"
-            :default-item="() => ({ type: 'telegram', link: '' })"
-            :max="10"
-          >
-            <template #item="{ item, update }">
-              <div class="space-y-3">
-                <UFormField label="Соцсеть" required>
-                  <USelect
-                    :model-value="item.type"
-                    :items="socialTypeOptions"
-                    class="w-full"
-                    @update:model-value="update('type', $event)"
-                  />
-                </UFormField>
-                <UFormField label="Ссылка" required>
-                  <UInput
-                    :model-value="item.link"
-                    placeholder="https://..."
-                    @update:model-value="update('link', $event)"
-                  />
-                </UFormField>
-              </div>
-            </template>
-          </RepeaterField>
-        </div>
-
-        <!-- Офисы продаж -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
-            Офисы продаж
-          </h2>
-
-          <RepeaterField
-            v-model="form.offices"
-            :default-item="() => ({ title: '', address: '', phone: '', email: '', workingHours: '', coordinates: '', image: '' })"
-            :max="10"
-          >
-            <template #item="{ item, update }">
-              <div class="space-y-3">
-                <UFormField label="Название" required>
-                  <UInput
-                    :model-value="item.title"
-                    placeholder="Офис продаж на Примерной"
-                    @update:model-value="update('title', $event)"
-                  />
-                </UFormField>
-                <UFormField label="Адрес" required>
-                  <UInput
-                    :model-value="item.address"
-                    placeholder="г. Москва, ул. Примерная, д. 1"
-                    @update:model-value="update('address', $event)"
-                  />
-                </UFormField>
-                <div class="grid grid-cols-2 gap-3">
-                  <UFormField label="Телефон">
-                    <UInput
-                      :model-value="item.phone"
-                      placeholder="+7 (999) 123-45-67"
-                      @update:model-value="update('phone', $event)"
-                    />
-                  </UFormField>
-                  <UFormField label="Email">
-                    <UInput
-                      :model-value="item.email"
-                      placeholder="office@company.ru"
-                      @update:model-value="update('email', $event)"
-                    />
-                  </UFormField>
-                </div>
-                <UFormField label="Часы работы">
-                  <UInput
-                    :model-value="item.workingHours"
-                    placeholder="Пн-Пт 9:00-18:00"
-                    @update:model-value="update('workingHours', $event)"
-                  />
-                </UFormField>
-                <UFormField label="Координаты" description="Широта и долгота через запятую">
-                  <UInput
-                    :model-value="item.coordinates"
-                    placeholder="55.7558, 37.6173"
-                    @update:model-value="update('coordinates', $event)"
-                  />
-                </UFormField>
-                <UFormField label="Фото офиса">
-                  <ImageUpload
-                    :model-value="item.image || null"
-                    folder="contacts/offices"
-                    @update:model-value="update('image', $event ?? '')"
-                  />
-                </UFormField>
-              </div>
-            </template>
-          </RepeaterField>
-        </div>
-
-      </div>
-    </template>
+    <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
+      <UIcon name="i-tabler-address-book-off" class="mx-auto size-12 text-(--ui-text-muted)" />
+      <p class="mt-2 text-(--ui-text-muted)">Контактов пока нет</p>
+      <NuxtLink to="/contacts/new">
+        <UButton class="mt-4" icon="i-tabler-plus">Создать первый контакт</UButton>
+      </NuxtLink>
+    </div>
   </PageContainer>
 </template>

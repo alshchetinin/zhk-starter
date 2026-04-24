@@ -12,6 +12,13 @@ const slugSchema = z
   .max(64)
   .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, "Invalid slug");
 
+const settingsSchema = z
+  .object({
+    contactsHeaderIds: z.array(z.string()).optional(),
+    contactsFooterIds: z.array(z.string()).optional(),
+  })
+  .partial();
+
 export const sitesRouter = {
   list: protectedProcedure.handler(async () => {
     return db.query.sites.findMany({
@@ -68,13 +75,19 @@ export const sitesRouter = {
         name: z.string().min(1).optional(),
         cityId: z.string().nullable().optional(),
         customDomain: z.string().nullable().optional(),
+        settings: settingsSchema.optional(),
       }),
     )
     .handler(async ({ input }) => {
-      const { id, ...fields } = input;
+      const { id, settings, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(fields)) {
         if (v !== undefined) updates[k] = v;
+      }
+      if (settings !== undefined) {
+        const existing = await db.query.sites.findFirst({ where: eq(sites.id, id) });
+        if (!existing) throw new ORPCError("NOT_FOUND");
+        updates.settings = { ...(existing.settings ?? {}), ...settings };
       }
       if (Object.keys(updates).length === 0) {
         const existing = await db.query.sites.findFirst({ where: eq(sites.id, id) });

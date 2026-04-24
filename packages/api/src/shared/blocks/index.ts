@@ -3,7 +3,7 @@ import type { BlockDefinition } from "./_core";
 
 import { aboutProjectBlock } from "./about-project";
 import { aboutFeaturesBlock } from "./about-features";
-import { contactsOfficeBlock } from "./contacts-office";
+import { contactsBlock } from "./contacts";
 import { heroFullscreenBlock } from "./hero-fullscreen";
 import { infrastructureTabsBlock } from "./infrastructure-tabs";
 import { aboutCompanyBlock } from "./about-company";
@@ -20,7 +20,7 @@ export type { BlockDefinition, BlockCategory } from "./_core";
 export const allBlocks = [
   aboutProjectBlock,
   aboutFeaturesBlock,
-  contactsOfficeBlock,
+  contactsBlock,
   heroFullscreenBlock,
   infrastructureTabsBlock,
   aboutCompanyBlock,

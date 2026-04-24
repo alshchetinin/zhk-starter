@@ -29,7 +29,12 @@ const catalogItems: NavItem[] = [
   { label: "Ипотека", icon: "i-tabler-coin", to: "/mortgage", section: "mortgage" },
   { label: "Способы покупки", icon: "i-tabler-credit-card", to: "/purchase-methods", section: "purchase-methods" },
   { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
+];
+
+// Company-wide brand info
+const companyItems: NavItem[] = [
   { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
+  { label: "Соцсети", icon: "i-tabler-brand-telegram", to: "/socials", adminOnly: true },
 ];
 
 // Admin-only system config
@@ -47,9 +52,9 @@ const devItems: NavItem[] = import.meta.dev
     ]
   : [];
 
-const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, systemItems, devItems];
+const allGroups: NavItem[][] = [mainItems, contentItems, catalogItems, companyItems, systemItems, devItems];
 
-export { contentItems, catalogItems, mainItems, systemItems, devItems };
+export { contentItems, catalogItems, companyItems, mainItems, systemItems, devItems };
 
 export function useNavigation() {
   const route = useRoute();
