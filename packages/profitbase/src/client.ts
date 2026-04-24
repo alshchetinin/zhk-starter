@@ -141,26 +141,28 @@ export async function getProperties(
   config: ProfitbaseConfig,
   projectIds: number[] = [],
 ): Promise<ProfitbaseProperty[]> {
+  const targets = projectIds.length
+    ? projectIds
+    : (await getProjects(config)).map((p) => p.id);
+
   const all: ProfitbaseProperty[] = [];
   const pageSize = 100;
-  let offset = 0;
 
-  for (;;) {
-    const params: Record<string, string | number> = {
-      limit: pageSize,
-      offset,
-    };
-    if (projectIds.length) {
-      params["filter[projectId]"] = projectIds.join(",");
+  for (const projectId of targets) {
+    let offset = 0;
+    for (;;) {
+      const data = (await apiFetch(config, "/property", {
+        projectId,
+        isArchive: false,
+        full: true,
+        limit: pageSize,
+        offset,
+      })) as { data: ProfitbaseProperty[] };
+      const chunk = data.data ?? [];
+      all.push(...chunk);
+      if (chunk.length < pageSize) break;
+      offset += pageSize;
     }
-
-    const data = (await apiFetch(config, "/property", params)) as {
-      data: ProfitbaseProperty[];
-    };
-    const chunk = data.data ?? [];
-    all.push(...chunk);
-    if (chunk.length < pageSize) break;
-    offset += pageSize;
   }
 
   return all;
