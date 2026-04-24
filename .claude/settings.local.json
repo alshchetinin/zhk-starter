@@ -7,7 +7,8 @@
       "Bash(PGPASSWORD=password psql -h localhost -p 5441 -U postgres -d zhk_starter -c \"SELECT id, floor_number, floor_image IS NOT NULL as has_image, svg_scheme IS NOT NULL as has_svg FROM floors LIMIT 10;\")",
       "Bash(PGPASSWORD=password psql -h localhost -p 5441 -U postgres -d zhk_starter -c \"SELECT id FROM integrations LIMIT 5;\")",
       "Bash(curl -s http://localhost:3000/health)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(gh repo *)"
     ]
   }
 }

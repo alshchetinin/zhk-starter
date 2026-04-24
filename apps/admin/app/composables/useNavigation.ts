@@ -17,6 +17,7 @@ const contentItems: NavItem[] = [
   { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
   { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
   { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
+  { label: "Модальные окна", icon: "i-tabler-app-window", to: "/modals", section: "modals" },
 ];
 
 // Shared across all sites

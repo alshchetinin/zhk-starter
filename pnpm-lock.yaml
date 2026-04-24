@@ -203,6 +203,9 @@ importers:
       '@zhk/env':
         specifier: workspace:*
         version: link:../../packages/env
+      maska:
+        specifier: ^3.2.0
+        version: 3.2.0
       motion-v:
         specifier: ^2.0.0
         version: 2.0.0(@vueuse/core@14.2.1(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))
@@ -4497,6 +4500,9 @@ packages:
     resolution: {integrity: sha512-jt1v2ObpyOKR8p4XaUJVk3YWRJ5n+i4+rjQopxvV32rSndTJXvIzuUdWWIy/1pFQMkQmvTXawzDNqOH/CUmx6A==}
     engines: {node: '>= 20'}
     hasBin: true
+
+  maska@3.2.0:
+    resolution: {integrity: sha512-zSmSgs5/q9vMSmrdZT3rKOv9uLznNWR/niuuAdBZDTvB3SMKOX9vhMtDijFyExz+B4UClu2rvksylUh/ea1bLA==}
 
   mdn-data@2.0.28:
     resolution: {integrity: sha512-aylIc7Z9y4yzHYAJNuESG3hfhC+0Ibp/MAMiaOZgNv4pmEdFyfZhhhny4MNiAfWdBQ1RQ2mfDWmM1x8SvGyp8g==}
@@ -10444,6 +10450,8 @@ snapshots:
       uc.micro: 2.1.0
 
   marked@17.0.3: {}
+
+  maska@3.2.0: {}
 
   mdn-data@2.0.28: {}
 

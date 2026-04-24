@@ -9,5 +9,6 @@ import { navItems } from "~/composables/useNavigation";
       <slot />
     </main>
     <WebFooter :nav-items="navItems" />
+    <ModalProvider />
   </div>
 </template>
