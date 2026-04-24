@@ -121,10 +121,17 @@ export async function upsertRecords(
 
   const toInsert: Record<string, unknown>[] = [];
   const toUpdate: { id: string; values: Record<string, unknown> }[] = [];
+  let skippedMissingExternalId = 0;
 
   for (const item of data) {
     const externalId = item.externalId as string;
-    const existingId = externalId ? existingMap.get(externalId) : undefined;
+
+    if (!externalId) {
+      skippedMissingExternalId++;
+      continue;
+    }
+
+    const existingId = existingMap.get(externalId);
 
     if (existingId) {
       const { id: _, createdAt: _c, ...updateValues } = item;
@@ -132,6 +139,12 @@ export async function upsertRecords(
     } else {
       toInsert.push(item);
     }
+  }
+
+  if (skippedMissingExternalId > 0) {
+    console.warn(
+      `[import] ${tableName}: skipped ${skippedMissingExternalId} records without externalId`,
+    );
   }
 
   // Batch insert
