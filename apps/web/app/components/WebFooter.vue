@@ -5,7 +5,21 @@ defineProps<{
   navItems: NavItem[];
 }>();
 
+const { footer: footerContacts } = useSiteContacts();
 const currentYear = new Date().getFullYear();
+
+const socialIcons: Record<string, string> = {
+  vk: "lucide:at-sign",
+  telegram: "lucide:send",
+  whatsapp: "lucide:message-circle",
+  ok: "lucide:circle-dot",
+  youtube: "lucide:youtube",
+  dzen: "lucide:flame",
+};
+
+function telHref(phone: string) {
+  return `tel:${phone.replace(/[^+\d]/g, "")}`;
+}
 </script>
 
 <template>
@@ -27,9 +41,7 @@ const currentYear = new Date().getFullYear();
 
         <!-- Navigation -->
         <div>
-          <h3
-            class="text-sm font-semibold text-[var(--web-text-primary)] mb-4"
-          >
+          <h3 class="text-sm font-semibold text-[var(--web-text-primary)] mb-4">
             Навигация
           </h3>
           <nav class="flex flex-col gap-2">
@@ -45,27 +57,43 @@ const currentYear = new Date().getFullYear();
         </div>
 
         <!-- Contacts -->
-        <div>
-          <h3
-            class="text-sm font-semibold text-[var(--web-text-primary)] mb-4"
-          >
-            Контакты
-          </h3>
-          <div
-            class="flex flex-col gap-2 text-sm text-[var(--web-text-secondary)]"
-          >
-            <a
-              href="tel:+70001234567"
-              class="hover:text-[var(--web-text-primary)] transition-colors"
-            >
-              +7 (000) 123-45-67
-            </a>
-            <a
-              href="mailto:info@example.com"
-              class="hover:text-[var(--web-text-primary)] transition-colors"
-            >
-              info@example.com
-            </a>
+        <div v-if="footerContacts.length" class="flex flex-col gap-6">
+          <div v-for="c in footerContacts" :key="c.id">
+            <h3 class="text-sm font-semibold text-[var(--web-text-primary)] mb-3">
+              {{ c.label }}
+            </h3>
+            <div class="flex flex-col gap-2 text-sm text-[var(--web-text-secondary)]">
+              <a
+                v-if="c.phone"
+                :href="telHref(c.phone)"
+                class="hover:text-[var(--web-text-primary)] transition-colors"
+              >
+                {{ c.phone }}
+              </a>
+              <a
+                v-if="c.email"
+                :href="`mailto:${c.email}`"
+                class="hover:text-[var(--web-text-primary)] transition-colors"
+              >
+                {{ c.email }}
+              </a>
+              <span v-if="c.address">{{ c.address }}</span>
+              <span v-if="c.workingHours" class="text-xs text-[var(--web-text-muted)]">
+                {{ c.workingHours }}
+              </span>
+              <div v-if="c.socials?.length" class="mt-2 flex gap-3">
+                <a
+                  v-for="s in c.socials"
+                  :key="s.link"
+                  :href="s.link"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+                >
+                  <Icon :name="socialIcons[s.type] ?? 'lucide:link'" class="size-5" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

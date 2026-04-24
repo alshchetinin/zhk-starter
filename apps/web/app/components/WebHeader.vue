@@ -18,6 +18,9 @@ if (import.meta.client) {
 const isMobileMenuOpen = ref(false);
 const route = useRoute();
 
+const { header: headerContacts } = useSiteContacts();
+const primaryContact = computed(() => headerContacts.value[0]);
+
 watch(
   () => route.path,
   () => {
@@ -61,6 +64,13 @@ watch(
 
       <!-- CTA + mobile toggle -->
       <div class="flex items-center gap-4">
+        <a
+          v-if="primaryContact?.phone"
+          :href="`tel:${primaryContact.phone.replace(/[^+\d]/g, '')}`"
+          class="hidden md:inline-flex text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"
+        >
+          {{ primaryContact.phone }}
+        </a>
         <UiButton as-child variant="primary" class="hidden md:inline-flex">
           <NuxtLink to="/projects">
             Выбрать квартиру
