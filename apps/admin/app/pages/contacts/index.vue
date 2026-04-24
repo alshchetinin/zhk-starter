@@ -5,12 +5,13 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
-const tagFilter = ref<string>("");
+const ALL_TAGS = "__all__";
+const tagFilter = ref<string>(ALL_TAGS);
 
 const { data, isPending } = useQuery(
   computed(() =>
     $orpc.contacts.list.queryOptions({
-      input: tagFilter.value ? { tag: tagFilter.value } : undefined,
+      input: tagFilter.value !== ALL_TAGS ? { tag: tagFilter.value } : undefined,
     }),
   ),
 );
@@ -59,7 +60,7 @@ const deleteMutation = useMutation({
         <USelect
           v-if="allTags.length"
           v-model="tagFilter"
-          :items="[{ label: 'Все теги', value: '' }, ...allTags.map((t) => ({ label: t, value: t }))]"
+          :items="[{ label: 'Все теги', value: ALL_TAGS }, ...allTags.map((t) => ({ label: t, value: t }))]"
           class="w-48"
         />
         <NuxtLink to="/contacts/new">
