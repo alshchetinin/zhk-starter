@@ -250,9 +250,7 @@ type PreviewFloor = {
 
 const preview = computed<PreviewFloor[]>(() => {
   const byFloor = new Map<number, PreviewCell[]>();
-  // For sequential numbering: assign one counter per floor position in sorted order
   let seq = 0;
-  // iterate stacks in order, floor asc, apartments in listed order
   for (const stack of stacks) {
     const lo = Math.min(stack.startFloor, stack.endFloor);
     const hi = Math.max(stack.startFloor, stack.endFloor);
@@ -274,6 +272,56 @@ const preview = computed<PreviewFloor[]>(() => {
   return [...byFloor.entries()]
     .sort((a, b) => b[0] - a[0])
     .map(([floorNumber, apartments]) => ({ floorNumber, apartments }));
+});
+
+// Preview grid: stacks as columns, floors as rows
+type PreviewGridCell = PreviewCell | null;
+type PreviewGridRow = {
+  floorNumber: number;
+  byStack: PreviewCell[][]; // index corresponds to stacks order
+};
+
+const previewGrid = computed<PreviewGridRow[]>(() => {
+  if (!stacks.length) return [];
+  const globalLo = Math.min(...stacks.map((s) => Math.min(s.startFloor, s.endFloor)));
+  const globalHi = Math.max(...stacks.map((s) => Math.max(s.startFloor, s.endFloor)));
+  const rows: PreviewGridRow[] = [];
+  let seq = 0;
+  // Pre-compute sequential numbers matching order in preview()
+  const seqMap = new Map<string, number>();
+  for (const stack of stacks) {
+    const lo = Math.min(stack.startFloor, stack.endFloor);
+    const hi = Math.max(stack.startFloor, stack.endFloor);
+    for (let f = lo; f <= hi; f++) {
+      for (const apt of stack.apartments) {
+        seq += 1;
+        seqMap.set(`${stack.id}-${f}-${apt.id}`, seq);
+      }
+    }
+  }
+
+  for (let f = globalHi; f >= globalLo; f--) {
+    const byStack: PreviewCell[][] = stacks.map((stack) => {
+      const lo = Math.min(stack.startFloor, stack.endFloor);
+      const hi = Math.max(stack.startFloor, stack.endFloor);
+      if (f < lo || f > hi) return [];
+      return stack.apartments.map((apt) => ({
+        stackId: stack.id,
+        apartmentId: apt.id,
+        apartmentNumber: computeApartmentNumber(
+          stack,
+          apt,
+          f,
+          seqMap.get(`${stack.id}-${f}-${apt.id}`) ?? 0,
+        ),
+        roomsCount: apt.roomsCount,
+        area: apt.area,
+        conflict: occupiedFloors.value.has(f),
+      }));
+    });
+    rows.push({ floorNumber: f, byStack });
+  }
+  return rows;
 });
 
 const totalApartments = computed(() =>
@@ -510,10 +558,143 @@ const schemeItems = computed(() => numberingSchemeItems);
 
     <div
       class="grid gap-5"
-      :class="previewCollapsed ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[1fr_380px]'"
+      :class="previewCollapsed ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-[1fr_360px]'"
     >
-      <!-- FORM column -->
-      <div class="min-w-0 space-y-4">
+      <!-- PREVIEW column (main) -->
+      <section
+        v-if="!previewCollapsed"
+        class="min-w-0 order-2 lg:order-1"
+      >
+        <div class="rounded-md border border-(--ui-border) bg-(--ui-bg) overflow-hidden">
+          <div
+            class="flex items-center justify-between gap-2 px-3 py-2 border-b border-(--ui-border) bg-(--ui-bg-elevated)/50"
+          >
+            <div class="flex items-center gap-3">
+              <h2 class="text-xs font-semibold tracking-tight">Шахматка</h2>
+              <span class="text-[11px] text-(--ui-text-dimmed) tabular-nums">
+                {{ totalApartments }} кв. · {{ previewGrid.length }} эт.
+              </span>
+              <!-- Stack legend -->
+              <div class="hidden sm:flex items-center gap-2">
+                <div
+                  v-for="(stack, i) in stacks"
+                  :key="stack.id"
+                  class="flex items-center gap-1 text-[11px] text-(--ui-text-muted)"
+                >
+                  <span
+                    class="size-2 rounded-sm"
+                    :class="stackAccent(i).bar"
+                  />
+                  <span>
+                    #{{ i + 1 }} · {{ stack.startFloor }}–{{ stack.endFloor }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button
+              class="p-1 rounded text-(--ui-text-dimmed) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
+              title="Скрыть превью"
+              @click="previewCollapsed = true"
+            >
+              <UIcon name="i-tabler-eye-off" class="size-3.5" />
+            </button>
+          </div>
+
+          <div
+            v-if="!previewGrid.length"
+            class="py-16 text-center text-xs text-(--ui-text-dimmed)"
+          >
+            Добавьте стояк в правой панели
+          </div>
+
+          <div
+            v-else
+            class="p-3 overflow-auto max-h-[calc(100vh-140px)]"
+          >
+            <div class="inline-block min-w-full">
+              <!-- Header row: stacks as column groups -->
+              <div
+                class="flex items-end sticky top-0 bg-(--ui-bg) pb-1.5 border-b border-(--ui-border) z-10"
+              >
+                <div class="w-10 shrink-0" />
+                <div
+                  v-for="(stack, si) in stacks"
+                  :key="stack.id"
+                  class="px-1.5 flex items-center gap-1.5 border-l border-(--ui-border) first:border-l-0 min-w-[120px]"
+                >
+                  <span
+                    class="size-2 rounded-sm"
+                    :class="stackAccent(si).bar"
+                  />
+                  <span class="text-[11px] font-medium">Стояк #{{ si + 1 }}</span>
+                  <span class="text-[10px] text-(--ui-text-dimmed) ml-auto">
+                    {{ stack.apartments.length }} кв.
+                  </span>
+                </div>
+              </div>
+
+              <!-- Floor rows -->
+              <div>
+                <div
+                  v-for="row in previewGrid"
+                  :key="row.floorNumber"
+                  class="flex items-stretch min-h-[56px] hover:bg-(--ui-bg-elevated)/30 transition-colors"
+                >
+                  <div
+                    class="w-10 shrink-0 flex items-center justify-center text-xs font-semibold text-(--ui-text-dimmed) tabular-nums border-r border-(--ui-border)"
+                  >
+                    {{ row.floorNumber }}
+                  </div>
+                  <div
+                    v-for="(cells, si) in row.byStack"
+                    :key="si"
+                    class="px-1.5 py-1 flex items-center gap-1 border-l border-(--ui-border) first:border-l-0 min-w-[120px]"
+                  >
+                    <button
+                      v-for="apt in cells"
+                      :key="apt.apartmentId"
+                      :title="`№${apt.apartmentNumber} · ${roomsLabel(apt.roomsCount)} · ${apt.area} м²${apt.conflict ? ' · КОНФЛИКТ' : ''}`"
+                      class="group flex flex-col items-start justify-center h-12 px-2 rounded-md border bg-(--ui-bg) text-left transition hover:-translate-y-0.5 hover:shadow-sm flex-1 min-w-[52px]"
+                      :class="[
+                        apt.conflict
+                          ? 'border-red-400 bg-red-50 dark:bg-red-950/40'
+                          : stackAccent(si).cell,
+                        highlightedAptId === apt.apartmentId
+                          ? 'ring-2 ring-(--ui-primary)'
+                          : '',
+                      ]"
+                      @click="onPreviewClick(apt)"
+                    >
+                      <span class="text-[11px] font-semibold tabular-nums leading-tight">
+                        {{ apt.apartmentNumber }}
+                      </span>
+                      <span class="text-[10px] text-(--ui-text-dimmed) leading-tight">
+                        {{ roomsLabel(apt.roomsCount) }} · {{ apt.area }}м²
+                      </span>
+                    </button>
+                    <div
+                      v-if="!cells.length"
+                      class="h-12 w-full rounded-md border border-dashed border-(--ui-border)/60"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <button
+        v-else
+        class="order-2 lg:order-1 self-start flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-(--ui-border) text-xs text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
+        @click="previewCollapsed = false"
+      >
+        <UIcon name="i-tabler-eye" class="size-3.5" />
+        Показать превью
+      </button>
+
+      <!-- FORM column (sidebar) -->
+      <div class="min-w-0 space-y-4 order-1 lg:order-2">
         <!-- Section target: pill selector + inline fields -->
         <section>
           <div class="mb-2 flex items-center gap-1 rounded-md bg-(--ui-bg-elevated) p-0.5 w-fit text-xs">
@@ -542,14 +723,13 @@ const schemeItems = computed(() => numberingSchemeItems);
             </button>
           </div>
 
-          <div class="grid grid-cols-[1fr_220px] gap-2">
+          <div class="space-y-2">
             <UInput
               v-if="!useExistingSection"
               v-model="sectionName"
               placeholder="Название секции"
               size="sm"
               autofocus
-              :ui="{ base: 'border-(--ui-border) bg-(--ui-bg)' }"
             />
             <USelect
               v-else
@@ -707,13 +887,12 @@ const schemeItems = computed(() => numberingSchemeItems);
               <div class="pl-3 pr-2 pb-2 pt-0.5">
                 <!-- column headers -->
                 <div
-                  class="grid grid-cols-[28px_60px_70px_90px_1fr_auto] gap-2 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
+                  class="grid grid-cols-[22px_1fr_1fr_1fr_auto] gap-1.5 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
                 >
                   <div></div>
                   <div>№</div>
                   <div>Комн.</div>
                   <div>м²</div>
-                  <div>Планировка</div>
                   <div></div>
                 </div>
 
@@ -722,7 +901,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                     v-for="(apt, ai) in stack.apartments"
                     :key="apt.id"
                     :data-apt-id="apt.id"
-                    class="grid grid-cols-[28px_60px_70px_90px_1fr_auto] gap-2 items-center px-1 py-0.5 rounded transition-colors"
+                    class="grid grid-cols-[22px_1fr_1fr_1fr_auto] gap-1.5 items-center px-1 py-0.5 rounded transition-colors"
                     :class="
                       highlightedAptId === apt.id
                         ? 'bg-(--ui-primary)/10 ring-1 ring-(--ui-primary)/40'
@@ -731,14 +910,14 @@ const schemeItems = computed(() => numberingSchemeItems);
                   >
                     <div class="flex flex-col -my-1">
                       <button
-                        class="h-4 px-1 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
+                        class="h-4 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === 0"
                         @click="moveApartment(stack, ai, -1)"
                       >
                         <UIcon name="i-tabler-chevron-up" class="size-3" />
                       </button>
                       <button
-                        class="h-4 px-1 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
+                        class="h-4 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === stack.apartments.length - 1"
                         @click="moveApartment(stack, ai, 1)"
                       >
@@ -767,9 +946,6 @@ const schemeItems = computed(() => numberingSchemeItems);
                         ai === stack.apartments.length - 1 && addApartment(stack)
                       "
                     />
-                    <span class="text-[11px] text-(--ui-text-muted) tabular-nums">
-                      {{ roomsLabel(apt.roomsCount) }} · {{ apt.area }} м²
-                    </span>
                     <button
                       v-if="stack.apartments.length > 1"
                       class="p-1 rounded text-(--ui-text-dimmed) hover:text-red-500 transition"
@@ -837,74 +1013,6 @@ const schemeItems = computed(() => numberingSchemeItems);
         </div>
       </div>
 
-      <!-- PREVIEW column -->
-      <aside v-if="!previewCollapsed" class="lg:sticky lg:top-4 self-start">
-        <div class="rounded-md border border-(--ui-border) bg-(--ui-bg)">
-          <div
-            class="flex items-center justify-between gap-2 px-3 py-2 border-b border-(--ui-border)"
-          >
-            <div class="flex items-baseline gap-2">
-              <h3 class="text-xs font-semibold tracking-tight">Превью</h3>
-              <span class="text-[11px] text-(--ui-text-dimmed) tabular-nums">
-                {{ totalApartments }} кв.
-              </span>
-            </div>
-            <button
-              class="p-1 rounded text-(--ui-text-dimmed) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
-              @click="previewCollapsed = true"
-            >
-              <UIcon name="i-tabler-layout-sidebar-right-collapse" class="size-3.5" />
-            </button>
-          </div>
-          <div class="p-1.5 max-h-[calc(100vh-140px)] overflow-auto">
-            <div
-              v-for="floor in preview"
-              :key="floor.floorNumber"
-              class="flex items-center gap-1.5 px-1 py-0.5"
-            >
-              <div
-                class="flex size-6 shrink-0 items-center justify-center rounded text-[10px] font-medium text-(--ui-text-dimmed) tabular-nums"
-              >
-                {{ floor.floorNumber }}
-              </div>
-              <div class="flex flex-wrap gap-1">
-                <button
-                  v-for="(apt, i) in floor.apartments"
-                  :key="i"
-                  :title="`№${apt.apartmentNumber} · ${roomsLabel(apt.roomsCount)} · ${apt.area} м²${apt.conflict ? ' · КОНФЛИКТ' : ''}`"
-                  class="flex flex-col items-center justify-center size-11 rounded border bg-(--ui-bg) text-[10px] transition hover:-translate-y-0.5 hover:shadow-sm"
-                  :class="[
-                    apt.conflict
-                      ? 'border-red-400 bg-red-50 dark:bg-red-950/40'
-                      : stackAccent(stackIndexById.get(apt.stackId) ?? 0).cell,
-                  ]"
-                  @click="onPreviewClick(apt)"
-                >
-                  <span class="font-medium tabular-nums">{{ apt.apartmentNumber }}</span>
-                  <span class="text-(--ui-text-dimmed) text-[9px]">
-                    {{ roomsLabel(apt.roomsCount) }}
-                  </span>
-                </button>
-              </div>
-            </div>
-            <div
-              v-if="!preview.length"
-              class="text-center text-[11px] text-(--ui-text-dimmed) py-6"
-            >
-              Добавьте стояк
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <button
-        v-else
-        class="self-start flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-(--ui-border) text-xs text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
-        @click="previewCollapsed = false"
-      >
-        <UIcon name="i-tabler-layout-sidebar-right-expand" class="size-3.5" />
-        Превью ({{ totalApartments }})
-      </button>
     </div>
   </div>
 </template>
