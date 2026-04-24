@@ -282,10 +282,10 @@ const previewGrid = computed<PreviewGridRow[]>(() => {
     globalHi = Math.max(globalHi, r.hi);
   }
 
-  const rows: PreviewGridRow[] = [];
+  // 1) Считаем номера снизу вверх (seq начинается с 1 этажа)
+  const cellsByFloor = new Map<number, PreviewGridCell[]>();
   let seq = 0;
-  // Iterate top-down so number matches visual order for sequential scheme
-  for (let f = globalHi; f >= globalLo; f--) {
+  for (let f = globalLo; f <= globalHi; f++) {
     let pos = 0;
     const byStack: PreviewGridCell[] = stacks.map((stack) => {
       const seg = segmentAtFloor(stack, f);
@@ -297,7 +297,6 @@ const previewGrid = computed<PreviewGridRow[]>(() => {
         apartmentId: seg.id,
         apartmentNumber: computeApartmentNumber(
           stack,
-          // legacy signature compat — передаём seg как apt-like
           { id: seg.id, roomsCount: seg.roomsCount, area: seg.area } as any,
           f,
           seq,
@@ -308,7 +307,13 @@ const previewGrid = computed<PreviewGridRow[]>(() => {
         conflict: occupiedFloors.value.has(f),
       };
     });
-    rows.push({ floorNumber: f, byStack });
+    cellsByFloor.set(f, byStack);
+  }
+
+  // 2) Рендерим сверху вниз
+  const rows: PreviewGridRow[] = [];
+  for (let f = globalHi; f >= globalLo; f--) {
+    rows.push({ floorNumber: f, byStack: cellsByFloor.get(f)! });
   }
   return rows;
 });
