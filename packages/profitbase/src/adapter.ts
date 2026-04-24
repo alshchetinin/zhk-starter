@@ -79,12 +79,13 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
   const apartment_layouts: ImportApartmentLayout[] = Array.from(
     layoutByCode.entries(),
   ).map(([code, p]) => {
-    const prices = residential
-      .filter((x) => x.layoutCode === code)
-      .map((x) => x.price?.value ?? 0);
-    const floorNums = residential
-      .filter((x) => x.layoutCode === code)
-      .map((x) => x.floor ?? 0);
+    const group = residential.filter((x) => x.layoutCode === code);
+    const prices = group.map((x) => x.price?.value ?? 0);
+    const floorNums = group.map((x) => x.floor ?? 0);
+    const firstWithImage = group.find(
+      (x) => x.planImages && x.planImages.length > 0 && x.planImages[0]?.source,
+    );
+    const image = firstWithImage?.planImages?.[0]?.source ?? null;
     return {
       external_id: code,
       name: `${p.rooms_amount ?? (p.studio ? 0 : 1)}-комн. ${p.area?.area_total ?? 0} м²`,
@@ -92,11 +93,25 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
       floor_range: `[${Math.min(...floorNums)}, ${Math.max(...floorNums)}]`,
       price_range: `[${Math.min(...prices)}, ${Math.max(...prices)}]`,
       rooms_count: p.rooms_amount ?? (p.studio ? 0 : 1),
-      default_layout_image: p.planImages?.[0]?.source ?? null,
+      default_layout_image: image,
       three_d_layout_image: null,
       ...base,
     };
   });
+
+  const withoutLayoutCode = residential.filter((p) => !p.layoutCode).length;
+  const withoutImage = residential.filter(
+    (p) => !p.planImages?.length,
+  ).length;
+  console.log(
+    `[profitbase] properties=${residential.length} layouts=${apartment_layouts.length} withoutLayoutCode=${withoutLayoutCode} withoutPlanImages=${withoutImage}`,
+  );
+  if (apartment_layouts.length && !apartment_layouts.some((l) => l.default_layout_image)) {
+    console.log(
+      `[profitbase] sample property planImages:`,
+      JSON.stringify(residential[0]?.planImages ?? null),
+    );
+  }
 
   const apartments: ImportApartment[] = residential.map((p) => ({
     external_id: p.id.toString(),

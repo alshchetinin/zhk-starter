@@ -186,7 +186,8 @@ const {
 } = useQuery(
   computed(() => ({
     ...$orpc.integration.getComplexes.queryOptions(),
-    enabled: hasIntegration.value,
+    enabled:
+      hasIntegration.value && activeProvider.value?.provider === "macro",
   })),
 );
 
