@@ -10,6 +10,14 @@ const { data: integration, isPending: loading } = useQuery(
   $orpc.integration.get.queryOptions(),
 );
 
+const { data: activeProvider } = useQuery(
+  $orpc.integration.getActiveProvider.queryOptions(),
+);
+
+const providerLabel = computed(() =>
+  activeProvider.value?.provider === "profitbase" ? "Profitbase" : "MacroCRM",
+);
+
 const hasIntegration = computed(
   () => integration.value != null && integration.value.isActive,
 );
@@ -172,10 +180,10 @@ const createBatchMutation = useMutation({
       <div class="mb-6 flex items-start justify-between">
         <div>
           <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-            Интеграции
+            Интеграция {{ providerLabel }}
           </h1>
           <p class="text-(--ui-text-muted) text-sm mt-1">
-            Настройка подключения к CRM-системам
+            Подключение к CRM-системе и импорт объектов
           </p>
         </div>
         <div v-if="hasIntegration" class="flex gap-2">
@@ -198,7 +206,26 @@ const createBatchMutation = useMutation({
         </div>
       </div>
 
-      <div class="max-w-2xl space-y-6">
+      <div
+        v-if="activeProvider?.provider === 'profitbase'"
+        class="max-w-2xl rounded-xl border border-(--ui-border) p-6 text-center"
+      >
+        <UIcon
+          name="i-tabler-tool"
+          class="text-3xl text-(--ui-text-dimmed) mb-2"
+        />
+        <p class="text-sm text-(--ui-text-muted)">
+          Setup-форма Profitbase ещё не готова
+        </p>
+        <p class="text-xs text-(--ui-text-dimmed) mt-1">
+          Следите за выпуском — адаптер в разработке
+        </p>
+      </div>
+
+      <div
+        v-else
+        class="max-w-2xl space-y-6"
+      >
         <!-- Active integration -->
         <div
           v-if="hasIntegration"

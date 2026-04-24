@@ -184,10 +184,20 @@ async function runByType(
   integration: Integration,
   complexes: number[],
 ): Promise<SyncLogStats> {
-  if (integration.type === "macro") {
+  const provider = process.env.INTEGRATION_PROVIDER ?? "macro";
+  if (integration.type && integration.type !== provider) {
+    throw new Error(
+      `Integration type (${integration.type}) doesn't match INTEGRATION_PROVIDER (${provider}). Reconfigure or delete the integration.`,
+    );
+  }
+
+  if (provider === "macro") {
     return runMacro(integration, complexes);
   }
-  throw new Error(`Unsupported integration type: ${integration.type}`);
+  if (provider === "profitbase") {
+    throw new Error("Profitbase adapter is not implemented yet");
+  }
+  throw new Error(`Unsupported integration provider: ${provider}`);
 }
 
 async function runMacro(

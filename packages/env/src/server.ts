@@ -24,6 +24,9 @@ export const env = createEnv({
     S3_ENDPOINT: z.string().url(),
     S3_BASE_URL: z.string().url(),
     S3_REGION: z.string().min(1),
+    INTEGRATION_PROVIDER: z
+      .enum(["macro", "profitbase"])
+      .default("macro"),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
