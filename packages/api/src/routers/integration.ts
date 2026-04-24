@@ -9,6 +9,14 @@ import { runIntegrationSync } from "../services/sync";
 import { sendTelegramMessage } from "../services/notify";
 
 export const integrationRouter = {
+  getActiveProvider: protectedProcedure.handler(() => {
+    return {
+      provider: (process.env.INTEGRATION_PROVIDER ?? "macro") as
+        | "macro"
+        | "profitbase",
+    };
+  }),
+
   get: protectedProcedure.handler(async () => {
     const integration = await db.query.integrations.findFirst();
     if (!integration) return null;
