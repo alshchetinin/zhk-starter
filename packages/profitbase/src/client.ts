@@ -119,10 +119,13 @@ async function apiFetch(
 export async function getProjects(
   config: ProfitbaseConfig,
 ): Promise<ProfitbaseProject[]> {
-  const data = (await apiFetch(config, "/projects")) as {
-    data: ProfitbaseProject[];
-  };
-  return data.data ?? [];
+  const raw = await apiFetch(config, "/projects");
+  if (Array.isArray(raw)) return raw as ProfitbaseProject[];
+  if (raw && typeof raw === "object" && "data" in raw) {
+    const data = (raw as { data?: ProfitbaseProject[] }).data;
+    if (Array.isArray(data)) return data;
+  }
+  return [];
 }
 
 export async function getHouses(

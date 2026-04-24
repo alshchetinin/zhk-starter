@@ -6,6 +6,7 @@ export type {
   ImportProject,
   ImportBuilding,
   ImportApartment,
+  ImportApartmentLayout,
   ApartmentStatus,
   MacroComplex,
 } from "./types";
