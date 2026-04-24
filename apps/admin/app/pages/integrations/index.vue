@@ -84,6 +84,92 @@ const canSetup = computed(
   () => domain.value.trim().length > 0 && appSecret.value.trim().length > 0,
 );
 
+// === Profitbase ===
+const pbApiKey = ref("");
+const pbAccountId = ref("");
+
+const pbSetupMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.integration.setupProfitbase({
+      apiKey: pbApiKey.value.trim(),
+      accountId: pbAccountId.value.trim(),
+    }),
+  onSuccess: () => {
+    toast.add({
+      title: "Интеграция настроена",
+      description: "Profitbase успешно подключена",
+      color: "success",
+    });
+    pbApiKey.value = "";
+    pbAccountId.value = "";
+    queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
+  },
+});
+
+const pbVerifyMutation = useMutation({
+  mutationFn: () => $orpcClient.integration.verifyProfitbaseConnection(),
+  onSuccess: (result: any) => {
+    toast.add({
+      title: "Подключение активно",
+      description: `Найдено проектов: ${result.projectCount}`,
+      color: "success",
+    });
+    queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
+  },
+});
+
+const canSetupProfitbase = computed(
+  () => pbApiKey.value.trim().length > 0 && pbAccountId.value.trim().length > 0,
+);
+
+const {
+  data: pbProjectsData,
+  isPending: loadingPbProjects,
+} = useQuery(
+  computed(() => ({
+    ...$orpc.integration.getProfitbaseProjects.queryOptions(),
+    enabled:
+      activeProvider.value?.provider === "profitbase" && hasIntegration.value,
+  })),
+);
+
+const pbProjects = computed(() => pbProjectsData.value?.projects ?? []);
+const pbExistingIds = computed(
+  () => new Set(pbProjectsData.value?.existingProjectIds ?? []),
+);
+const pbIntegrationId = computed(
+  () => pbProjectsData.value?.integrationId ?? null,
+);
+const pbSelectedIds = ref(new Set<number>());
+
+const pbAvailable = computed(() =>
+  pbProjects.value.filter((p) => !pbExistingIds.value.has(p.id)),
+);
+
+function togglePbProject(id: number) {
+  const next = new Set(pbSelectedIds.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  pbSelectedIds.value = next;
+}
+
+const pbSyncMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.integration.triggerSync({
+      integrationId: pbIntegrationId.value!,
+      complexes: Array.from(pbSelectedIds.value),
+    }),
+  onSuccess: () => {
+    toast.add({
+      title: "Синхронизация запущена",
+      description: `Импортируется ${pbSelectedIds.value.size} проектов`,
+      color: "success",
+    });
+    pbSelectedIds.value = new Set();
+    queryClient.invalidateQueries({ queryKey: $orpc.integration.key() });
+  },
+});
+
 function pluralize(n: number, forms: [string, string, string]) {
   const mod10 = n % 10;
   const mod100 = n % 100;
@@ -208,18 +294,195 @@ const createBatchMutation = useMutation({
 
       <div
         v-if="activeProvider?.provider === 'profitbase'"
-        class="max-w-2xl rounded-xl border border-(--ui-border) p-6 text-center"
+        class="max-w-2xl space-y-6"
       >
-        <UIcon
-          name="i-tabler-tool"
-          class="text-3xl text-(--ui-text-dimmed) mb-2"
-        />
-        <p class="text-sm text-(--ui-text-muted)">
-          Setup-форма Profitbase ещё не готова
-        </p>
-        <p class="text-xs text-(--ui-text-dimmed) mt-1">
-          Следите за выпуском — адаптер в разработке
-        </p>
+        <!-- Active Profitbase -->
+        <div
+          v-if="hasIntegration"
+          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-tabler-plug-connected"
+                  class="text-blue-600 dark:text-blue-400 text-xl"
+                />
+              </div>
+              <div>
+                <div class="font-medium text-(--ui-text-highlighted)">
+                  Profitbase
+                </div>
+                <div class="text-sm text-(--ui-text-muted)">
+                  pb{{ integration!.profitbaseAccountId }}.profitbase.ru
+                </div>
+              </div>
+            </div>
+            <UBadge color="success" variant="subtle">Подключено</UBadge>
+          </div>
+
+          <div class="flex items-center gap-2 pt-2 border-t border-(--ui-border)">
+            <UButton
+              variant="outline"
+              icon="i-tabler-refresh"
+              :loading="pbVerifyMutation.isPending.value"
+              class="rounded-xl"
+              @click="pbVerifyMutation.mutate()"
+            >
+              Проверить подключение
+            </UButton>
+            <UButton
+              variant="outline"
+              color="error"
+              icon="i-tabler-plug-connected-x"
+              class="rounded-xl ml-auto"
+              @click="showRemoveConfirm = true"
+            >
+              Отключить
+            </UButton>
+          </div>
+        </div>
+
+        <!-- Projects from Profitbase -->
+        <div
+          v-if="hasIntegration"
+          class="rounded-xl border border-(--ui-border) p-6 space-y-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-medium text-(--ui-text-highlighted)">
+                Проекты Profitbase
+              </div>
+              <div class="text-sm text-(--ui-text-muted)">
+                Выберите проекты для синхронизации
+              </div>
+            </div>
+            <UBadge v-if="pbProjects.length" variant="subtle" color="neutral">
+              {{ pbProjects.length }}
+            </UBadge>
+          </div>
+
+          <div v-if="loadingPbProjects" class="flex justify-center py-8">
+            <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
+          </div>
+
+          <template v-else-if="pbProjects.length > 0">
+            <div class="space-y-1">
+              <label
+                v-for="project in pbProjects"
+                :key="project.id"
+                class="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-(--ui-bg-elevated) cursor-pointer"
+              >
+                <UCheckbox
+                  :model-value="
+                    pbExistingIds.has(project.id) ||
+                    pbSelectedIds.has(project.id)
+                  "
+                  :disabled="pbExistingIds.has(project.id)"
+                  @update:model-value="togglePbProject(project.id)"
+                />
+                <div class="flex-1 min-w-0 text-sm text-(--ui-text-highlighted) truncate">
+                  {{ project.title }}
+                </div>
+                <UBadge
+                  v-if="pbExistingIds.has(project.id)"
+                  variant="subtle"
+                  color="success"
+                  size="xs"
+                >
+                  Синхронизирован
+                </UBadge>
+              </label>
+            </div>
+
+            <div
+              v-if="pbAvailable.length"
+              class="pt-3 border-t border-(--ui-border)"
+            >
+              <UButton
+                :disabled="pbSelectedIds.size === 0"
+                :loading="pbSyncMutation.isPending.value"
+                icon="i-tabler-download"
+                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+                @click="pbSyncMutation.mutate()"
+              >
+                Импортировать выбранные ({{ pbSelectedIds.size }})
+              </UButton>
+            </div>
+          </template>
+
+          <div v-else class="text-center py-6">
+            <UIcon
+              name="i-tabler-building-off"
+              class="text-3xl text-(--ui-text-dimmed) mb-2"
+            />
+            <p class="text-sm text-(--ui-text-muted)">Проекты не найдены</p>
+          </div>
+        </div>
+
+        <!-- Setup Profitbase -->
+        <div
+          v-if="!hasIntegration"
+          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+        >
+          <div class="flex items-center gap-3 mb-2">
+            <div
+              class="w-10 h-10 rounded-lg bg-(--ui-bg-muted) flex items-center justify-center"
+            >
+              <UIcon
+                name="i-tabler-plug"
+                class="text-(--ui-text-dimmed) text-xl"
+              />
+            </div>
+            <div>
+              <div class="font-medium text-(--ui-text-highlighted)">
+                Profitbase
+              </div>
+              <div class="text-sm text-(--ui-text-muted)">
+                Подключите Profitbase для импорта объектов
+              </div>
+            </div>
+          </div>
+
+          <UFormField
+            label="Account ID"
+            description="Числовой ID из URL: pb{ID}.profitbase.ru"
+          >
+            <UInput
+              v-model="pbAccountId"
+              placeholder="1234"
+              icon="i-tabler-hash"
+              size="xl"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UFormField
+            label="API Key"
+            description="Создаётся в Profitbase → Настройки → API"
+          >
+            <UInput
+              v-model="pbApiKey"
+              type="password"
+              placeholder="pb_api_key..."
+              icon="i-tabler-key"
+              size="xl"
+              class="w-full"
+            />
+          </UFormField>
+
+          <UButton
+            :disabled="!canSetupProfitbase"
+            :loading="pbSetupMutation.isPending.value"
+            icon="i-tabler-plug-connected"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+            @click="pbSetupMutation.mutate()"
+          >
+            Подключить Profitbase
+          </UButton>
+        </div>
       </div>
 
       <div

@@ -30,6 +30,8 @@ export const integrations = pgTable(
     apiDomain: text("api_domain"),
     appSecret: text("app_secret"),
     macroType: text("macro_type"),
+    profitbaseApiKey: text("profitbase_api_key"),
+    profitbaseAccountId: text("profitbase_account_id"),
     feedUrl: text("feed_url"),
     isActive: boolean("is_active").default(false).notNull(),
     status: integrationStatusEnum("status").default("pending"),

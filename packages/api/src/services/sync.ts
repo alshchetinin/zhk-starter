@@ -195,9 +195,55 @@ async function runByType(
     return runMacro(integration, complexes);
   }
   if (provider === "profitbase") {
-    throw new Error("Profitbase adapter is not implemented yet");
+    return runProfitbase(integration, complexes);
   }
   throw new Error(`Unsupported integration provider: ${provider}`);
+}
+
+async function runProfitbase(
+  integration: Integration,
+  projectIds: number[],
+): Promise<SyncLogStats> {
+  const { getProfitbaseData } = await import("@zhk/profitbase");
+  const { importAllData } = await import("@zhk/import");
+
+  if (!integration.profitbaseApiKey || !integration.profitbaseAccountId) {
+    throw new Error("Profitbase integration is not configured");
+  }
+
+  const apiKey = decrypt(integration.profitbaseApiKey);
+  const importData = await getProfitbaseData(
+    {
+      id: integration.id,
+      siteId: integration.siteId,
+      apiKey,
+      accountId: integration.profitbaseAccountId,
+    },
+    projectIds,
+  );
+
+  const result = await importAllData(
+    importData,
+    integration.id,
+    integration.siteId,
+  );
+
+  if (!result.success) {
+    throw new Error(result.error ?? "Import failed");
+  }
+
+  let created = 0;
+  let updated = 0;
+  let projectsCount = 0;
+  let unitsCount = 0;
+  for (const r of result.results) {
+    created += r.inserted;
+    updated += r.updated;
+    if (r.table === "projects") projectsCount = r.inserted + r.updated;
+    if (r.table === "apartments") unitsCount += r.inserted + r.updated;
+  }
+
+  return { projects: projectsCount, units: unitsCount, created, updated };
 }
 
 async function runMacro(
