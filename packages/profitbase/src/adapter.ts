@@ -4,6 +4,7 @@ import type {
   ImportBuilding,
   ImportData,
   ImportProject,
+  ImportSection,
   ApartmentStatus,
 } from "@zhk/macro";
 import type {
@@ -69,6 +70,40 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
       p.projectId != null,
   );
 
+  function sectionKey(p: (typeof residential)[number]): string {
+    const s = p.sectionNumber ?? p.sectionName ?? "default";
+    return `${p.house_id}-${s}`;
+  }
+
+  function sectionName(p: (typeof residential)[number]): string {
+    return (
+      p.sectionName ??
+      (p.sectionNumber != null ? `Секция ${p.sectionNumber}` : "Секция")
+    );
+  }
+
+  const sectionMap = new Map<
+    string,
+    { sample: (typeof residential)[number]; maxFloor: number }
+  >();
+  for (const p of residential) {
+    const key = sectionKey(p);
+    const floor = p.floor ?? 0;
+    const cur = sectionMap.get(key);
+    if (!cur) sectionMap.set(key, { sample: p, maxFloor: floor });
+    else if (floor > cur.maxFloor) cur.maxFloor = floor;
+  }
+
+  const sections: ImportSection[] = Array.from(sectionMap.entries()).map(
+    ([key, { sample, maxFloor }]) => ({
+      external_id: key,
+      external_building_id: sample.house_id.toString(),
+      name: sectionName(sample),
+      floors_count: maxFloor,
+      ...base,
+    }),
+  );
+
   const layoutByCode = new Map<string, ProfitbaseProperty>();
   for (const p of residential) {
     if (p.layoutCode && !layoutByCode.has(p.layoutCode)) {
@@ -130,9 +165,10 @@ export function buildImportData(input: ProfitbaseAdapterInput): ImportData {
     monthly_mortgage_payment: 0,
     external_project_id: p.projectId!.toString(),
     external_building_id: p.house_id!.toString(),
+    external_section_id: sectionKey(p),
     external_apartment_layout_id: p.layoutCode ?? null,
     ...base,
   }));
 
-  return { projects, buildings, apartment_layouts, apartments };
+  return { projects, buildings, sections, apartment_layouts, apartments };
 }
