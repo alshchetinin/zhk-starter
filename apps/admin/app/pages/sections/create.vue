@@ -223,15 +223,16 @@ const sectionPrefix = computed(() => {
 });
 
 function computeApartmentNumber(
-  stack: FormStack,
-  apt: FormApartment,
+  _stack: FormStack,
+  _apt: FormApartment,
   floor: number,
   sequentialIdx: number,
+  positionOnFloor: number,
 ): string {
   if (numberingScheme.value === "sequential") return String(sequentialIdx);
   if (numberingScheme.value === "section-prefix")
-    return `${sectionPrefix.value}-${floor}-${String(apt.number).padStart(2, "0")}`;
-  return String(floor * 100 + apt.number);
+    return `${sectionPrefix.value}-${floor}-${String(positionOnFloor).padStart(2, "0")}`;
+  return String(floor * 100 + positionOnFloor);
 }
 
 // ---------------- Preview ----------------
@@ -248,27 +249,48 @@ type PreviewFloor = {
   apartments: PreviewCell[];
 };
 
-const preview = computed<PreviewFloor[]>(() => {
-  const byFloor = new Map<number, PreviewCell[]>();
+// Iterate floors TOP-DOWN across all stacks so numbering is per-floor
+// (stack order defines position on each floor).
+type NumberedCell = PreviewCell;
+function buildFloorNumbering(): {
+  byFloor: Map<number, NumberedCell[]>;
+  byKey: Map<string, NumberedCell>;
+} {
+  const byFloor = new Map<number, NumberedCell[]>();
+  const byKey = new Map<string, NumberedCell>();
+  if (!stacks.length) return { byFloor, byKey };
+  const lo = Math.min(...stacks.map((s) => Math.min(s.startFloor, s.endFloor)));
+  const hi = Math.max(...stacks.map((s) => Math.max(s.startFloor, s.endFloor)));
   let seq = 0;
-  for (const stack of stacks) {
-    const lo = Math.min(stack.startFloor, stack.endFloor);
-    const hi = Math.max(stack.startFloor, stack.endFloor);
-    for (let f = lo; f <= hi; f++) {
-      if (!byFloor.has(f)) byFloor.set(f, []);
+  for (let f = lo; f <= hi; f++) {
+    let pos = 0;
+    const cells: NumberedCell[] = [];
+    for (const stack of stacks) {
+      const sLo = Math.min(stack.startFloor, stack.endFloor);
+      const sHi = Math.max(stack.startFloor, stack.endFloor);
+      if (f < sLo || f > sHi) continue;
       for (const apt of stack.apartments) {
+        pos += 1;
         seq += 1;
-        byFloor.get(f)!.push({
+        const cell: NumberedCell = {
           stackId: stack.id,
           apartmentId: apt.id,
-          apartmentNumber: computeApartmentNumber(stack, apt, f, seq),
+          apartmentNumber: computeApartmentNumber(stack, apt, f, seq, pos),
           roomsCount: apt.roomsCount,
           area: apt.area,
           conflict: occupiedFloors.value.has(f),
-        });
+        };
+        cells.push(cell);
+        byKey.set(`${stack.id}-${f}-${apt.id}`, cell);
       }
     }
+    if (cells.length) byFloor.set(f, cells);
   }
+  return { byFloor, byKey };
+}
+
+const preview = computed<PreviewFloor[]>(() => {
+  const { byFloor } = buildFloorNumbering();
   return [...byFloor.entries()]
     .sort((a, b) => b[0] - a[0])
     .map(([floorNumber, apartments]) => ({ floorNumber, apartments }));
@@ -283,41 +305,18 @@ type PreviewGridRow = {
 
 const previewGrid = computed<PreviewGridRow[]>(() => {
   if (!stacks.length) return [];
+  const { byKey } = buildFloorNumbering();
   const globalLo = Math.min(...stacks.map((s) => Math.min(s.startFloor, s.endFloor)));
   const globalHi = Math.max(...stacks.map((s) => Math.max(s.startFloor, s.endFloor)));
   const rows: PreviewGridRow[] = [];
-  let seq = 0;
-  // Pre-compute sequential numbers matching order in preview()
-  const seqMap = new Map<string, number>();
-  for (const stack of stacks) {
-    const lo = Math.min(stack.startFloor, stack.endFloor);
-    const hi = Math.max(stack.startFloor, stack.endFloor);
-    for (let f = lo; f <= hi; f++) {
-      for (const apt of stack.apartments) {
-        seq += 1;
-        seqMap.set(`${stack.id}-${f}-${apt.id}`, seq);
-      }
-    }
-  }
-
   for (let f = globalHi; f >= globalLo; f--) {
     const byStack: PreviewCell[][] = stacks.map((stack) => {
       const lo = Math.min(stack.startFloor, stack.endFloor);
       const hi = Math.max(stack.startFloor, stack.endFloor);
       if (f < lo || f > hi) return [];
-      return stack.apartments.map((apt) => ({
-        stackId: stack.id,
-        apartmentId: apt.id,
-        apartmentNumber: computeApartmentNumber(
-          stack,
-          apt,
-          f,
-          seqMap.get(`${stack.id}-${f}-${apt.id}`) ?? 0,
-        ),
-        roomsCount: apt.roomsCount,
-        area: apt.area,
-        conflict: occupiedFloors.value.has(f),
-      }));
+      return stack.apartments
+        .map((apt) => byKey.get(`${stack.id}-${f}-${apt.id}`))
+        .filter((c): c is PreviewCell => !!c);
     });
     rows.push({ floorNumber: f, byStack });
   }
@@ -514,7 +513,7 @@ const schemeItems = computed(() => numberingSchemeItems);
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1400px] px-6 py-5">
+  <div class="w-full px-6 py-5">
     <!-- Compact header -->
     <div class="flex items-center justify-between mb-5">
       <div class="flex items-center gap-3 min-w-0">
@@ -887,10 +886,9 @@ const schemeItems = computed(() => numberingSchemeItems);
               <div class="pl-3 pr-2 pb-2 pt-0.5">
                 <!-- column headers -->
                 <div
-                  class="grid grid-cols-[22px_1fr_1fr_1fr_auto] gap-1.5 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
+                  class="grid grid-cols-[22px_1fr_1fr_auto] gap-1.5 pb-1 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) px-1"
                 >
                   <div></div>
-                  <div>№</div>
                   <div>Комн.</div>
                   <div>м²</div>
                   <div></div>
@@ -901,7 +899,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                     v-for="(apt, ai) in stack.apartments"
                     :key="apt.id"
                     :data-apt-id="apt.id"
-                    class="grid grid-cols-[22px_1fr_1fr_1fr_auto] gap-1.5 items-center px-1 py-0.5 rounded transition-colors"
+                    class="grid grid-cols-[22px_1fr_1fr_auto] gap-1.5 items-center px-1 py-0.5 rounded transition-colors"
                     :class="
                       highlightedAptId === apt.id
                         ? 'bg-(--ui-primary)/10 ring-1 ring-(--ui-primary)/40'
@@ -924,12 +922,6 @@ const schemeItems = computed(() => numberingSchemeItems);
                         <UIcon name="i-tabler-chevron-down" class="size-3" />
                       </button>
                     </div>
-                    <UInput
-                      v-model.number="apt.number"
-                      type="number"
-                      min="1"
-                      size="xs"
-                    />
                     <UInput
                       v-model.number="apt.roomsCount"
                       type="number"
