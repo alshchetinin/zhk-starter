@@ -51,9 +51,9 @@ const form = reactive({
   roomsCount: 1,
   floorRange: "",
   priceRange: "",
-  defaultLayoutImage: "",
-  furnishedLayoutImage: "",
-  threeDLayoutImage: "",
+  defaultLayoutImage: null as string | null,
+  furnishedLayoutImage: null as string | null,
+  threeDLayoutImage: null as string | null,
   ceilingHeight: null as number | null,
 });
 
@@ -63,9 +63,9 @@ function resetForm() {
   form.roomsCount = 1;
   form.floorRange = "";
   form.priceRange = "";
-  form.defaultLayoutImage = "";
-  form.furnishedLayoutImage = "";
-  form.threeDLayoutImage = "";
+  form.defaultLayoutImage = null;
+  form.furnishedLayoutImage = null;
+  form.threeDLayoutImage = null;
   form.ceilingHeight = null;
 }
 
@@ -82,9 +82,9 @@ function openEdit(l: Layout) {
   form.roomsCount = l.roomsCount;
   form.floorRange = l.floorRange ?? "";
   form.priceRange = l.priceRange ?? "";
-  form.defaultLayoutImage = l.defaultLayoutImage ?? "";
-  form.furnishedLayoutImage = l.furnishedLayoutImage ?? "";
-  form.threeDLayoutImage = l.threeDLayoutImage ?? "";
+  form.defaultLayoutImage = l.defaultLayoutImage ?? null;
+  form.furnishedLayoutImage = l.furnishedLayoutImage ?? null;
+  form.threeDLayoutImage = l.threeDLayoutImage ?? null;
   form.ceilingHeight = l.ceilingHeight ? Number(l.ceilingHeight) : null;
   formOpen.value = true;
 }
@@ -97,9 +97,9 @@ const createMut = useMutation({
       roomsCount: form.roomsCount,
       floorRange: form.floorRange.trim() || null,
       priceRange: form.priceRange.trim() || null,
-      defaultLayoutImage: form.defaultLayoutImage.trim() || null,
-      furnishedLayoutImage: form.furnishedLayoutImage.trim() || null,
-      threeDLayoutImage: form.threeDLayoutImage.trim() || null,
+      defaultLayoutImage: form.defaultLayoutImage,
+      furnishedLayoutImage: form.furnishedLayoutImage,
+      threeDLayoutImage: form.threeDLayoutImage,
       ceilingHeight: form.ceilingHeight ?? null,
     }),
   onSuccess: () => {
@@ -121,9 +121,9 @@ const updateMut = useMutation({
       roomsCount: form.roomsCount,
       floorRange: form.floorRange.trim() || null,
       priceRange: form.priceRange.trim() || null,
-      defaultLayoutImage: form.defaultLayoutImage.trim() || null,
-      furnishedLayoutImage: form.furnishedLayoutImage.trim() || null,
-      threeDLayoutImage: form.threeDLayoutImage.trim() || null,
+      defaultLayoutImage: form.defaultLayoutImage,
+      furnishedLayoutImage: form.furnishedLayoutImage,
+      threeDLayoutImage: form.threeDLayoutImage,
       ceilingHeight: form.ceilingHeight ?? null,
     });
   },
@@ -267,14 +267,14 @@ const isSubmitting = computed(
           <UFormField label="Высота потолков, м">
             <UInput v-model.number="form.ceilingHeight" type="number" step="0.01" />
           </UFormField>
-          <UFormField label="Картинка (URL)" class="sm:col-span-2">
-            <UInput v-model="form.defaultLayoutImage" placeholder="https://..." />
+          <UFormField label="Картинка планировки" class="sm:col-span-2">
+            <ImageUpload v-model="form.defaultLayoutImage" folder="layouts" />
           </UFormField>
-          <UFormField label="С мебелью (URL)" class="sm:col-span-2">
-            <UInput v-model="form.furnishedLayoutImage" placeholder="https://..." />
+          <UFormField label="С мебелью" class="sm:col-span-2">
+            <ImageUpload v-model="form.furnishedLayoutImage" folder="layouts" />
           </UFormField>
-          <UFormField label="3D (URL)" class="sm:col-span-2">
-            <UInput v-model="form.threeDLayoutImage" placeholder="https://..." />
+          <UFormField label="3D" class="sm:col-span-2">
+            <ImageUpload v-model="form.threeDLayoutImage" folder="layouts" />
           </UFormField>
         </div>
       </template>

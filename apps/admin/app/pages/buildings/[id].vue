@@ -73,13 +73,13 @@ const sectionToDelete = ref<Section | null>(null);
 const sectionForm = reactive({
   name: "",
   floorsCount: null as number | null,
-  masterplanImage: "" as string,
+  masterplanImage: null as string | null,
 });
 
 function resetSectionForm() {
   sectionForm.name = "";
   sectionForm.floorsCount = null;
-  sectionForm.masterplanImage = "";
+  sectionForm.masterplanImage = null;
 }
 
 function openCreateSection() {
@@ -92,7 +92,7 @@ function openEditSection(s: Section) {
   editingSection.value = s;
   sectionForm.name = s.name;
   sectionForm.floorsCount = s.floorsCount;
-  sectionForm.masterplanImage = s.masterplanImage ?? "";
+  sectionForm.masterplanImage = s.masterplanImage ?? null;
   sectionFormOpen.value = true;
 }
 
@@ -106,7 +106,7 @@ const createSectionMut = useMutation({
       buildingId: id.value,
       name: sectionForm.name.trim(),
       floorsCount: sectionForm.floorsCount ?? null,
-      masterplanImage: sectionForm.masterplanImage.trim() || null,
+      masterplanImage: sectionForm.masterplanImage,
     }),
   onSuccess: () => {
     toast.add({ title: "Секция создана", color: "success" });
@@ -125,7 +125,7 @@ const updateSectionMut = useMutation({
       id: editingSection.value.id,
       name: sectionForm.name.trim(),
       floorsCount: sectionForm.floorsCount ?? null,
-      masterplanImage: sectionForm.masterplanImage.trim() || null,
+      masterplanImage: sectionForm.masterplanImage,
     });
   },
   onMutate: async () => {
@@ -141,7 +141,7 @@ const updateSectionMut = useMutation({
                 ...s,
                 name: sectionForm.name.trim(),
                 floorsCount: sectionForm.floorsCount ?? null,
-                masterplanImage: sectionForm.masterplanImage.trim() || null,
+                masterplanImage: sectionForm.masterplanImage,
               }
             : s,
         ),
@@ -429,8 +429,8 @@ const isSectionSubmitting = computed(
             <UFormField label="Этажей">
               <UInput v-model.number="sectionForm.floorsCount" type="number" min="1" />
             </UFormField>
-            <UFormField label="Картинка мастер-плана (URL)">
-              <UInput v-model="sectionForm.masterplanImage" placeholder="https://..." />
+            <UFormField label="Мастер-план">
+              <ImageUpload v-model="sectionForm.masterplanImage" folder="sections" />
             </UFormField>
           </div>
         </template>

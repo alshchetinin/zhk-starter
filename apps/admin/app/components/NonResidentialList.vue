@@ -82,7 +82,7 @@ const form = reactive({
   isPublished: true,
   projectId: "",
   buildingId: "",
-  layoutImage: "",
+  layoutImage: null as string | null,
 });
 
 // Buildings by project (for form select)
@@ -115,7 +115,7 @@ function resetForm() {
   form.isPublished = true;
   form.projectId = projectFilter.value || "";
   form.buildingId = "";
-  form.layoutImage = "";
+  form.layoutImage = null;
 }
 
 function openCreate() {
@@ -134,7 +134,7 @@ function openEdit(it: Item) {
   form.isPublished = it.isPublished ?? true;
   form.projectId = it.projectId ?? "";
   form.buildingId = it.buildingId ?? "";
-  form.layoutImage = it.layoutImage ?? "";
+  form.layoutImage = it.layoutImage ?? null;
   formOpen.value = true;
 }
 
@@ -155,8 +155,7 @@ function buildPayload() {
     buildingId: form.buildingId || null,
   };
   if (props.withCategory) base.category = form.category.trim() || null;
-  if (props.kind === "commerce")
-    base.layoutImage = form.layoutImage.trim() || null;
+  if (props.kind === "commerce") base.layoutImage = form.layoutImage;
   return base;
 }
 
@@ -348,8 +347,8 @@ const columns = computed(() => {
           <UFormField label="Дом">
             <USelect v-model="form.buildingId" :items="buildingItems" placeholder="—" :disabled="!form.projectId" />
           </UFormField>
-          <UFormField v-if="kind === 'commerce'" label="Картинка (URL)" class="sm:col-span-2">
-            <UInput v-model="form.layoutImage" placeholder="https://..." />
+          <UFormField v-if="kind === 'commerce'" label="Картинка" class="sm:col-span-2">
+            <ImageUpload v-model="form.layoutImage" folder="commerce" />
           </UFormField>
         </div>
       </template>
