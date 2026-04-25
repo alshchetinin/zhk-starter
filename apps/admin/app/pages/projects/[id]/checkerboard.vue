@@ -87,81 +87,80 @@ const hasApartments = computed(() =>
 
 <template>
   <div>
-    <!-- No buildings -->
-    <div v-if="!buildings.length" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
-      <UIcon name="i-tabler-building-skyscraper" class="mx-auto size-12 text-(--ui-text-muted)" />
-      <p class="mt-2 text-(--ui-text-muted)">No buildings in this project</p>
-    </div>
+    <AppEmptyState
+      v-if="!buildings.length"
+      icon="i-tabler-building-skyscraper"
+      title="В проекте нет домов"
+      description="Сначала добавьте дом, затем создайте секции и квартиры."
+    />
 
     <template v-else>
-      <!-- Building selector tabs -->
-      <div class="flex gap-1 mb-4 border-b border-(--ui-border) overflow-x-auto">
+      <nav class="flex gap-0.5 mb-4 border-b border-(--ui-border) overflow-x-auto">
         <button
           v-for="building in buildings"
           :key="building.id"
-          class="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap cursor-pointer"
+          class="px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors whitespace-nowrap cursor-pointer"
           :class="
             selectedBuildingId === building.id
-              ? 'border-(--ui-primary) text-(--ui-primary)'
+              ? 'border-(--ui-text) text-(--ui-text)'
               : 'border-transparent text-(--ui-text-muted) hover:text-(--ui-text)'
           "
           @click="selectedBuildingId = building.id"
         >
           {{ building.name }}
         </button>
+      </nav>
+
+      <div
+        v-if="isLoadingApartments"
+        class="flex items-center gap-2 py-8 text-xs text-(--ui-text-dimmed) justify-center"
+      >
+        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        Загрузка…
       </div>
 
-      <!-- Loading -->
-      <div v-if="isLoadingApartments" class="flex items-center gap-2 py-8 text-(--ui-text-muted)">
-        <UIcon name="i-tabler-loader-2" class="animate-spin" />
-        <span>Loading apartments...</span>
-      </div>
-
-      <!-- Checkerboard -->
-      <template v-else-if="hasApartments">
-        <!-- Status Legend -->
-        <div class="mb-4 flex flex-wrap gap-3">
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-green-100 border border-green-200 dark:bg-green-950 dark:border-green-800" />
-            <span class="text-(--ui-text-muted)">Free</span>
+      <AppDataCard v-else-if="hasApartments" flush title="Шахматка">
+        <template #actions>
+          <div class="flex items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1.5">
+              <span class="size-2 rounded-sm bg-emerald-500/30 border border-emerald-500/50" />
+              <span class="text-(--ui-text-dimmed)">Свободно</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="size-2 rounded-sm bg-amber-500/30 border border-amber-500/50" />
+              <span class="text-(--ui-text-dimmed)">Бронь</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="size-2 rounded-sm bg-violet-500/30 border border-violet-500/50" />
+              <span class="text-(--ui-text-dimmed)">Корп.</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="size-2 rounded-sm bg-zinc-500/30 border border-zinc-500/50" />
+              <span class="text-(--ui-text-dimmed)">Продано</span>
+            </span>
           </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-blue-100 border border-blue-200 dark:bg-blue-950 dark:border-blue-800" />
-            <span class="text-(--ui-text-muted)">Reserved</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-yellow-100 border border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800" />
-            <span class="text-(--ui-text-muted)">Corporate</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-red-100 border border-red-200 dark:bg-red-950 dark:border-red-800" />
-            <span class="text-(--ui-text-muted)">Sold</span>
-          </div>
-        </div>
-
-        <!-- Sections displayed horizontally -->
-        <div class="flex items-end gap-4 overflow-x-auto pb-2">
+        </template>
+        <div class="flex items-end gap-3 overflow-x-auto p-4">
           <div
             v-for="{ section, floors } in checkerboardData"
             :key="section.id"
-            class="shrink-0 rounded-xl border border-(--ui-border) bg-(--ui-bg) shadow-sm"
+            class="shrink-0 rounded-lg border border-(--ui-border) bg-(--ui-bg)"
           >
-            <!-- Section header -->
-            <div class="border-b border-(--ui-border) px-4 py-3">
-              <h3 class="text-sm font-semibold">{{ section.name }}</h3>
+            <div class="border-b border-(--ui-border) px-3 py-2">
+              <h3 class="text-xs font-semibold tracking-tight">{{ section.name }}</h3>
             </div>
-
-            <!-- Floors -->
             <div class="space-y-1 p-2">
               <div
                 v-for="floor in floors"
                 :key="floor.floorNumber"
-                class="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-(--ui-bg-elevated)"
+                class="flex items-center gap-2 rounded-md p-1 hover:bg-(--ui-bg-elevated) transition"
               >
-                <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-(--ui-bg-elevated) text-xs font-medium text-(--ui-text-muted)">
+                <div
+                  class="flex size-7 shrink-0 items-center justify-center rounded-md bg-(--ui-bg-elevated) text-[11px] font-medium text-(--ui-text-muted) tabular-nums"
+                >
                   {{ floor.floorNumber }}
                 </div>
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex flex-wrap gap-1">
                   <CheckerboardCell
                     v-for="apt in floor.apartments"
                     :key="apt.id"
@@ -169,19 +168,23 @@ const hasApartments = computed(() =>
                   />
                 </div>
               </div>
-
-              <div v-if="!floors.length" class="px-4 py-6 text-center text-sm text-(--ui-text-muted)">
-                No apartments
+              <div
+                v-if="!floors.length"
+                class="px-3 py-4 text-center text-xs text-(--ui-text-dimmed)"
+              >
+                Квартир нет
               </div>
             </div>
           </div>
         </div>
-      </template>
+      </AppDataCard>
 
-      <!-- No apartments for this building -->
-      <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-8 text-center">
-        <p class="text-(--ui-text-muted)">No apartments in this building</p>
-      </div>
+      <AppEmptyState
+        v-else
+        icon="i-tabler-home-off"
+        title="В этом доме нет квартир"
+        description="Добавьте секции и квартиры для отображения шахматки."
+      />
     </template>
   </div>
 </template>

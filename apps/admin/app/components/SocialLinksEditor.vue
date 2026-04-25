@@ -39,7 +39,7 @@ const saveMutation = useMutation({
 </script>
 
 <template>
-  <div class="rounded-xl border border-(--ui-border) p-5 space-y-4">
+  <div class="border border-(--ui-border) p-5 space-y-4">
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
@@ -53,7 +53,7 @@ const saveMutation = useMutation({
         :loading="saveMutation.isPending.value"
         icon="i-tabler-device-floppy"
         size="sm"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         @click="saveMutation.mutate()"
       >
         Сохранить

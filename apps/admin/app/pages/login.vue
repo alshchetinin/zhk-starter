@@ -17,12 +17,12 @@ async function handleLogin() {
       password: password.value,
     });
     if (result.error) {
-      error.value = result.error.message ?? "Login failed";
+      error.value = result.error.message ?? "Не удалось войти";
     } else {
       navigateTo("/");
     }
   } catch (e: any) {
-    error.value = e.message ?? "Login failed";
+    error.value = e.message ?? "Не удалось войти";
   } finally {
     loading.value = false;
   }
@@ -30,24 +30,55 @@ async function handleLogin() {
 </script>
 
 <template>
-  <UCard class="w-full max-w-sm">
-    <template #header>
-      <h1 class="text-xl font-bold">ZHK Admin</h1>
-      <p class="text-sm text-gray-500">Sign in to your account</p>
-    </template>
+  <div
+    class="w-full max-w-sm rounded-xl border border-(--ui-border) bg-(--ui-bg) overflow-hidden"
+  >
+    <header class="px-5 py-4 border-b border-(--ui-border)">
+      <h1 class="text-base font-semibold tracking-tight">ZHK Admin</h1>
+      <p class="text-xs text-(--ui-text-dimmed) mt-0.5">Вход в админку</p>
+    </header>
 
-    <form class="flex flex-col gap-4" @submit.prevent="handleLogin">
+    <form class="flex flex-col gap-3 p-5" @submit.prevent="handleLogin">
       <UFormField label="Email">
-        <UInput v-model="email" type="email" placeholder="admin@example.com" required />
+        <UInput
+          v-model="email"
+          type="email"
+          placeholder="admin@example.com"
+          icon="i-tabler-mail"
+          size="sm"
+          required
+        />
+      </UFormField>
+      <UFormField label="Пароль">
+        <UInput
+          v-model="password"
+          type="password"
+          placeholder="••••••••"
+          icon="i-tabler-lock"
+          size="sm"
+          required
+        />
       </UFormField>
 
-      <UFormField label="Password">
-        <UInput v-model="password" type="password" placeholder="Password" required />
-      </UFormField>
+      <p
+        v-if="error"
+        class="text-xs text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-2.5 py-1.5"
+      >
+        {{ error }}
+      </p>
 
-      <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
-
-      <UButton type="submit" block :loading="loading">Sign In</UButton>
+      <button
+        type="submit"
+        :disabled="loading"
+        class="mt-1 inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-md bg-(--ui-bg-inverted) text-(--ui-text-inverted) text-sm font-medium hover:opacity-90 transition disabled:opacity-40"
+      >
+        <UIcon
+          v-if="loading"
+          name="i-tabler-loader-2"
+          class="size-4 animate-spin"
+        />
+        Войти
+      </button>
     </form>
-  </UCard>
+  </div>
 </template>

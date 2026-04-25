@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { useQuery } from "@tanstack/vue-query";
+import { keepPreviousData, useQuery } from "@tanstack/vue-query";
 
 const { $orpc } = useNuxtApp();
 const page = ref(1);
 const pageSize = 20;
 
-// Filters
 const projectFilter = ref("");
 const statusFilter = ref("");
 const roomsFilter = ref("");
@@ -15,31 +14,35 @@ const { data: projectsData } = useQuery(
   $orpc.projects.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );
 
-const projectItems = computed(() =>
-  projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ?? [],
-);
+const projectItems = computed(() => [
+  { label: "Все ЖК", value: "" },
+  ...(projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ??
+    []),
+]);
 
 const statusItems = [
-  { label: "Free", value: "free" },
-  { label: "Paid Reservation", value: "paid_reservation" },
-  { label: "Corporate Reservation", value: "corporate_reservation" },
-  { label: "Sold", value: "sold" },
+  { label: "Все статусы", value: "" },
+  { label: "Свободно", value: "free" },
+  { label: "Бронь оплачена", value: "paid_reservation" },
+  { label: "Бронь корп.", value: "corporate_reservation" },
+  { label: "Продано", value: "sold" },
 ];
 
 const roomsItems = [
-  { label: "Studio", value: "0" },
-  { label: "1 room", value: "1" },
-  { label: "2 rooms", value: "2" },
-  { label: "3 rooms", value: "3" },
-  { label: "4+ rooms", value: "4" },
+  { label: "Все", value: "" },
+  { label: "Студия", value: "0" },
+  { label: "1к", value: "1" },
+  { label: "2к", value: "2" },
+  { label: "3к", value: "3" },
+  { label: "4к+", value: "4" },
 ];
 
 const activeFiltersCount = computed(() => {
-  let count = 0;
-  if (projectFilter.value) count++;
-  if (statusFilter.value) count++;
-  if (roomsFilter.value) count++;
-  return count;
+  let n = 0;
+  if (projectFilter.value) n++;
+  if (statusFilter.value) n++;
+  if (roomsFilter.value) n++;
+  return n;
 });
 
 watch([projectFilter, statusFilter, roomsFilter], () => {
@@ -53,8 +56,8 @@ function clearFilters() {
 }
 
 const { data, isPending } = useQuery(
-  computed(() =>
-    $orpc.apartments.list.queryOptions({
+  computed(() => ({
+    ...$orpc.apartments.list.queryOptions({
       input: {
         page: page.value,
         pageSize,
@@ -63,118 +66,153 @@ const { data, isPending } = useQuery(
         roomsCount: roomsFilter.value ? Number(roomsFilter.value) : undefined,
       },
     }),
-  ),
+    placeholderData: keepPreviousData,
+  })),
 );
 
-const columns = [
-  { accessorKey: "apartmentNumber", header: "#" },
-  { accessorKey: "roomsCount", header: "Rooms" },
-  { accessorKey: "area", header: "Area m²" },
-  { id: "price", header: "Price" },
-  { accessorKey: "floorNumber", header: "Floor" },
-  { id: "status", header: "Status" },
-  { id: "project", header: "Project" },
-  { id: "actions", header: "" },
-];
-
-const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> = {
+const statusTone: Record<string, "success" | "warning" | "info" | "muted"> = {
   free: "success",
   paid_reservation: "warning",
-  corporate_reservation: "warning",
-  sold: "error",
+  corporate_reservation: "info",
+  sold: "muted",
+};
+const statusLabel: Record<string, string> = {
+  free: "Свободно",
+  paid_reservation: "Бронь",
+  corporate_reservation: "Корп.",
+  sold: "Продано",
 };
 
-function formatPrice(price: string | number) {
+function fmtPrice(price: string | number) {
   return Number(price).toLocaleString("ru-RU");
+}
+function fmtRooms(n: number) {
+  return n === 0 ? "Студия" : `${n}к`;
 }
 </script>
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Apartments</h1>
-      <UButton
-        icon="i-tabler-filter"
-        variant="outline"
-        color="neutral"
-        @click="filterOpen = true"
-      >
-        Filters
-        <UBadge v-if="activeFiltersCount" :label="String(activeFiltersCount)" size="sm" color="primary" class="ml-1" />
-      </UButton>
-    </div>
+    <AppPageHeader
+      title="Квартиры"
+      :subtitle="data?.total != null ? `${data.total} лотов` : undefined"
+    >
+      <template #actions>
+        <AppToolbarButton
+          icon="i-tabler-filter"
+          variant="ghost"
+          @click="filterOpen = true"
+        >
+          Фильтры
+          <span
+            v-if="activeFiltersCount"
+            class="ml-0.5 px-1.5 py-px rounded bg-(--ui-bg-inverted) text-(--ui-text-inverted) text-[10px] tabular-nums"
+          >
+            {{ activeFiltersCount }}
+          </span>
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
-    <!-- Filter Drawer -->
-    <USlideover v-model:open="filterOpen" title="Filters" side="right">
+    <USlideover v-model:open="filterOpen" title="Фильтры" side="right">
       <template #body>
-        <div class="flex flex-col gap-5 p-4">
-          <div>
-            <label class="mb-1.5 block text-sm font-medium">Project</label>
-            <USelect
-              v-model="projectFilter"
-              :items="projectItems"
-              placeholder="All Projects"
-            />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-sm font-medium">Status</label>
-            <USelect
-              v-model="statusFilter"
-              :items="statusItems"
-              placeholder="All Statuses"
-            />
-          </div>
-          <div>
-            <label class="mb-1.5 block text-sm font-medium">Rooms</label>
-            <USelect
-              v-model="roomsFilter"
-              :items="roomsItems"
-              placeholder="All Rooms"
-            />
-          </div>
-
+        <div class="flex flex-col gap-4 p-4">
+          <UFormField label="ЖК">
+            <USelect v-model="projectFilter" :items="projectItems" size="sm" />
+          </UFormField>
+          <UFormField label="Статус">
+            <USelect v-model="statusFilter" :items="statusItems" size="sm" />
+          </UFormField>
+          <UFormField label="Комнаты">
+            <USelect v-model="roomsFilter" :items="roomsItems" size="sm" />
+          </UFormField>
           <div class="flex gap-2 mt-2">
-            <UButton block @click="filterOpen = false">Apply</UButton>
-            <UButton block variant="outline" color="neutral" @click="clearFilters">Clear</UButton>
+            <AppToolbarButton
+              variant="primary"
+              class="flex-1 justify-center"
+              @click="filterOpen = false"
+            >
+              Применить
+            </AppToolbarButton>
+            <AppToolbarButton
+              variant="ghost"
+              class="flex-1 justify-center"
+              @click="clearFilters"
+            >
+              Сбросить
+            </AppToolbarButton>
           </div>
         </div>
       </template>
     </USlideover>
 
-    <UTable :data="data?.data ?? []" :columns="columns" :loading="isPending">
-      <template #price-cell="{ row }">
-        {{ formatPrice(row.original.price) }} ₽
-      </template>
+    <AppDataCard v-if="isPending && !data" flush>
+      <div
+        class="p-12 text-center text-xs text-(--ui-text-dimmed) flex items-center justify-center gap-2"
+      >
+        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        Загрузка…
+      </div>
+    </AppDataCard>
 
-      <template #status-cell="{ row }">
-        <UBadge :color="statusColors[row.original.status] ?? 'neutral'" variant="subtle">
-          {{ row.original.status.replace(/_/g, " ") }}
-        </UBadge>
-      </template>
-
-      <template #project-cell="{ row }">
+    <AppDataCard v-else-if="data?.data.length" flush>
+      <div
+        class="grid grid-cols-[60px_80px_80px_120px_60px_120px_minmax(0,1fr)_40px] gap-3 px-4 py-2 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) border-b border-(--ui-border) font-medium"
+      >
+        <div>№</div>
+        <div>Комн.</div>
+        <div class="text-right">м²</div>
+        <div class="text-right">Цена</div>
+        <div>Этаж</div>
+        <div>Статус</div>
+        <div>ЖК</div>
+        <div></div>
+      </div>
+      <div class="divide-y divide-(--ui-border)">
         <NuxtLink
-          v-if="row.original.project"
-          :to="`/projects/${row.original.project.id}`"
-          class="text-primary hover:underline"
+          v-for="apt in data.data"
+          :key="apt.id"
+          :to="`/apartments/${apt.id}`"
+          class="group grid grid-cols-[60px_80px_80px_120px_60px_120px_minmax(0,1fr)_40px] gap-3 px-4 py-2.5 text-xs items-center hover:bg-(--ui-bg-elevated) transition"
         >
-          {{ row.original.project.name }}
+          <span class="font-semibold tabular-nums">
+            {{ apt.apartmentNumber }}
+          </span>
+          <span class="text-(--ui-text-muted)">{{ fmtRooms(apt.roomsCount) }}</span>
+          <span class="tabular-nums text-right">{{ apt.area }}</span>
+          <span class="tabular-nums text-right font-medium">
+            {{ fmtPrice(apt.price) }} ₽
+          </span>
+          <span class="tabular-nums text-(--ui-text-muted)">{{ apt.floorNumber }}</span>
+          <AppStatusPill
+            :tone="statusTone[apt.status] ?? 'muted'"
+            :label="statusLabel[apt.status] ?? apt.status"
+            dot
+          />
+          <span class="truncate text-(--ui-text-muted)">
+            {{ apt.project?.name ?? "—" }}
+          </span>
+          <UIcon
+            name="i-tabler-chevron-right"
+            class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition justify-self-end"
+          />
         </NuxtLink>
-        <span v-else class="text-(--ui-text-muted)">—</span>
-      </template>
+      </div>
+    </AppDataCard>
 
-      <template #actions-cell="{ row }">
-        <UButton
-          :to="`/apartments/${row.original.id}`"
-          variant="ghost"
-          icon="i-tabler-eye"
-          size="sm"
-        />
-      </template>
-    </UTable>
+    <AppEmptyState
+      v-else
+      icon="i-tabler-home-off"
+      title="Квартиры не найдены"
+      description="Измените фильтры или добавьте квартиры через мастер заполнения секции."
+    />
 
-    <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
-      <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
+    <div v-if="(data?.total ?? 0) > pageSize" class="mt-4 flex justify-center">
+      <UPagination
+        v-model:page="page"
+        :total="data?.total ?? 0"
+        :items-per-page="pageSize"
+      />
     </div>
   </PageContainer>
 </template>

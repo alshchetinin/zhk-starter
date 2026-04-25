@@ -153,7 +153,7 @@ const isPaused = computed(() => {
         <UButton
           variant="outline"
           icon="i-tabler-history"
-          class="rounded-xl"
+          class="rounded-md"
           to="/integrations/logs"
         >
           Логи
@@ -162,7 +162,7 @@ const isPaused = computed(() => {
 
       <div class="max-w-2xl space-y-6">
         <!-- Статус -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <div class="flex items-center justify-between">
             <div class="font-medium text-(--ui-text-highlighted)">Статус</div>
             <UBadge :color="statusBadge.color" variant="subtle">
@@ -201,7 +201,7 @@ const isPaused = computed(() => {
               :disabled="integration.status === 'loading'"
               icon="i-tabler-refresh"
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="triggerMutation.mutate()"
             >
               Запустить сейчас
@@ -212,7 +212,7 @@ const isPaused = computed(() => {
               icon="i-tabler-player-stop"
               color="warning"
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="cancelMutation.mutate()"
             >
               Отменить
@@ -221,7 +221,7 @@ const isPaused = computed(() => {
         </div>
 
         <!-- Автосинхронизация -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-5">
+        <div class="border border-(--ui-border) p-6 space-y-5">
           <div class="flex items-center justify-between">
             <div>
               <div class="font-medium text-(--ui-text-highlighted)">
@@ -276,7 +276,7 @@ const isPaused = computed(() => {
         </div>
 
         <!-- Пауза -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <div>
             <div class="font-medium text-(--ui-text-highlighted)">Пауза</div>
             <div class="text-sm text-(--ui-text-muted)">
@@ -287,7 +287,7 @@ const isPaused = computed(() => {
             <UButton
               :loading="pauseMutation.isPending.value"
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="pauseMutation.mutate(1)"
             >
               На 1 час
@@ -295,7 +295,7 @@ const isPaused = computed(() => {
             <UButton
               :loading="pauseMutation.isPending.value"
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="pauseMutation.mutate(24)"
             >
               На 24 часа
@@ -303,7 +303,7 @@ const isPaused = computed(() => {
             <UButton
               :loading="pauseMutation.isPending.value"
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="pauseMutation.mutate(168)"
             >
               На неделю
@@ -313,7 +313,7 @@ const isPaused = computed(() => {
               :loading="pauseMutation.isPending.value"
               variant="outline"
               color="success"
-              class="rounded-xl"
+              class="rounded-md"
               @click="pauseMutation.mutate(null)"
             >
               Снять паузу
@@ -322,7 +322,7 @@ const isPaused = computed(() => {
         </div>
 
         <!-- Ретраи -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <div>
             <div class="font-medium text-(--ui-text-highlighted)">
               Повторные попытки при ошибке
@@ -353,7 +353,7 @@ const isPaused = computed(() => {
         </div>
 
         <!-- Хранение логов -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <div>
             <div class="font-medium text-(--ui-text-highlighted)">
               Хранение логов
@@ -375,7 +375,7 @@ const isPaused = computed(() => {
         </div>
 
         <!-- Уведомления -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-5">
+        <div class="border border-(--ui-border) p-6 space-y-5">
           <div>
             <div class="font-medium text-(--ui-text-highlighted)">
               Уведомления в Telegram
@@ -433,7 +433,7 @@ const isPaused = computed(() => {
               !integration.notifyTelegramBotToken ||
               !integration.notifyTelegramChatId
             "
-            class="rounded-xl"
+            class="rounded-md"
             @click="testNotifyMutation.mutate()"
           >
             Отправить тестовое сообщение
@@ -453,7 +453,7 @@ const isPaused = computed(() => {
           <UButton
             :loading="updateMutation.isPending.value"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
             @click="updateMutation.mutate()"
           >
             Сохранить
@@ -464,7 +464,7 @@ const isPaused = computed(() => {
 
     <div v-else class="text-center py-20">
       <p class="text-(--ui-text-muted)">Интеграция не настроена</p>
-      <UButton to="/integrations" variant="outline" class="mt-4 rounded-xl">
+      <UButton to="/integrations" variant="outline" class="mt-4">
         К настройке интеграции
       </UButton>
     </div>

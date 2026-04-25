@@ -50,159 +50,151 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Ипотечные программы</h1>
-      <div class="flex items-center gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Поиск..."
-          icon="i-tabler-search"
-          class="w-48"
-        />
-        <USelect
-          v-model="statusFilter"
-          :items="mortgageProgramStatusOptions"
-          placeholder="Все статусы"
-          class="w-36"
-        />
-        <div class="flex items-center gap-1">
-          <USelect
-            v-model="bankFilter"
-            :items="bankOptions"
-            placeholder="Все банки"
-            class="w-40"
-          />
-          <UButton
-            v-if="bankFilter"
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-x"
-            @click="bankFilter = undefined"
-          />
-        </div>
-        <NuxtLink to="/mortgage/banks">
-          <UButton
-            variant="outline"
-            icon="i-tabler-building-bank"
-            class="rounded-xl"
-          >
-            Банки
-          </UButton>
-        </NuxtLink>
-        <NuxtLink to="/mortgage/create">
-          <UButton
-            icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
-          >
-            Новая программа
-          </UButton>
-        </NuxtLink>
-      </div>
-    </div>
-
-    <div
-      v-if="isPending"
-      class="flex items-center gap-2 text-(--ui-text-muted)"
+    <AppPageHeader
+      title="Ипотечные программы"
+      :subtitle="data?.total != null ? `${data.total} программ` : undefined"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
-    </div>
+      <template #actions>
+        <AppToolbarButton to="/mortgage/banks" icon="i-tabler-building-bank" variant="ghost">
+          Банки
+        </AppToolbarButton>
+        <AppToolbarButton to="/mortgage/create" icon="i-tabler-plus" variant="primary">
+          Новая программа
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
-    <div v-else-if="data?.data.length" class="grid grid-cols-1 gap-4">
-      <div
-        v-for="item in data.data"
-        :key="item.id"
-        class="flex items-center gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
-      >
-        <div
-          class="flex items-center justify-center w-16 h-12 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden"
-        >
-          <img
-            v-if="item.bank?.logo"
-            :src="item.bank.logo"
-            :alt="item.bank.name"
-            class="h-full w-full object-contain"
-          />
-          <UIcon
-            v-else
-            name="i-tabler-building-bank"
-            class="size-5 text-(--ui-text-muted)"
-          />
-        </div>
-
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <NuxtLink
-              :to="`/mortgage/${item.id}`"
-              class="text-base font-semibold truncate hover:underline"
-            >
-              {{ item.name }}
-            </NuxtLink>
-            <UBadge
-              :color="mortgageProgramStatusColors[item.status]"
-              variant="subtle"
-            >
-              {{ mortgageProgramStatusLabels[item.status] }}
-            </UBadge>
-            <span
-              v-if="item.bank"
-              class="text-sm text-(--ui-text-muted) truncate"
-            >
-              {{ item.bank.name }}
-            </span>
-          </div>
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-(--ui-text-muted)">
-            <span>Ставка: <b class="text-(--ui-text)">{{ formatPercent(item.rate) }}</b></span>
-            <span>Первый взнос от: {{ formatPercent(item.minDownPaymentPercent) }}</span>
-            <span>Сумма до: {{ formatMoney(item.maxLoanAmount) }}</span>
-            <span>Срок: {{ formatTermMonths(item.termMonths) }}</span>
-          </div>
-          <p
-            v-if="item.programProjects?.length"
-            class="text-xs text-(--ui-text-dimmed) mt-1 truncate"
-          >
-            Проекты: {{ item.programProjects.map((pp) => pp.project.name).join(", ") }}
-          </p>
-          <p v-else class="text-xs text-(--ui-text-dimmed) mt-1">Для всех проектов</p>
-        </div>
-
-        <div class="flex items-center gap-1 shrink-0">
-          <NuxtLink :to="`/mortgage/${item.id}`">
-            <UButton
-              variant="ghost"
-              size="xs"
-              icon="i-tabler-edit"
-              class="rounded-lg"
-            />
-          </NuxtLink>
-          <UButton
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-trash"
-            color="error"
-            class="rounded-lg"
-            :loading="deleteMutation.isPending.value"
-            @click="deleteMutation.mutate(item.id)"
-          />
-        </div>
-      </div>
-    </div>
-
-    <div
-      v-else
-      class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
-    >
-      <UIcon
-        name="i-tabler-coin"
-        class="mx-auto size-12 text-(--ui-text-muted)"
+    <div class="mb-4 flex items-center gap-2 flex-wrap">
+      <UInput
+        v-model="search"
+        placeholder="Поиск…"
+        icon="i-tabler-search"
+        size="sm"
+        class="max-w-xs"
       />
-      <p class="mt-2 text-(--ui-text-muted)">Ипотечные программы не найдены</p>
-      <NuxtLink to="/mortgage/create">
-        <UButton class="mt-4" icon="i-tabler-plus">Создать первую программу</UButton>
-      </NuxtLink>
+      <USelect
+        v-model="statusFilter"
+        :items="mortgageProgramStatusOptions"
+        placeholder="Все статусы"
+        size="sm"
+        class="max-w-[180px]"
+      />
+      <USelect
+        v-model="bankFilter"
+        :items="bankOptions"
+        placeholder="Все банки"
+        size="sm"
+        class="max-w-[200px]"
+      />
+      <AppToolbarButton
+        v-if="bankFilter"
+        variant="subtle"
+        icon="i-tabler-x"
+        @click="bankFilter = undefined"
+      />
     </div>
 
-    <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
+    <div
+      v-if="isPending && !data"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
+    </div>
+
+    <AppDataCard v-else-if="data?.data.length" flush>
+      <div class="divide-y divide-(--ui-border)">
+        <div
+          v-for="item in data.data"
+          :key="item.id"
+          class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+        >
+          <div
+            class="flex items-center justify-center w-14 h-10 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden border border-(--ui-border)"
+          >
+            <img
+              v-if="item.bank?.logo"
+              :src="item.bank.logo"
+              :alt="item.bank.name"
+              class="h-full w-full object-contain"
+            />
+            <UIcon
+              v-else
+              name="i-tabler-building-bank"
+              class="size-5 text-(--ui-text-dimmed)"
+            />
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <NuxtLink
+                :to="`/mortgage/${item.id}`"
+                class="text-sm font-semibold truncate hover:underline"
+              >
+                {{ item.name }}
+              </NuxtLink>
+              <AppStatusPill
+                :tone="(({ active: 'success', archived: 'muted' } as const)[item.status as 'active' | 'archived']) ?? 'muted'"
+                :label="mortgageProgramStatusLabels[item.status]"
+                dot
+              />
+              <span v-if="item.bank" class="text-[11px] text-(--ui-text-dimmed) truncate">
+                · {{ item.bank.name }}
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-(--ui-text-muted) tabular-nums">
+              <span>
+                Ставка
+                <b class="text-(--ui-text) ml-0.5">{{ formatPercent(item.rate) }}</b>
+              </span>
+              <span>ПВ от {{ formatPercent(item.minDownPaymentPercent) }}</span>
+              <span>до {{ formatMoney(item.maxLoanAmount) }}</span>
+              <span>{{ formatTermMonths(item.termMonths) }}</span>
+            </div>
+            <p
+              v-if="item.programProjects?.length"
+              class="text-[11px] text-(--ui-text-dimmed) mt-0.5 truncate"
+            >
+              {{ item.programProjects.map((pp) => pp.project.name).join(", ") }}
+            </p>
+            <p v-else class="text-[11px] text-(--ui-text-dimmed) mt-0.5">
+              Для всех проектов
+            </p>
+          </div>
+
+          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
+            <AppToolbarButton
+              :to="`/mortgage/${item.id}`"
+              variant="subtle"
+              icon="i-tabler-edit"
+              title="Редактировать"
+            />
+            <AppToolbarButton
+              variant="subtle"
+              icon="i-tabler-trash"
+              title="Удалить"
+              :loading="deleteMutation.isPending.value"
+              @click="deleteMutation.mutate(item.id)"
+            />
+          </div>
+        </div>
+      </div>
+    </AppDataCard>
+
+    <AppEmptyState
+      v-else
+      icon="i-tabler-coin"
+      title="Ипотечных программ не найдено"
+      description="Создайте первую программу с банком и ставкой."
+    >
+      <template #actions>
+        <AppToolbarButton to="/mortgage/create" icon="i-tabler-plus" variant="primary">
+          Создать программу
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
+
+    <div v-if="(data?.total ?? 0) > pageSize" class="mt-4 flex justify-center">
       <UPagination
         v-model:page="page"
         :total="data?.total ?? 0"

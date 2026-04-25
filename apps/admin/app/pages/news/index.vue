@@ -60,137 +60,130 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Новости</h1>
-      <div class="flex items-center gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Поиск..."
-          icon="i-tabler-search"
-          class="w-48"
-        />
-        <USelect
-          v-model="statusFilter"
-          :items="newsStatusOptions"
-          placeholder="Все статусы"
-          class="w-40"
-        />
-        <NuxtLink to="/news/create">
-          <UButton
-            icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
-          >
-            Новая статья
-          </UButton>
-        </NuxtLink>
-      </div>
+    <AppPageHeader
+      title="Новости"
+      :subtitle="data?.total != null ? `${data.total} статей` : undefined"
+    >
+      <template #actions>
+        <AppToolbarButton to="/news/create" icon="i-tabler-plus" variant="primary">
+          Новая статья
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
+
+    <div class="mb-4 flex items-center gap-2">
+      <UInput
+        v-model="search"
+        placeholder="Поиск…"
+        icon="i-tabler-search"
+        size="sm"
+        class="max-w-xs"
+      />
+      <USelect
+        v-model="statusFilter"
+        :items="newsStatusOptions"
+        placeholder="Все статусы"
+        size="sm"
+        class="max-w-[200px]"
+      />
     </div>
 
     <div
-      v-if="isPending"
-      class="flex items-center gap-2 text-(--ui-text-muted)"
+      v-if="isPending && !data"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
-    <div v-else-if="data?.data.length" class="grid grid-cols-1 gap-4">
-      <div
-        v-for="item in data.data"
-        :key="item.id"
-        class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
-        @mouseenter="prefetchNews(item.id)"
-      >
-        <!-- Cover image -->
-        <NuxtLink
-          :to="`/news/${item.id}`"
-          class="flex items-center justify-center w-32 h-20 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden"
+    <AppDataCard v-else-if="data?.data.length" flush>
+      <div class="divide-y divide-(--ui-border)">
+        <div
+          v-for="item in data.data"
+          :key="item.id"
+          class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+          @mouseenter="prefetchNews(item.id)"
         >
-          <img
-            v-if="item.coverImage"
-            :src="item.coverImage"
-            :alt="item.title"
-            class="h-full w-full object-cover"
-          />
-          <UIcon
-            v-else
-            name="i-tabler-news"
-            class="size-8 text-(--ui-text-muted)"
-          />
-        </NuxtLink>
-
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <NuxtLink
-              :to="`/news/${item.id}`"
-              class="text-base font-semibold truncate hover:underline"
-            >
-              {{ item.title }}
-            </NuxtLink>
-            <UBadge
-              :color="newsStatusColors[item.status] ?? 'neutral'"
-              variant="subtle"
-            >
-              {{ newsStatusLabels[item.status] ?? item.status }}
-            </UBadge>
-          </div>
-          <p
-            v-if="item.excerpt"
-            class="text-sm text-(--ui-text-muted) truncate mb-1"
+          <NuxtLink
+            :to="`/news/${item.id}`"
+            class="w-20 h-14 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden border border-(--ui-border) flex items-center justify-center"
           >
-            {{ item.excerpt }}
-          </p>
-          <div class="flex items-center gap-4 text-xs text-(--ui-text-dimmed)">
-            <span v-if="item.publishedAt">
-              {{ formatDate(item.publishedAt) }}
-            </span>
-            <span>Создано: {{ formatDate(item.createdAt) }}</span>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-1 shrink-0">
-          <NuxtLink :to="`/news/${item.id}`">
-            <UButton
-              variant="ghost"
-              size="xs"
-              icon="i-tabler-edit"
-              class="rounded-lg"
+            <img
+              v-if="item.coverImage"
+              :src="item.coverImage"
+              :alt="item.title"
+              class="h-full w-full object-cover"
+            />
+            <UIcon
+              v-else
+              name="i-tabler-news"
+              class="size-5 text-(--ui-text-dimmed)"
             />
           </NuxtLink>
-          <UButton
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-trash"
-            color="error"
-            class="rounded-lg"
-            :loading="deleteMutation.isPending.value"
-            @click="deleteMutation.mutate(item.id)"
-          />
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <NuxtLink
+                :to="`/news/${item.id}`"
+                class="text-sm font-semibold truncate hover:underline"
+              >
+                {{ item.title }}
+              </NuxtLink>
+              <AppStatusPill
+                :tone="(({ draft: 'warning', published: 'success', archived: 'muted' } as const)[item.status as 'draft' | 'published' | 'archived']) ?? 'muted'"
+                :label="newsStatusLabels[item.status] ?? item.status"
+                dot
+              />
+            </div>
+            <p
+              v-if="item.excerpt"
+              class="text-xs text-(--ui-text-muted) truncate mt-0.5"
+            >
+              {{ item.excerpt }}
+            </p>
+            <div class="flex items-center gap-3 text-[11px] text-(--ui-text-dimmed) tabular-nums mt-0.5">
+              <span v-if="item.publishedAt">
+                опубл. {{ formatDate(item.publishedAt) }}
+              </span>
+              <span>· создано {{ formatDate(item.createdAt) }}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
+            <AppToolbarButton
+              :to="`/news/${item.id}`"
+              variant="subtle"
+              icon="i-tabler-edit"
+              title="Редактировать"
+            />
+            <AppToolbarButton
+              variant="subtle"
+              icon="i-tabler-trash"
+              title="Удалить"
+              :loading="deleteMutation.isPending.value"
+              @click="deleteMutation.mutate(item.id)"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </AppDataCard>
 
-    <div
+    <AppEmptyState
       v-else
-      class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
+      icon="i-tabler-news-off"
+      title="Новостей не найдено"
+      description="Создайте первую статью для сайта."
     >
-      <UIcon
-        name="i-tabler-news-off"
-        class="mx-auto size-12 text-(--ui-text-muted)"
-      />
-      <p class="mt-2 text-(--ui-text-muted)">Новости не найдены</p>
-      <NuxtLink to="/news/create">
-        <UButton class="mt-4" icon="i-tabler-plus">
-          Создать первую статью
-        </UButton>
-      </NuxtLink>
-    </div>
+      <template #actions>
+        <AppToolbarButton to="/news/create" icon="i-tabler-plus" variant="primary">
+          Создать статью
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
 
     <div
       v-if="(data?.total ?? 0) > pageSize"
-      class="mt-6 flex justify-center"
+      class="mt-4 flex justify-center"
     >
       <UPagination
         v-model:page="page"

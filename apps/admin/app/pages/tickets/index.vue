@@ -133,53 +133,54 @@ function onRowClick(_e: Event, row: any) {
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">Заявки</h1>
-        <p class="text-(--ui-text-muted) text-sm mt-1">Входящие заявки с сайта</p>
-      </div>
-      <NuxtLink to="/tickets/settings">
-        <UButton variant="outline" icon="i-tabler-settings" class="rounded-xl">
+    <AppPageHeader
+      title="Заявки"
+      :subtitle="`${total} ${total === 1 ? 'заявка' : 'заявок'}`"
+    >
+      <template #actions>
+        <AppToolbarButton
+          to="/tickets/settings"
+          icon="i-tabler-settings"
+          variant="ghost"
+        >
           Настройки
-        </UButton>
-      </NuxtLink>
-    </div>
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
-    <!-- Filters -->
-    <div class="mb-4 flex items-center gap-3">
+    <div class="mb-4 flex items-center gap-2">
       <UInput
         v-model="search"
-        placeholder="Поиск по телефону..."
+        placeholder="Поиск по телефону…"
         icon="i-tabler-search"
-        class="w-64"
+        size="sm"
+        class="max-w-xs"
       />
       <USelect
         :model-value="typeFilter ?? '_all'"
         :items="[{ label: 'Все типы', value: '_all' }, ...ticketTypeOptions]"
-        class="w-48"
+        size="sm"
+        class="max-w-[200px]"
         @update:model-value="typeFilter = $event === '_all' ? undefined : $event"
       />
-      <UBadge variant="subtle" color="neutral" class="ml-auto">
-        {{ total }} заявок
-      </UBadge>
     </div>
 
-    <!-- Loading -->
-    <div v-if="isPending" class="flex justify-center py-12">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
-    </div>
-
-    <!-- Empty -->
     <div
-      v-else-if="items.length === 0"
-      class="flex flex-col items-center justify-center py-16 text-center"
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-inbox" class="text-4xl text-(--ui-text-dimmed) mb-3" />
-      <p class="text-(--ui-text-muted)">Заявок пока нет</p>
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
-    <!-- Table -->
-    <div v-else class="rounded-lg border border-(--ui-border) overflow-hidden">
+    <AppEmptyState
+      v-else-if="items.length === 0"
+      icon="i-tabler-inbox"
+      title="Заявок пока нет"
+      description="Сюда будут поступать заявки с сайта."
+    />
+
+    <AppDataCard v-else flush>
       <UTable
         v-model:sorting="sorting"
         :data="items"
@@ -187,19 +188,26 @@ function onRowClick(_e: Event, row: any) {
         class="w-full"
         @select="onRowClick"
       />
-    </div>
+    </AppDataCard>
 
-    <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center mt-6 gap-2">
-      <UButton variant="outline" size="sm" :disabled="page <= 1" @click="page--">
+    <div v-if="totalPages > 1" class="flex justify-center mt-4 gap-2">
+      <AppToolbarButton
+        variant="ghost"
+        :disabled="page <= 1"
+        @click="page--"
+      >
         Назад
-      </UButton>
-      <span class="flex items-center text-sm text-(--ui-text-muted) px-3">
+      </AppToolbarButton>
+      <span class="flex items-center text-xs text-(--ui-text-muted) px-3 tabular-nums">
         {{ page }} / {{ totalPages }}
       </span>
-      <UButton variant="outline" size="sm" :disabled="page >= totalPages" @click="page++">
+      <AppToolbarButton
+        variant="ghost"
+        :disabled="page >= totalPages"
+        @click="page++"
+      >
         Вперёд
-      </UButton>
+      </AppToolbarButton>
     </div>
   </PageContainer>
 </template>

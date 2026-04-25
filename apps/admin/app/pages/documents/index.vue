@@ -57,7 +57,7 @@ const deleteMutation = useMutation({
         <NuxtLink to="/documents/create">
           <UButton
             icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
           >
             Новый документ
           </UButton>

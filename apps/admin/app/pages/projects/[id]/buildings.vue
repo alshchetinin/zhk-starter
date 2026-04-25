@@ -151,71 +151,104 @@ const isSubmitting = computed(
 <template>
   <div>
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-semibold">Дома ({{ project.buildings.length }})</h2>
-      <UButton
+      <h2 class="text-sm font-semibold tracking-tight">
+        Дома
+        <span class="text-(--ui-text-dimmed) tabular-nums ml-1.5">
+          {{ project.buildings.length }}
+        </span>
+      </h2>
+      <AppToolbarButton
         icon="i-tabler-plus"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        variant="primary"
         @click="openCreate"
       >
         Добавить дом
-      </UButton>
+      </AppToolbarButton>
     </div>
 
-    <div
-      v-if="project.buildings.length"
-      class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-    >
-      <div
-        v-for="building in project.buildings"
-        :key="building.id"
-        class="relative rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
-      >
-        <NuxtLink :to="`/buildings/${building.id}`" class="block">
-          <div class="flex items-center gap-2 mb-2 pr-16">
-            <UIcon name="i-tabler-building-skyscraper" class="size-5 text-(--ui-text-muted)" />
-            <h3 class="font-semibold truncate">{{ building.name }}</h3>
-          </div>
-          <div v-if="building.completionDate" class="flex items-center gap-1 text-xs text-(--ui-text-muted)">
-            <UIcon name="i-tabler-calendar" class="size-3" />
-            <span>{{ building.completionDate }}</span>
-          </div>
-          <div class="mt-3 grid grid-cols-3 gap-2 text-center">
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">Всего</p>
-              <p class="text-sm font-semibold">{{ building.totalApartmentsCount ?? 0 }}</p>
+    <AppDataCard v-if="project.buildings.length" flush>
+      <div class="divide-y divide-(--ui-border)">
+        <div
+          v-for="building in project.buildings"
+          :key="building.id"
+          class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+        >
+          <NuxtLink
+            :to="`/buildings/${building.id}`"
+            class="flex items-center gap-3 flex-1 min-w-0"
+          >
+            <div
+              class="size-10 rounded-lg bg-(--ui-bg-elevated) border border-(--ui-border) flex items-center justify-center shrink-0"
+            >
+              <UIcon
+                name="i-tabler-building-skyscraper"
+                class="size-5 text-(--ui-text-dimmed)"
+              />
             </div>
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">Свободно</p>
-              <p class="text-sm font-semibold text-green-600">{{ building.freeApartmentsCount ?? 0 }}</p>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold truncate">{{ building.name }}</span>
+                <span
+                  v-if="building.completionDate"
+                  class="text-[11px] text-(--ui-text-dimmed) tabular-nums flex items-center gap-1"
+                >
+                  <UIcon name="i-tabler-calendar" class="size-3" />
+                  {{ building.completionDate }}
+                </span>
+              </div>
+              <div
+                class="flex items-center gap-3 text-[11px] text-(--ui-text-muted) tabular-nums mt-1"
+              >
+                <span>
+                  <span class="text-(--ui-text-dimmed)">всего</span>
+                  <span class="text-(--ui-text) font-medium ml-1">
+                    {{ building.totalApartmentsCount ?? 0 }}
+                  </span>
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="size-1.5 rounded-full bg-emerald-500" />
+                  {{ building.freeApartmentsCount ?? 0 }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="size-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                  {{ building.soldApartmentsCount ?? 0 }}
+                </span>
+              </div>
             </div>
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">Продано</p>
-              <p class="text-sm font-semibold">{{ building.soldApartmentsCount ?? 0 }}</p>
-            </div>
+          </NuxtLink>
+          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+            <AppToolbarButton
+              variant="subtle"
+              icon="i-tabler-edit"
+              title="Редактировать"
+              @click="openEdit(building)"
+            />
+            <AppToolbarButton
+              variant="subtle"
+              icon="i-tabler-trash"
+              title="Удалить"
+              @click="toDelete = building"
+            />
           </div>
-        </NuxtLink>
-        <div class="absolute top-2 right-2 flex gap-1">
-          <UButton
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-edit"
-            class="rounded-lg"
-            @click.stop="openEdit(building)"
-          />
-          <UButton
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-trash"
-            color="error"
-            class="rounded-lg"
-            @click.stop="toDelete = building"
-          />
         </div>
       </div>
-    </div>
-    <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-8 text-center">
-      <p class="text-(--ui-text-muted)">Домов пока нет</p>
-    </div>
+    </AppDataCard>
+    <AppEmptyState
+      v-else
+      icon="i-tabler-building-skyscraper"
+      title="Домов пока нет"
+      description="Добавьте первый дом для этого проекта."
+    >
+      <template #actions>
+        <AppToolbarButton
+          icon="i-tabler-plus"
+          variant="primary"
+          @click="openCreate"
+        >
+          Добавить дом
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
 
     <!-- Create / Edit modal -->
     <UModal
@@ -237,17 +270,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="formOpen = false">
+          <AppToolbarButton variant="ghost" @click="formOpen = false">
             Отмена
-          </UButton>
-          <UButton
+          </AppToolbarButton>
+          <AppToolbarButton
+            variant="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim()"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </UButton>
+          </AppToolbarButton>
         </div>
       </template>
     </UModal>
@@ -266,17 +299,22 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="toDelete = null">
+          <AppToolbarButton variant="ghost" @click="toDelete = null">
             Отмена
-          </UButton>
-          <UButton
-            color="error"
-            :loading="deleteMutation.isPending.value"
-            class="rounded-xl"
+          </AppToolbarButton>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+            :disabled="deleteMutation.isPending.value"
             @click="toDelete && deleteMutation.mutate(toDelete.id)"
           >
+            <UIcon
+              v-if="deleteMutation.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
+          </button>
         </div>
       </template>
     </UModal>

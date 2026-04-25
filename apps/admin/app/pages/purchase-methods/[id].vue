@@ -106,7 +106,7 @@ const deleteMutation = useMutation({
             variant="outline"
             color="error"
             icon="i-tabler-trash"
-            class="rounded-xl"
+            class="rounded-md"
             :loading="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >
@@ -114,7 +114,7 @@ const deleteMutation = useMutation({
           </UButton>
           <UButton
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >

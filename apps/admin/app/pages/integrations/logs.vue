@@ -70,7 +70,7 @@ const triggerLabel = (t: string) =>
       <UButton
         variant="outline"
         icon="i-tabler-settings"
-        class="rounded-xl"
+        class="rounded-md"
         to="/integrations/settings"
       >
         Настройки
@@ -100,7 +100,7 @@ const triggerLabel = (t: string) =>
       Запусков пока не было
     </div>
 
-    <div v-else class="rounded-xl border border-(--ui-border) overflow-hidden">
+    <div v-else class="border border-(--ui-border) overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-(--ui-bg-elevated)">
           <tr class="text-left text-(--ui-text-muted)">
@@ -147,7 +147,7 @@ const triggerLabel = (t: string) =>
       <UButton
         :disabled="page === 0"
         variant="outline"
-        class="rounded-xl"
+        class="rounded-md"
         @click="page = Math.max(0, page - 1)"
       >
         Назад
@@ -155,7 +155,7 @@ const triggerLabel = (t: string) =>
       <UButton
         :disabled="(page + 1) * limit >= total"
         variant="outline"
-        class="rounded-xl"
+        class="rounded-md"
         @click="page = page + 1"
       >
         Вперёд

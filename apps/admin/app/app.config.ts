@@ -17,10 +17,10 @@ export default defineAppConfig({
       slots: { trigger: "cursor-pointer" },
     },
     select: {
-      slots: { root: "w-full", base: "cursor-pointer" },
+      slots: { root: "w-full", base: "w-full cursor-pointer" },
     },
     selectMenu: {
-      slots: { base: "cursor-pointer" },
+      slots: { root: "w-full", base: "w-full cursor-pointer" },
     },
     icons: {
       arrowDown: "i-tabler-arrow-down",

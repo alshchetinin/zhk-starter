@@ -86,7 +86,7 @@ function apply() {
 
     <template v-else>
       <div class="max-w-2xl space-y-6">
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-5">
+        <div class="border border-(--ui-border) p-6 space-y-5">
           <div class="flex items-center justify-between">
             <div>
               <div class="font-medium text-(--ui-text-highlighted)">
@@ -134,7 +134,7 @@ function apply() {
               :disabled="!isDirty"
               :loading="setMutation.isPending.value"
               icon="i-tabler-device-floppy"
-              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
               @click="apply"
             >
               Применить
@@ -156,7 +156,7 @@ function apply() {
           <div class="flex justify-end gap-2">
             <UButton
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="showConfirm = false"
             >
               Отмена
@@ -164,7 +164,7 @@ function apply() {
             <UButton
               color="error"
               :loading="setMutation.isPending.value"
-              class="rounded-xl"
+              class="rounded-md"
               @click="setMutation.mutate(true)"
             >
               Удалить и сменить

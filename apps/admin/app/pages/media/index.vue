@@ -125,7 +125,7 @@ function formatFileSize(bytes: number | null | undefined): string {
 
     <div
       ref="dropZoneRef"
-      class="mb-6 flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-colors"
+      class="mb-6 flex flex-col items-center justify-center border-2 border-dashed p-8 transition-colors"
       :class="
         isOverDropZone
           ? 'border-(--ui-primary) bg-(--ui-primary)/5'
@@ -210,7 +210,7 @@ function formatFileSize(bytes: number | null | undefined): string {
       <div
         v-for="item in items"
         :key="item.id"
-        class="group relative rounded-xl border border-(--ui-border) overflow-hidden bg-(--ui-bg-elevated)"
+        class="group relative border border-(--ui-border) overflow-hidden bg-(--ui-bg-elevated)"
       >
         <div class="aspect-square overflow-hidden">
           <img

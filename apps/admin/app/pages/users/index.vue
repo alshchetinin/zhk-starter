@@ -67,55 +67,74 @@ function onSubmit() {
 
 <template>
   <PageContainer>
-    <div v-if="isLoading" class="text-(--ui-text-muted)">Загрузка…</div>
-
-    <div v-else-if="!isAdmin" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-8 text-center">
-      <UIcon name="i-tabler-shield-lock" class="size-12 mx-auto text-(--ui-text-muted)" />
-      <p class="mt-3 text-(--ui-text-muted)">Раздел доступен только администраторам</p>
+    <div
+      v-if="isLoading"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
+    <AppEmptyState
+      v-else-if="!isAdmin"
+      icon="i-tabler-shield-lock"
+      title="Только для администраторов"
+      description="У вас нет прав на просмотр этой страницы."
+    />
+
     <template v-else>
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-bold">Пользователи</h1>
-          <p class="text-sm text-(--ui-text-muted) mt-1">
-            Управление ролями и правами доступа редакторов
-          </p>
-        </div>
-        <UButton
-          icon="i-tabler-user-plus"
-          class="rounded-xl"
-          @click="isCreateOpen = true"
-        >
-          Добавить пользователя
-        </UButton>
+      <AppPageHeader
+        title="Пользователи"
+        subtitle="Управление ролями и правами"
+      >
+        <template #actions>
+          <AppToolbarButton
+            icon="i-tabler-user-plus"
+            variant="primary"
+            @click="isCreateOpen = true"
+          >
+            Добавить пользователя
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
+
+      <div
+        v-if="isPending"
+        class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+      >
+        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        Загрузка…
       </div>
 
-      <div v-if="isPending" class="text-(--ui-text-muted)">Загрузка…</div>
-
-      <div v-else-if="data?.length" class="grid grid-cols-1 gap-3">
-        <NuxtLink
-          v-for="u in data"
-          :key="u.id"
-          :to="`/users/${u.id}`"
-          class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 hover:shadow-md transition-shadow"
-        >
-          <UAvatar :alt="u.name ?? 'U'" size="md" />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span class="font-semibold truncate">{{ u.name }}</span>
-              <UBadge
-                :color="u.role === 'admin' ? 'primary' : 'neutral'"
-                variant="subtle"
-              >
-                {{ u.role === 'admin' ? 'Admin' : 'Editor' }}
-              </UBadge>
-              <UBadge v-if="u.banned" color="error" variant="subtle">Banned</UBadge>
+      <AppDataCard v-else-if="data?.length" flush>
+        <div class="divide-y divide-(--ui-border)">
+          <NuxtLink
+            v-for="u in data"
+            :key="u.id"
+            :to="`/users/${u.id}`"
+            class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+          >
+            <UAvatar :alt="u.name ?? 'U'" size="sm" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold truncate">{{ u.name }}</span>
+                <AppStatusPill
+                  :tone="u.role === 'admin' ? 'info' : 'muted'"
+                  :label="u.role === 'admin' ? 'Admin' : 'Editor'"
+                />
+                <AppStatusPill v-if="u.banned" tone="error" label="Banned" dot />
+              </div>
+              <div class="text-[11px] text-(--ui-text-dimmed) truncate mt-0.5">
+                {{ u.email }}
+              </div>
             </div>
-            <div class="text-xs text-(--ui-text-dimmed) mt-1">{{ u.email }}</div>
-          </div>
-        </NuxtLink>
-      </div>
+            <UIcon
+              name="i-tabler-chevron-right"
+              class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition shrink-0"
+            />
+          </NuxtLink>
+        </div>
+      </AppDataCard>
 
       <UModal
         :open="isCreateOpen"
@@ -133,15 +152,13 @@ function onSubmit() {
             <UFormField label="Пароль" required>
               <div class="flex gap-2">
                 <UInput v-model="form.password" type="text" placeholder="Минимум 8 символов" class="flex-1" autocomplete="new-password" />
-                <UButton
-                  type="button"
-                  variant="outline"
+                <AppToolbarButton
+                  variant="ghost"
                   icon="i-tabler-refresh"
-                  class="rounded-xl"
                   @click="generatePassword"
                 >
                   Сгенерировать
-                </UButton>
+                </AppToolbarButton>
               </div>
             </UFormField>
             <UFormField label="Роль">
@@ -157,21 +174,20 @@ function onSubmit() {
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <UButton
-              variant="outline"
-              class="rounded-xl"
+            <AppToolbarButton
+              variant="ghost"
               :disabled="createMutation.isPending.value"
               @click="isCreateOpen = false"
             >
               Отмена
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
+              variant="primary"
               :loading="createMutation.isPending.value"
-              class="rounded-xl"
               @click="onSubmit"
             >
               Создать
-            </UButton>
+            </AppToolbarButton>
           </div>
         </template>
       </UModal>

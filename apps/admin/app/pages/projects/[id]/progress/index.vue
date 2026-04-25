@@ -97,7 +97,7 @@ const deleteMutation = useMutation({
         />
       </div>
       <NuxtLink :to="`/projects/${projectId}/progress/create`">
-        <UButton icon="i-tabler-plus" class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl">
+        <UButton icon="i-tabler-plus" class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)">
           Добавить запись
         </UButton>
       </NuxtLink>

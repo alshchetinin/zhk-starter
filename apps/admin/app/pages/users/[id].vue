@@ -125,7 +125,7 @@ function onSavePermissions() {
           v-if="userData && userData.role === 'editor' && userData.id !== me?.id"
           variant="outline"
           icon="i-tabler-eye"
-          class="ml-auto rounded-xl"
+          class="ml-auto"
           @click="startImpersonation(userData.id)"
         >
           Посмотреть глазами редактора
@@ -146,7 +146,7 @@ function onSavePermissions() {
           />
           <button
             type="button"
-            class="mt-4 text-sm font-medium px-4 py-2 rounded-xl bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
+            class="mt-4 text-sm font-medium px-4 py-2 bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
             :disabled="roleMutation.isPending.value"
             @click="onSaveRole"
           >
@@ -215,7 +215,7 @@ function onSavePermissions() {
           <div>
             <button
               type="button"
-              class="text-sm font-medium px-4 py-2 rounded-xl bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
+              class="text-sm font-medium px-4 py-2 bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
               :disabled="permissionsMutation.isPending.value"
               @click="onSavePermissions"
             >
@@ -242,7 +242,7 @@ function onSavePermissions() {
             :color="userData.banned ? 'primary' : 'error'"
             variant="outline"
             :icon="userData.banned ? 'i-tabler-lock-open' : 'i-tabler-lock'"
-            class="rounded-xl shrink-0"
+            class="shrink-0"
             :loading="banMutation.isPending.value"
             @click="banMutation.mutate()"
           >

@@ -29,7 +29,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
 
 <template>
   <div class="max-w-2xl space-y-6">
-    <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+    <div class="border border-(--ui-border) p-6 space-y-4">
       <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Основное</h2>
 
       <UFormField label="Название записи" required hint="Внутреннее имя, например «Отдел продаж — Казань» или «Главный офис»">
@@ -51,7 +51,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
       </UFormField>
     </div>
 
-    <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+    <div class="border border-(--ui-border) p-6 space-y-4">
       <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Контактная информация</h2>
 
       <UFormField label="Телефон">
@@ -75,7 +75,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
       </UFormField>
     </div>
 
-    <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+    <div class="border border-(--ui-border) p-6 space-y-4">
       <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Карта</h2>
 
       <YandexMapPicker :model-value="model.coordinates" @update:model-value="(v) => set('coordinates', v as string)" />
@@ -85,7 +85,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
       </UFormField>
     </div>
 
-    <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+    <div class="border border-(--ui-border) p-6 space-y-4">
       <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Свои соцсети</h2>
       <p class="text-sm text-(--ui-text-muted) -mt-2">
         Если оставить пустым — используются общие соцсети компании или сайта.

@@ -236,38 +236,47 @@ const columns = computed(() => {
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between gap-2">
-      <h1 class="text-2xl font-bold">{{ title }}</h1>
-      <div class="flex gap-2">
-        <UButton
-          icon="i-tabler-plus"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-          @click="openCreate"
-        >
-          Добавить
-        </UButton>
-        <UButton
+    <AppPageHeader
+      :title="title"
+      :subtitle="data?.total != null ? `${data.total} объектов` : undefined"
+    >
+      <template #actions>
+        <AppToolbarButton
           icon="i-tabler-filter"
-          variant="outline"
-          color="neutral"
+          variant="ghost"
           @click="filterOpen = true"
         >
           Фильтры
-          <UBadge v-if="activeFiltersCount" :label="String(activeFiltersCount)" size="sm" color="primary" class="ml-1" />
-        </UButton>
-      </div>
-    </div>
+          <span
+            v-if="activeFiltersCount"
+            class="ml-0.5 px-1.5 py-px rounded bg-(--ui-bg-inverted) text-(--ui-text-inverted) text-[10px] tabular-nums"
+          >
+            {{ activeFiltersCount }}
+          </span>
+        </AppToolbarButton>
+        <AppToolbarButton
+          icon="i-tabler-plus"
+          variant="primary"
+          @click="openCreate"
+        >
+          Добавить
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
     <USlideover v-model:open="filterOpen" title="Фильтры" side="right">
       <template #body>
-        <div class="flex flex-col gap-5 p-4">
-          <div>
-            <label class="mb-1.5 block text-sm font-medium">ЖК</label>
-            <USelect v-model="projectFilter" :items="projectItems" placeholder="Все" />
-          </div>
+        <div class="flex flex-col gap-4 p-4">
+          <UFormField label="ЖК">
+            <USelect v-model="projectFilter" :items="projectItems" placeholder="Все" size="sm" />
+          </UFormField>
           <div class="flex gap-2 mt-2">
-            <UButton block @click="filterOpen = false">Применить</UButton>
-            <UButton block variant="outline" color="neutral" @click="clearFilters">Сброс</UButton>
+            <AppToolbarButton variant="primary" class="flex-1 justify-center" @click="filterOpen = false">
+              Применить
+            </AppToolbarButton>
+            <AppToolbarButton variant="ghost" class="flex-1 justify-center" @click="clearFilters">
+              Сброс
+            </AppToolbarButton>
           </div>
         </div>
       </template>
@@ -284,9 +293,11 @@ const columns = computed(() => {
       </template>
 
       <template #category-cell="{ row }">
-        <UBadge v-if="row.original.category" variant="subtle" color="neutral">
-          {{ row.original.category }}
-        </UBadge>
+        <AppStatusPill
+          v-if="row.original.category"
+          tone="muted"
+          :label="row.original.category"
+        />
         <span v-else class="text-(--ui-text-muted)">—</span>
       </template>
 
@@ -307,8 +318,18 @@ const columns = computed(() => {
 
       <template #actions-cell="{ row }">
         <div class="flex gap-1">
-          <UButton variant="ghost" size="sm" icon="i-tabler-edit" @click="openEdit(row.original as Item)" />
-          <UButton variant="ghost" size="sm" icon="i-tabler-trash" color="error" @click="toDelete = row.original as Item" />
+          <AppToolbarButton
+            variant="subtle"
+            icon="i-tabler-edit"
+            title="Редактировать"
+            @click="openEdit(row.original as Item)"
+          />
+          <AppToolbarButton
+            variant="subtle"
+            icon="i-tabler-trash"
+            title="Удалить"
+            @click="toDelete = row.original as Item"
+          />
         </div>
       </template>
     </UTable>
@@ -354,17 +375,17 @@ const columns = computed(() => {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="formOpen = false">
+          <AppToolbarButton variant="ghost" @click="formOpen = false">
             Отмена
-          </UButton>
-          <UButton
+          </AppToolbarButton>
+          <AppToolbarButton
+            variant="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim() || !form.projectId"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </UButton>
+          </AppToolbarButton>
         </div>
       </template>
     </UModal>
@@ -381,17 +402,22 @@ const columns = computed(() => {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="toDelete = null">
+          <AppToolbarButton variant="ghost" @click="toDelete = null">
             Отмена
-          </UButton>
-          <UButton
-            color="error"
-            :loading="deleteMut.isPending.value"
-            class="rounded-xl"
+          </AppToolbarButton>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+            :disabled="deleteMut.isPending.value"
             @click="toDelete && deleteMut.mutate(toDelete.id)"
           >
+            <UIcon
+              v-if="deleteMut.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
+          </button>
         </div>
       </template>
     </UModal>

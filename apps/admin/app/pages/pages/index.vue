@@ -60,119 +60,78 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Страницы</h1>
-      <div class="flex items-center gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Поиск..."
-          icon="i-tabler-search"
-          class="w-48"
-        />
-        <USelect
-          v-model="statusFilter"
-          :items="pageStatusOptions"
-          placeholder="Все статусы"
-          class="w-40"
-        />
-        <NuxtLink to="/pages/create">
-          <UButton
-            icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
-          >
-            Новая страница
-          </UButton>
-        </NuxtLink>
-      </div>
-    </div>
-
-    <div
-      v-if="isPending"
-      class="flex items-center gap-2 text-(--ui-text-muted)"
+    <AppPageHeader
+      title="Страницы"
+      :subtitle="data?.total != null ? `${data.total} страниц` : undefined"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
-    </div>
+      <template #actions>
+        <AppToolbarButton to="/pages/create" icon="i-tabler-plus" variant="primary">
+          Новая страница
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
-    <div v-else-if="data?.data.length" class="grid grid-cols-1 gap-4">
-      <div
-        v-for="item in data.data"
-        :key="item.id"
-        class="flex gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
-        @mouseenter="prefetchPage(item.id)"
-      >
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <NuxtLink
-              :to="`/pages/${item.id}`"
-              class="text-base font-semibold truncate hover:underline"
-            >
-              {{ item.title }}
-            </NuxtLink>
-            <UBadge
-              :color="pageStatusColors[item.status] ?? 'neutral'"
-              variant="subtle"
-            >
-              {{ pageStatusLabels[item.status] ?? item.status }}
-            </UBadge>
-            <UBadge v-if="item.project" variant="subtle" color="primary" class="ml-1">
-              {{ item.project.name }}
-            </UBadge>
-          </div>
-          <div class="flex items-center gap-4 text-xs text-(--ui-text-dimmed)">
-            <span>Создано: {{ formatDate(item.createdAt) }}</span>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-1 shrink-0">
-          <NuxtLink :to="`/pages/${item.id}`">
-            <UButton
-              variant="ghost"
-              size="xs"
-              icon="i-tabler-edit"
-              class="rounded-lg"
-            />
-          </NuxtLink>
-          <UButton
-            variant="ghost"
-            size="xs"
-            icon="i-tabler-trash"
-            color="error"
-            class="rounded-lg"
-            :loading="deleteMutation.isPending.value"
-            @click="deleteMutation.mutate(item.id)"
-          />
-        </div>
-      </div>
+    <div class="mb-4 flex items-center gap-2">
+      <UInput v-model="search" placeholder="Поиск…" icon="i-tabler-search" size="sm" class="max-w-xs" />
+      <USelect v-model="statusFilter" :items="pageStatusOptions" placeholder="Все статусы" size="sm" class="max-w-[200px]" />
     </div>
 
     <div
+      v-if="isPending && !data"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
+    </div>
+
+    <AppDataCard v-else-if="data?.data.length" flush>
+      <div class="divide-y divide-(--ui-border)">
+        <div
+          v-for="item in data.data"
+          :key="item.id"
+          class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+          @mouseenter="prefetchPage(item.id)"
+        >
+          <UIcon name="i-tabler-file-text" class="size-4 text-(--ui-text-dimmed) shrink-0" />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <NuxtLink :to="`/pages/${item.id}`" class="text-sm font-semibold truncate hover:underline">
+                {{ item.title }}
+              </NuxtLink>
+              <AppStatusPill
+                :tone="(({ draft: 'warning', published: 'success', archived: 'muted' } as const)[item.status as 'draft' | 'published' | 'archived']) ?? 'muted'"
+                :label="pageStatusLabels[item.status] ?? item.status"
+                dot
+              />
+              <AppStatusPill v-if="item.project" tone="info" :label="item.project.name" />
+            </div>
+            <div class="text-[11px] text-(--ui-text-dimmed) tabular-nums mt-0.5">
+              создано {{ formatDate(item.createdAt) }}
+            </div>
+          </div>
+          <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+            <AppToolbarButton :to="`/pages/${item.id}`" variant="subtle" icon="i-tabler-edit" title="Редактировать" />
+            <AppToolbarButton variant="subtle" icon="i-tabler-trash" title="Удалить" :loading="deleteMutation.isPending.value" @click="deleteMutation.mutate(item.id)" />
+          </div>
+        </div>
+      </div>
+    </AppDataCard>
+
+    <AppEmptyState
       v-else
-      class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
+      icon="i-tabler-file-text-off"
+      title="Страниц не найдено"
+      description="Создайте первую страницу для сайта."
     >
-      <UIcon
-        name="i-tabler-file-text-off"
-        class="mx-auto size-12 text-(--ui-text-muted)"
-      />
-      <p class="mt-2 text-(--ui-text-muted)">Страницы не найдены</p>
-      <NuxtLink to="/pages/create">
-        <UButton class="mt-4" icon="i-tabler-plus">
-          Создать первую страницу
-        </UButton>
-      </NuxtLink>
-    </div>
+      <template #actions>
+        <AppToolbarButton to="/pages/create" icon="i-tabler-plus" variant="primary">
+          Создать страницу
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
 
-    <div
-      v-if="(data?.total ?? 0) > pageSize"
-      class="mt-6 flex justify-center"
-    >
-      <UPagination
-        v-model:page="page"
-        :total="data?.total ?? 0"
-        :items-per-page="pageSize"
-      />
+    <div v-if="(data?.total ?? 0) > pageSize" class="mt-4 flex justify-center">
+      <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
     </div>
   </PageContainer>
 </template>

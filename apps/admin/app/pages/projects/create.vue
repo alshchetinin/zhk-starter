@@ -53,51 +53,50 @@ function submit() {
 
 <template>
   <PageContainer>
-    <UBreadcrumb
-      :items="[
-        { label: 'Проекты', to: '/projects', icon: 'i-tabler-building' },
-        { label: 'Новый ЖК' },
-      ]"
-      class="mb-6"
+    <AppPageHeader
+      title="Новый ЖК"
+      back="/projects"
+      :crumbs="[{ label: 'Проекты', to: '/projects' }, { label: 'Новый ЖК' }]"
     />
 
-    <h1 class="text-2xl font-bold mb-6">Новый ЖК</h1>
-
-    <div class="max-w-2xl space-y-4">
-      <UFormField label="Название" required>
-        <UInput v-model="form.name" placeholder="ЖК «Солнечный»" />
-      </UFormField>
-      <UFormField label="Адрес">
-        <UInput v-model="form.address" placeholder="ул. Пушкина, 10" />
-      </UFormField>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <UFormField label="Город">
-          <USelect v-model="form.cityId" :items="cityItems" placeholder="—" />
+    <AppDataCard class="max-w-2xl">
+      <div class="space-y-4">
+        <UFormField label="Название" required>
+          <UInput v-model="form.name" placeholder="ЖК «Солнечный»" size="sm" />
         </UFormField>
-        <UFormField label="Статус" required>
-          <USelect v-model="form.status" :items="statusItems" />
+        <UFormField label="Адрес">
+          <UInput v-model="form.address" placeholder="ул. Пушкина, 10" size="sm" />
         </UFormField>
-      </div>
-      <UFormField label="Координаты" hint="широта,долгота">
-        <UInput v-model="form.coordinates" placeholder="55.7558,37.6173" />
-      </UFormField>
-      <UFormField label="Район / расположение">
-        <UInput v-model="form.location" placeholder="Центр города" />
-      </UFormField>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Город">
+            <USelect v-model="form.cityId" :items="cityItems" placeholder="—" size="sm" />
+          </UFormField>
+          <UFormField label="Статус" required>
+            <USelect v-model="form.status" :items="statusItems" size="sm" />
+          </UFormField>
+        </div>
+        <UFormField label="Координаты" hint="широта,долгота">
+          <UInput v-model="form.coordinates" placeholder="55.7558,37.6173" size="sm" />
+        </UFormField>
+        <UFormField label="Район / расположение">
+          <UInput v-model="form.location" placeholder="Центр города" size="sm" />
+        </UFormField>
 
-      <div class="flex gap-2 pt-2">
-        <UButton variant="outline" class="rounded-xl" @click="router.push('/projects')">
-          Отмена
-        </UButton>
-        <UButton
-          :loading="createMut.isPending.value"
-          :disabled="!form.name.trim()"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-          @click="submit"
-        >
-          Создать
-        </UButton>
+        <div class="flex gap-2 pt-2 border-t border-(--ui-border) -mx-4 px-4 -mb-4 pb-4 mt-6">
+          <AppToolbarButton variant="ghost" @click="router.push('/projects')">
+            Отмена
+          </AppToolbarButton>
+          <AppToolbarButton
+            variant="primary"
+            icon="i-tabler-plus"
+            :loading="createMut.isPending.value"
+            :disabled="!form.name.trim()"
+            @click="submit"
+          >
+            Создать
+          </AppToolbarButton>
+        </div>
       </div>
-    </div>
+    </AppDataCard>
   </PageContainer>
 </template>

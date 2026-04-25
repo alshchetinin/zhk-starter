@@ -65,7 +65,7 @@ const createMutation = useMutation({
       </div>
       <UButton
         icon="i-tabler-device-floppy"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         :loading="createMutation.isPending.value"
         :disabled="!form.title"
         @click="createMutation.mutate()"

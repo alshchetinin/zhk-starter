@@ -65,7 +65,7 @@ const saveMutation = useMutation({
           <UButton
             :variant="showPreview ? 'solid' : 'outline'"
             icon="i-tabler-eye"
-            class="rounded-xl"
+            class="rounded-md"
             @click="showPreview = !showPreview"
           >
             Превью
@@ -73,7 +73,7 @@ const saveMutation = useMutation({
           <UButton
             :loading="saveMutation.isPending.value"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
             @click="saveMutation.mutate()"
           >
             Сохранить

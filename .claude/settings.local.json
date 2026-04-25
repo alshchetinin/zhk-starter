@@ -10,7 +10,8 @@
       "Bash(curl:*)",
       "Bash(gh repo *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git -C /Users/alex/project/experiments/zhk-starter remote -v)"
     ]
   }
 }

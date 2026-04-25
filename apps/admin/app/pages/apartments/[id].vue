@@ -7,14 +7,18 @@ const route = useRoute();
 const id = computed(() => route.params.id as string);
 
 const { data: apartment, isPending } = useQuery(
-  computed(() => $orpc.apartments.getById.queryOptions({ input: { id: id.value } })),
+  computed(() =>
+    $orpc.apartments.getById.queryOptions({ input: { id: id.value } }),
+  ),
 );
 
 const floorId = computed(() => apartment.value?.floor?.id);
 
 const { data: floorApartments } = useQuery(
-  computed(() => $orpc.apartments.listByFloor.queryOptions({
-    input: { floorId: floorId.value! },
+  computed(() => ({
+    ...$orpc.apartments.listByFloor.queryOptions({
+      input: { floorId: floorId.value! },
+    }),
     enabled: !!floorId.value,
   })),
 );
@@ -27,24 +31,32 @@ const apartmentsByNum = computed(() => {
   return map;
 });
 
-const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> = {
+const statusTone: Record<string, "success" | "warning" | "info" | "muted"> = {
   free: "success",
   paid_reservation: "warning",
-  corporate_reservation: "warning",
-  sold: "error",
+  corporate_reservation: "info",
+  sold: "muted",
+};
+const statusLabel: Record<string, string> = {
+  free: "Свободно",
+  paid_reservation: "Бронь оплачена",
+  corporate_reservation: "Бронь корп.",
+  sold: "Продано",
 };
 
-function formatPrice(price: string | number) {
+function fmtPrice(price: string | number | null | undefined) {
+  if (price == null) return "—";
   return Number(price).toLocaleString("ru-RU");
+}
+function fmtRooms(n: number) {
+  return n === 0 ? "Студия" : `${n}к`;
 }
 
 const floorPlanSvg = computed(() => {
-  if (!apartment.value?.floor?.svgScheme || !apartment.value.apartmentNumber) return null;
-
+  if (!apartment.value?.floor?.svgScheme || !apartment.value.apartmentNumber)
+    return null;
   const svg = apartment.value.floor.svgScheme;
   const currentNum = apartment.value.apartmentNumber;
-
-  // Mark current apartment and all known apartments
   let result = svg;
   for (const [num, info] of apartmentsByNum.value) {
     const isActive = num === currentNum;
@@ -52,7 +64,7 @@ const floorPlanSvg = computed(() => {
       ? ` data-active="true" data-apt-id="${info.id}" data-status="${info.status}"`
       : ` data-apt-id="${info.id}" data-status="${info.status}"`;
     result = result.replace(
-      new RegExp(`(<path[^>]*data-num="${num}"[^>]*)(/?>)`, 'g'),
+      new RegExp(`(<path[^>]*data-num="${num}"[^>]*)(/?>)`, "g"),
       `$1${attrs}$2`,
     );
   }
@@ -60,9 +72,9 @@ const floorPlanSvg = computed(() => {
 });
 
 function onFloorPlanClick(event: MouseEvent) {
-  const path = (event.target as Element).closest('path[data-apt-id]');
+  const path = (event.target as Element).closest("path[data-apt-id]");
   if (!path) return;
-  const aptId = path.getAttribute('data-apt-id');
+  const aptId = path.getAttribute("data-apt-id");
   if (aptId && aptId !== id.value) {
     router.push(`/apartments/${aptId}`);
   }
@@ -71,175 +83,249 @@ function onFloorPlanClick(event: MouseEvent) {
 
 <template>
   <PageContainer>
-    <!-- Breadcrumb -->
-    <UBreadcrumb
-      :items="[
-        { label: 'Apartments', to: '/apartments', icon: 'i-tabler-home' },
-        { label: apartment ? `#${apartment.apartmentNumber}` : '...' },
-      ]"
-      class="mb-6"
-    />
-
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Loading...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="apartment">
-      <!-- Header -->
-      <div class="mb-6 flex items-center gap-3">
-        <h1 class="text-2xl font-bold">Apartment #{{ apartment.apartmentNumber }}</h1>
-        <UBadge
-          :color="statusColors[apartment.status] ?? 'neutral'"
-          variant="subtle"
-          size="lg"
-        >
-          {{ apartment.status.replace(/_/g, " ") }}
-        </UBadge>
+      <AppPageHeader
+        :title="`Квартира №${apartment.apartmentNumber}`"
+        back="/apartments"
+        :crumbs="[
+          { label: 'Квартиры', to: '/apartments' },
+          { label: `№${apartment.apartmentNumber}` },
+        ]"
+      >
+        <template #actions>
+          <AppStatusPill
+            :tone="statusTone[apartment.status] ?? 'muted'"
+            :label="statusLabel[apartment.status] ?? apartment.status"
+            dot
+          />
+        </template>
+      </AppPageHeader>
+
+      <!-- Hero stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <AppStatHero label="Площадь" accent="sky">
+          <template #value>{{ apartment.area }}</template>
+          <template #sub>
+            <span class="text-xs text-(--ui-text-dimmed)">м²</span>
+          </template>
+        </AppStatHero>
+        <AppStatHero label="Комнаты" accent="violet">
+          <template #value>{{ fmtRooms(apartment.roomsCount) }}</template>
+        </AppStatHero>
+        <AppStatHero label="Цена" accent="emerald">
+          <template #value>{{ fmtPrice(apartment.price) }}</template>
+          <template #sub>
+            <span class="text-xs text-(--ui-text-dimmed)">₽</span>
+          </template>
+        </AppStatHero>
+        <AppStatHero label="₽ / м²" accent="zinc">
+          <template #value>
+            {{
+              apartment.area
+                ? fmtPrice(
+                    Math.round(Number(apartment.price) / Number(apartment.area)),
+                  )
+                : "—"
+            }}
+          </template>
+        </AppStatHero>
       </div>
 
-      <!-- Two Column Layout -->
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Left Column -->
-        <div class="space-y-6">
-          <!-- Key Characteristics -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-              <p class="text-xs text-(--ui-text-muted)">Area</p>
-              <p class="text-xl font-bold">{{ apartment.area }} m²</p>
-            </div>
-            <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-              <p class="text-xs text-(--ui-text-muted)">Rooms</p>
-              <p class="text-xl font-bold">{{ apartment.roomsCount === 0 ? 'Studio' : apartment.roomsCount }}</p>
-            </div>
-            <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-              <p class="text-xs text-(--ui-text-muted)">Price</p>
-              <p class="text-xl font-bold">{{ formatPrice(apartment.price) }} ₽</p>
-            </div>
-            <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-              <p class="text-xs text-(--ui-text-muted)">Price / m²</p>
-              <p class="text-xl font-bold">
-                {{ apartment.area ? formatPrice(Math.round(Number(apartment.price) / Number(apartment.area))) : '—' }} ₽
-              </p>
-            </div>
-          </div>
-
-          <!-- Additional Info -->
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-4 font-semibold">Details</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="flex items-start gap-3">
-                <UIcon name="i-tabler-stairs" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Floor</p>
-                  <p class="text-sm font-medium">{{ apartment.floorNumber }}</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <UIcon name="i-tabler-hash" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Number</p>
-                  <p class="text-sm font-medium">{{ apartment.apartmentNumber }}</p>
-                </div>
-              </div>
-              <div v-if="apartment.ceilingHeight" class="flex items-start gap-3">
-                <UIcon name="i-tabler-arrows-vertical" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Ceiling Height</p>
-                  <p class="text-sm font-medium">{{ apartment.ceilingHeight }} m</p>
-                </div>
-              </div>
-              <div v-if="apartment.windowView" class="flex items-start gap-3">
-                <UIcon name="i-tabler-window" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Window View</p>
-                  <p class="text-sm font-medium">{{ apartment.windowView }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Old Price -->
-            <div v-if="apartment.oldPrice" class="mt-4 flex items-start gap-3">
-              <UIcon name="i-tabler-tag" class="mt-0.5 size-4 text-(--ui-text-muted)" />
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <!-- Left column -->
+        <div class="space-y-3">
+          <AppDataCard title="Детали">
+            <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
               <div>
-                <p class="text-xs text-(--ui-text-muted)">Old Price</p>
-                <p class="text-sm font-medium line-through text-(--ui-text-muted)">{{ formatPrice(apartment.oldPrice) }} ₽</p>
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Этаж
+                </p>
+                <p class="text-sm font-medium tabular-nums mt-0.5">
+                  {{ apartment.floorNumber }}
+                </p>
               </div>
-            </div>
-
-            <!-- Monthly Mortgage -->
-            <div v-if="apartment.monthlyMortgagePayment" class="mt-4 flex items-start gap-3">
-              <UIcon name="i-tabler-cash" class="mt-0.5 size-4 text-(--ui-text-muted)" />
               <div>
-                <p class="text-xs text-(--ui-text-muted)">Monthly Mortgage</p>
-                <p class="text-sm font-medium">{{ formatPrice(apartment.monthlyMortgagePayment) }} ₽/month</p>
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Номер
+                </p>
+                <p class="text-sm font-medium tabular-nums mt-0.5">
+                  {{ apartment.apartmentNumber }}
+                </p>
+              </div>
+              <div v-if="apartment.ceilingHeight">
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Высота потолков
+                </p>
+                <p class="text-sm font-medium mt-0.5">
+                  {{ apartment.ceilingHeight }} м
+                </p>
+              </div>
+              <div v-if="apartment.windowView">
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Вид из окна
+                </p>
+                <p class="text-sm font-medium mt-0.5">
+                  {{ apartment.windowView }}
+                </p>
+              </div>
+              <div v-if="apartment.oldPrice">
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Старая цена
+                </p>
+                <p class="text-sm font-medium line-through text-(--ui-text-muted) mt-0.5">
+                  {{ fmtPrice(apartment.oldPrice) }} ₽
+                </p>
+              </div>
+              <div v-if="apartment.monthlyMortgagePayment">
+                <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                  Ипотека / мес
+                </p>
+                <p class="text-sm font-medium mt-0.5">
+                  {{ fmtPrice(apartment.monthlyMortgagePayment) }} ₽
+                </p>
               </div>
             </div>
-          </div>
+          </AppDataCard>
 
-          <!-- Decoration -->
-          <div v-if="apartment.decoration" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Decoration</h3>
+          <AppDataCard v-if="apartment.decoration" title="Отделка">
             <p class="text-sm font-medium">{{ apartment.decoration.title }}</p>
-            <p v-if="apartment.decoration.description" class="mt-1 text-sm text-(--ui-text-muted)">
+            <p
+              v-if="apartment.decoration.description"
+              class="mt-1 text-xs text-(--ui-text-muted)"
+            >
               {{ apartment.decoration.description }}
             </p>
-          </div>
+          </AppDataCard>
 
-          <!-- Promotions -->
-          <div v-if="apartment.promotions?.length" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Promotions</h3>
-            <div class="space-y-3">
-              <div v-for="ap in apartment.promotions" :key="ap.promotion.id" class="flex items-start gap-3">
-                <UIcon name="i-tabler-discount-2" class="mt-0.5 size-4 text-amber-500" />
-                <div>
-                  <p class="text-sm font-medium">{{ ap.promotion.name }}</p>
-                  <p v-if="ap.promotion.description" class="text-xs text-(--ui-text-muted)">
+          <AppDataCard v-if="apartment.promotions?.length" title="Акции">
+            <div class="space-y-2">
+              <div
+                v-for="ap in apartment.promotions"
+                :key="ap.promotion.id"
+                class="flex items-start gap-2"
+              >
+                <UIcon
+                  name="i-tabler-discount-2"
+                  class="mt-0.5 size-4 text-amber-500 shrink-0"
+                />
+                <div class="min-w-0">
+                  <p class="text-sm font-medium truncate">{{ ap.promotion.name }}</p>
+                  <p
+                    v-if="ap.promotion.description"
+                    class="text-xs text-(--ui-text-muted)"
+                  >
                     {{ ap.promotion.description }}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
+          </AppDataCard>
+
+          <AppDataCard title="Связанные">
+            <div class="space-y-1">
+              <NuxtLink
+                v-if="apartment.project"
+                :to="`/projects/${apartment.project.id}`"
+                class="flex items-center gap-3 rounded-md px-2 py-1.5 -mx-2 hover:bg-(--ui-bg-elevated) transition group"
+              >
+                <UIcon
+                  name="i-tabler-building"
+                  class="size-4 text-(--ui-text-dimmed)"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                    ЖК
+                  </p>
+                  <p class="text-sm font-medium truncate">
+                    {{ apartment.project.name }}
+                  </p>
+                </div>
+                <UIcon
+                  name="i-tabler-chevron-right"
+                  class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
+                />
+              </NuxtLink>
+              <NuxtLink
+                v-if="apartment.building"
+                :to="`/buildings/${apartment.building.id}`"
+                class="flex items-center gap-3 rounded-md px-2 py-1.5 -mx-2 hover:bg-(--ui-bg-elevated) transition group"
+              >
+                <UIcon
+                  name="i-tabler-building-skyscraper"
+                  class="size-4 text-(--ui-text-dimmed)"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                    Дом
+                  </p>
+                  <p class="text-sm font-medium truncate">
+                    {{ apartment.building.name }}
+                  </p>
+                </div>
+                <UIcon
+                  name="i-tabler-chevron-right"
+                  class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
+                />
+              </NuxtLink>
+            </div>
+          </AppDataCard>
         </div>
 
-        <!-- Right Column -->
-        <div class="space-y-6">
-          <!-- Layout Image -->
-          <div v-if="apartment.apartmentLayout" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Layout</h3>
+        <!-- Right column -->
+        <div class="space-y-3">
+          <AppDataCard v-if="apartment.apartmentLayout" title="Планировка">
             <img
               v-if="apartment.apartmentLayout.defaultLayoutImage"
               :src="apartment.apartmentLayout.defaultLayoutImage"
               :alt="apartment.apartmentLayout.name"
               class="w-full rounded-lg bg-(--ui-bg-elevated)"
             />
-            <div v-else class="flex items-center justify-center h-48 rounded-lg bg-(--ui-bg-elevated)">
-              <UIcon name="i-tabler-photo-off" class="size-12 text-(--ui-text-muted)" />
+            <div
+              v-else
+              class="flex items-center justify-center h-48 rounded-lg bg-(--ui-bg-elevated)"
+            >
+              <UIcon
+                name="i-tabler-photo-off"
+                class="size-10 text-(--ui-text-dimmed)"
+              />
             </div>
-            <div class="mt-3 flex items-center justify-between text-sm">
+            <div class="mt-3 flex items-center justify-between text-xs">
               <span class="font-medium">{{ apartment.apartmentLayout.name }}</span>
-              <span class="text-(--ui-text-muted)">{{ apartment.apartmentLayout.area }} m²</span>
+              <span class="text-(--ui-text-muted) tabular-nums">
+                {{ apartment.apartmentLayout.area }} м²
+              </span>
             </div>
             <NuxtLink
               :to="`/layouts/${apartment.apartmentLayout.id}`"
-              class="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              class="mt-2 inline-flex items-center gap-1 text-xs text-(--ui-text-muted) hover:text-(--ui-text) transition"
             >
               <UIcon name="i-tabler-external-link" class="size-3" />
-              View layout
+              Открыть планировку
             </NuxtLink>
-          </div>
+          </AppDataCard>
 
-          <!-- Floor Plan with SVG overlay -->
-          <div v-if="apartment.floor && (apartment.floor.floorImage || apartment.floor.svgScheme)" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">
-              Floor {{ apartment.floorNumber }}
-            </h3>
-            <div class="relative w-full overflow-hidden rounded-lg bg-(--ui-bg-elevated)">
+          <AppDataCard
+            v-if="
+              apartment.floor &&
+              (apartment.floor.floorImage || apartment.floor.svgScheme)
+            "
+            :title="`Этаж ${apartment.floorNumber}`"
+          >
+            <div
+              class="relative w-full overflow-hidden rounded-lg bg-(--ui-bg-elevated)"
+            >
               <img
                 v-if="apartment.floor.floorImage"
                 :src="apartment.floor.floorImage"
-                :alt="`Floor ${apartment.floorNumber}`"
+                :alt="`Этаж ${apartment.floorNumber}`"
                 class="block w-full"
               />
               <div
@@ -249,36 +335,7 @@ function onFloorPlanClick(event: MouseEvent) {
                 @click="onFloorPlanClick"
               />
             </div>
-          </div>
-
-          <!-- Related Objects -->
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Related</h3>
-            <div class="space-y-3">
-              <NuxtLink
-                v-if="apartment.project"
-                :to="`/projects/${apartment.project.id}`"
-                class="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-(--ui-bg-elevated)"
-              >
-                <UIcon name="i-tabler-building" class="size-5 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Project</p>
-                  <p class="text-sm font-medium">{{ apartment.project.name }}</p>
-                </div>
-              </NuxtLink>
-              <NuxtLink
-                v-if="apartment.building"
-                :to="`/buildings/${apartment.building.id}`"
-                class="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-(--ui-bg-elevated)"
-              >
-                <UIcon name="i-tabler-building-skyscraper" class="size-5 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Building</p>
-                  <p class="text-sm font-medium">{{ apartment.building.name }}</p>
-                </div>
-              </NuxtLink>
-            </div>
-          </div>
+          </AppDataCard>
         </div>
       </div>
     </template>
@@ -292,13 +349,11 @@ function onFloorPlanClick(event: MouseEvent) {
   display: block;
   pointer-events: none;
 }
-
 .floor-svg-overlay :deep(path) {
   fill: transparent;
   stroke: none;
   pointer-events: none;
 }
-
 .floor-svg-overlay :deep(path[data-apt-id]) {
   pointer-events: all;
   cursor: pointer;
@@ -307,19 +362,16 @@ function onFloorPlanClick(event: MouseEvent) {
   stroke-width: 2;
   transition: fill 0.15s, stroke 0.15s;
 }
-
 .floor-svg-overlay :deep(path[data-apt-id]:hover) {
   fill: rgba(59, 130, 246, 0.4);
   stroke: rgb(37, 99, 235);
   stroke-width: 3;
 }
-
 .floor-svg-overlay :deep(path[data-active="true"]) {
   fill: rgba(234, 88, 12, 0.45);
   stroke: rgb(234, 88, 12);
   stroke-width: 3;
 }
-
 .floor-svg-overlay :deep(path[data-active="true"]:hover) {
   fill: rgba(234, 88, 12, 0.55);
 }

@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { keepPreviousData, useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/vue-query";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -18,28 +23,38 @@ const { data, isPending } = useQuery(
   })),
 );
 
-function prefetchProject(id: string) {
-  queryClient.prefetchQuery($orpc.projects.getById.queryOptions({ input: { id } }));
-}
-
 watch(search, () => {
   page.value = 1;
 });
 
-const statusColors: Record<string, "success" | "warning" | "error" | "neutral"> = {
+function prefetchProject(id: string) {
+  queryClient.prefetchQuery(
+    $orpc.projects.getById.queryOptions({ input: { id } }),
+  );
+}
+
+const statusTone: Record<
+  string,
+  "success" | "warning" | "error" | "muted"
+> = {
   active: "success",
   planning: "warning",
-  completed: "error",
-  hidden: "neutral",
+  completed: "muted",
+  hidden: "muted",
+};
+const statusLabel: Record<string, string> = {
+  active: "Активный",
+  planning: "Планируется",
+  completed: "Завершён",
+  hidden: "Скрыт",
 };
 
-const syncStatusColors: Record<string, "success" | "warning" | "error" | "neutral"> = {
+const syncTone: Record<string, "success" | "warning" | "error"> = {
   success: "success",
   loading: "warning",
-  error: "error",
+  failed: "error",
 };
 
-// Sync all mutation
 const syncAllMutation = useMutation({
   mutationFn: () => $orpcClient.projects.syncAll(),
   onSuccess: (result) => {
@@ -50,15 +65,20 @@ const syncAllMutation = useMutation({
     });
     queryClient.invalidateQueries({ queryKey: $orpc.projects.key() });
   },
+  onError: (e: any) =>
+    toast.add({ title: "Ошибка", description: e.message, color: "error" }),
 });
 
-const hasSyncableProjects = computed(() =>
-  data.value?.data.some((p) => p.macroComplexId && p.lastSyncStatus !== "loading") ?? false,
+const hasSyncableProjects = computed(
+  () =>
+    data.value?.data.some(
+      (p) => p.macroComplexId && p.lastSyncStatus !== "loading",
+    ) ?? false,
 );
 
 const showDeleteId = ref<string | null>(null);
-const projectToDelete = computed(() =>
-  data.value?.data.find((p) => p.id === showDeleteId.value) ?? null,
+const projectToDelete = computed(
+  () => data.value?.data.find((p) => p.id === showDeleteId.value) ?? null,
 );
 
 type ProjectsListData = typeof data extends { value: infer V } ? V : never;
@@ -95,174 +115,246 @@ const deleteMutation = useMutation({
   },
 });
 
-function formatDate(date: string | Date | null | undefined) {
-  if (!date) return null;
-  return new Date(date).toLocaleString("ru-RU");
+function fmtRelative(d: string | Date | null | undefined) {
+  if (!d) return null;
+  const date = typeof d === "string" ? new Date(d) : d;
+  const diff = Date.now() - date.getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "только что";
+  if (m < 60) return `${m} мин назад`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}ч назад`;
+  const dd = Math.floor(h / 24);
+  if (dd < 30) return `${dd} дн назад`;
+  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+}
+
+function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?: number | null }) {
+  const total = p.totalApartmentsCount ?? 0;
+  if (!total) return 0;
+  return Math.round(((p.soldApartmentsCount ?? 0) / total) * 100);
 }
 </script>
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">Проекты</h1>
-      <div class="flex items-center gap-3">
-        <UInput
-          v-model="search"
-          placeholder="Поиск проектов..."
-          icon="i-tabler-search"
-          class="w-64"
-        />
-        <UButton
+    <AppPageHeader
+      title="Проекты"
+      :subtitle="
+        data?.total != null ? `${data.total} ЖК` : undefined
+      "
+    >
+      <template #actions>
+        <AppToolbarButton
           v-if="hasSyncableProjects"
-          variant="outline"
           icon="i-tabler-refresh"
+          variant="ghost"
           :loading="syncAllMutation.isPending.value"
-          class="rounded-xl"
           @click="syncAllMutation.mutate()"
         >
           Синхронизировать все
-        </UButton>
-        <NuxtLink to="/projects/create">
-          <UButton
-            icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        </AppToolbarButton>
+        <AppToolbarButton
+          to="/projects/create"
+          icon="i-tabler-plus"
+          variant="primary"
+        >
+          Новый ЖК
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
+
+    <!-- Search -->
+    <div class="mb-4">
+      <UInput
+        v-model="search"
+        placeholder="Поиск по названию или адресу"
+        icon="i-tabler-search"
+        size="sm"
+        class="max-w-sm"
+      />
+    </div>
+
+    <!-- List -->
+    <AppDataCard v-if="isPending && !data" flush>
+      <div class="p-12 text-center text-xs text-(--ui-text-dimmed) flex items-center justify-center gap-2">
+        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        Загрузка…
+      </div>
+    </AppDataCard>
+
+    <AppDataCard v-else-if="data?.data.length" flush>
+      <div class="divide-y divide-(--ui-border)">
+        <div
+          v-for="project in data.data"
+          :key="project.id"
+          class="group relative flex items-stretch gap-4 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
+          @mouseenter="prefetchProject(project.id)"
+        >
+          <!-- Thumbnail -->
+          <NuxtLink
+            :to="`/projects/${project.id}`"
+            class="size-14 rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden flex items-center justify-center border border-(--ui-border)"
           >
-            Создать ЖК
-          </UButton>
-        </NuxtLink>
+            <img
+              v-if="project.gallery?.length"
+              :src="project.gallery[0]"
+              :alt="project.name"
+              class="h-full w-full object-cover"
+            />
+            <UIcon
+              v-else
+              name="i-tabler-building"
+              class="size-5 text-(--ui-text-dimmed)"
+            />
+          </NuxtLink>
+
+          <!-- Main content -->
+          <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <NuxtLink
+                :to="`/projects/${project.id}`"
+                class="text-sm font-semibold truncate hover:underline"
+              >
+                {{ project.name }}
+              </NuxtLink>
+              <AppStatusPill
+                v-if="project.status"
+                :tone="statusTone[project.status] ?? 'muted'"
+                :label="statusLabel[project.status] ?? project.status"
+                dot
+              />
+              <AppStatusPill
+                v-if="project.lastSyncStatus"
+                :tone="syncTone[project.lastSyncStatus] ?? 'muted'"
+                :pulse="project.lastSyncStatus === 'loading'"
+                dot
+              >
+                sync
+              </AppStatusPill>
+              <span
+                v-if="project.macroComplexName"
+                class="text-[11px] text-(--ui-text-dimmed) truncate"
+              >
+                · MacroCRM: {{ project.macroComplexName }}
+              </span>
+            </div>
+
+            <p
+              v-if="project.address"
+              class="text-xs text-(--ui-text-muted) truncate"
+            >
+              {{ project.address }}
+            </p>
+
+            <!-- Stats inline -->
+            <div
+              v-if="project.totalApartmentsCount"
+              class="flex items-center gap-3 text-[11px] text-(--ui-text-muted) tabular-nums mt-1"
+            >
+              <span class="flex items-center gap-1">
+                <span class="text-(--ui-text-dimmed)">всего</span>
+                <span class="text-(--ui-text) font-medium">
+                  {{ project.totalApartmentsCount }}
+                </span>
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="size-1.5 rounded-full bg-emerald-500" />
+                <span>{{ project.freeApartmentsCount ?? 0 }}</span>
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="size-1.5 rounded-full bg-amber-500" />
+                <span>{{ project.paidReservationCount ?? 0 }}</span>
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="size-1.5 rounded-full bg-violet-500" />
+                <span>{{ project.corporateReservationCount ?? 0 }}</span>
+              </span>
+              <span class="flex items-center gap-1">
+                <span class="size-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+                <span>{{ project.soldApartmentsCount ?? 0 }}</span>
+              </span>
+
+              <!-- Progress bar inline -->
+              <span class="ml-2 flex items-center gap-1.5 min-w-0">
+                <span
+                  class="w-24 h-1 rounded-full bg-(--ui-bg-elevated) overflow-hidden shrink-0"
+                >
+                  <span
+                    class="block h-full bg-zinc-500"
+                    :style="{ width: soldPct(project) + '%' }"
+                  />
+                </span>
+                <span class="text-[10px] text-(--ui-text-dimmed)">
+                  {{ soldPct(project) }}% продано
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: meta + actions -->
+          <div class="flex flex-col items-end gap-2 shrink-0 justify-center">
+            <span
+              v-if="project.lastSyncAt"
+              class="text-[11px] text-(--ui-text-dimmed) tabular-nums"
+            >
+              sync {{ fmtRelative(project.lastSyncAt) }}
+            </span>
+            <div
+              class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
+            >
+              <AppToolbarButton
+                :to="`/projects/${project.id}`"
+                icon="i-tabler-edit"
+                variant="subtle"
+                title="Редактировать"
+              />
+              <AppToolbarButton
+                icon="i-tabler-trash"
+                variant="subtle"
+                title="Удалить"
+                @click="showDeleteId = project.id"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </AppDataCard>
 
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
-    </div>
-
-    <div v-else-if="data?.data.length" class="grid grid-cols-1 gap-5">
-      <div
-        v-for="project in data.data"
-        :key="project.id"
-        class="flex flex-col sm:flex-row gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
-        @mouseenter="prefetchProject(project.id)"
-      >
-        <!-- Image / Placeholder -->
-        <NuxtLink
-          :to="`/projects/${project.id}`"
-          class="flex items-center justify-center w-full sm:w-40 h-28 sm:h-auto rounded-lg bg-(--ui-bg-elevated) shrink-0 overflow-hidden"
+    <AppEmptyState
+      v-else
+      icon="i-tabler-building-off"
+      title="Проектов пока нет"
+      description="Создайте новый ЖК вручную или подключите интеграцию для импорта из MacroCRM / Profitbase."
+    >
+      <template #actions>
+        <AppToolbarButton
+          to="/projects/create"
+          icon="i-tabler-plus"
+          variant="primary"
         >
-          <img
-            v-if="project.gallery?.length"
-            :src="project.gallery[0]"
-            :alt="project.name"
-            class="h-full w-full object-cover"
-          />
-          <UIcon v-else name="i-tabler-building" class="size-10 text-(--ui-text-muted)" />
-        </NuxtLink>
-
-        <!-- Content -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-2">
-            <NuxtLink :to="`/projects/${project.id}`" class="text-lg font-semibold truncate hover:underline">
-              {{ project.name }}
-            </NuxtLink>
-            <UBadge
-              :color="statusColors[project.status ?? ''] ?? 'neutral'"
-              variant="subtle"
-            >
-              {{ project.status }}
-            </UBadge>
-            <UBadge
-              v-if="project.lastSyncStatus"
-              :color="syncStatusColors[project.lastSyncStatus] ?? 'neutral'"
-              variant="subtle"
-            >
-              sync: {{ project.lastSyncStatus }}
-            </UBadge>
-          </div>
-
-          <p v-if="project.address" class="text-sm text-(--ui-text-muted) mb-1 truncate">
-            {{ project.address }}
-          </p>
-
-          <p v-if="project.macroComplexName" class="text-xs text-(--ui-text-dimmed) mb-1">
-            MacroCRM: {{ project.macroComplexName }}
-          </p>
-
-          <p v-if="project.lastSyncAt" class="text-xs text-(--ui-text-dimmed) mb-3">
-            Последний sync: {{ formatDate(project.lastSyncAt) }}
-          </p>
-
-          <!-- Stats -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-home" class="size-4 text-blue-500" />
-              <div>
-                <p class="text-xs text-(--ui-text-muted)">Всего</p>
-                <p class="text-sm font-semibold">{{ project.totalApartmentsCount ?? 0 }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-circle-check" class="size-4 text-green-500" />
-              <div>
-                <p class="text-xs text-(--ui-text-muted)">Свободно</p>
-                <p class="text-sm font-semibold">{{ project.freeApartmentsCount ?? 0 }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-circle-x" class="size-4 text-red-500" />
-              <div>
-                <p class="text-xs text-(--ui-text-muted)">Продано</p>
-                <p class="text-sm font-semibold">{{ project.soldApartmentsCount ?? 0 }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-clock" class="size-4 text-yellow-500" />
-              <div>
-                <p class="text-xs text-(--ui-text-muted)">Бронь</p>
-                <p class="text-sm font-semibold">{{ project.paidReservationCount ?? 0 }}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-briefcase" class="size-4 text-purple-500" />
-              <div>
-                <p class="text-xs text-(--ui-text-muted)">Корп.</p>
-                <p class="text-sm font-semibold">{{ project.corporateReservationCount ?? 0 }}</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="shrink-0 flex items-start">
-          <UButton
-            variant="ghost"
-            color="error"
-            icon="i-tabler-trash"
-            size="sm"
-            class="rounded-xl"
-            @click.stop="showDeleteId = project.id"
-          />
-        </div>
-      </div>
-    </div>
-
-    <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
-      <UIcon name="i-tabler-building-off" class="mx-auto size-12 text-(--ui-text-muted)" />
-      <p class="mt-2 text-(--ui-text-muted)">Проекты не найдены</p>
-      <NuxtLink to="/integrations">
-        <UButton
-          class="mt-4"
+          Создать ЖК
+        </AppToolbarButton>
+        <AppToolbarButton
+          to="/integrations"
           icon="i-tabler-plug-connected"
+          variant="ghost"
         >
-          Добавить через интеграции
-        </UButton>
-      </NuxtLink>
+          Интеграции
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
+
+    <!-- Pagination -->
+    <div v-if="(data?.total ?? 0) > pageSize" class="mt-4 flex justify-center">
+      <UPagination
+        v-model:page="page"
+        :total="data?.total ?? 0"
+        :items-per-page="pageSize"
+      />
     </div>
 
-    <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
-      <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
-    </div>
-
+    <!-- Delete modal -->
     <UModal
       :open="projectToDelete != null"
       title="Удалить проект?"
@@ -270,30 +362,33 @@ function formatDate(date: string | Date | null | undefined) {
     >
       <template #body>
         <p class="text-sm text-(--ui-text-muted)">
-          Проект <b>{{ projectToDelete?.name }}</b> будет удалён вместе со всеми
-          квартирами, коммерцией, паркингом и кладовыми. Действие необратимо.
+          Проект <b>{{ projectToDelete?.name }}</b> будет удалён вместе со
+          всеми квартирами, коммерцией, паркингом и кладовыми. Действие
+          необратимо.
         </p>
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton
-            variant="outline"
-            class="rounded-xl"
-            @click="showDeleteId = null"
-          >
+          <AppToolbarButton variant="ghost" @click="showDeleteId = null">
             Отмена
-          </UButton>
-          <UButton
-            color="error"
-            :loading="deleteMutation.isPending.value"
-            class="rounded-xl"
-            @click="projectToDelete && deleteMutation.mutate(projectToDelete.id)"
+          </AppToolbarButton>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+            :disabled="deleteMutation.isPending.value"
+            @click="
+              projectToDelete && deleteMutation.mutate(projectToDelete.id)
+            "
           >
+            <UIcon
+              v-if="deleteMutation.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
+          </button>
         </div>
       </template>
     </UModal>
-
   </PageContainer>
 </template>

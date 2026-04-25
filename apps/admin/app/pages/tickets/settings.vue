@@ -60,7 +60,7 @@ const saveMutation = useMutation({
         <UButton
           :loading="saveMutation.isPending.value"
           icon="i-tabler-device-floppy"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
           @click="saveMutation.mutate()"
         >
           Сохранить
@@ -69,7 +69,7 @@ const saveMutation = useMutation({
 
       <div class="max-w-2xl space-y-6">
         <!-- Telegram -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
               <UIcon name="i-tabler-brand-telegram" class="text-blue-500 text-xl" />

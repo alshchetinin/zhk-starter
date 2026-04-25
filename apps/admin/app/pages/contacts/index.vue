@@ -66,7 +66,7 @@ const deleteMutation = useMutation({
         <NuxtLink to="/contacts/new">
           <UButton
             icon="i-tabler-plus"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
           >
             Новый контакт
           </UButton>

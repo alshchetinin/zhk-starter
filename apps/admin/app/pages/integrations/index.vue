@@ -277,7 +277,7 @@ const createBatchMutation = useMutation({
           <UButton
             variant="outline"
             icon="i-tabler-settings"
-            class="rounded-xl"
+            class="rounded-md"
             to="/integrations/settings"
           >
             Синхронизация
@@ -285,7 +285,7 @@ const createBatchMutation = useMutation({
           <UButton
             variant="outline"
             icon="i-tabler-history"
-            class="rounded-xl"
+            class="rounded-md"
             to="/integrations/logs"
           >
             Логи
@@ -300,7 +300,7 @@ const createBatchMutation = useMutation({
         <!-- Active Profitbase -->
         <div
           v-if="hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+          class="border border-(--ui-border) p-6 space-y-5"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -329,7 +329,7 @@ const createBatchMutation = useMutation({
               variant="outline"
               icon="i-tabler-refresh"
               :loading="pbVerifyMutation.isPending.value"
-              class="rounded-xl"
+              class="rounded-md"
               @click="pbVerifyMutation.mutate()"
             >
               Проверить подключение
@@ -338,7 +338,7 @@ const createBatchMutation = useMutation({
               variant="outline"
               color="error"
               icon="i-tabler-plug-connected-x"
-              class="rounded-xl ml-auto"
+              class="ml-auto"
               @click="showRemoveConfirm = true"
             >
               Отключить
@@ -349,7 +349,7 @@ const createBatchMutation = useMutation({
         <!-- Projects from Profitbase -->
         <div
           v-if="hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-4"
+          class="border border-(--ui-border) p-6 space-y-4"
         >
           <div class="flex items-center justify-between">
             <div>
@@ -406,7 +406,7 @@ const createBatchMutation = useMutation({
                 :disabled="pbSelectedIds.size === 0"
                 :loading="pbSyncMutation.isPending.value"
                 icon="i-tabler-download"
-                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
                 @click="pbSyncMutation.mutate()"
               >
                 Импортировать выбранные ({{ pbSelectedIds.size }})
@@ -426,7 +426,7 @@ const createBatchMutation = useMutation({
         <!-- Setup Profitbase -->
         <div
           v-if="!hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+          class="border border-(--ui-border) p-6 space-y-5"
         >
           <div class="flex items-center gap-3 mb-2">
             <div
@@ -478,7 +478,7 @@ const createBatchMutation = useMutation({
             :disabled="!canSetupProfitbase"
             :loading="pbSetupMutation.isPending.value"
             icon="i-tabler-plug-connected"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
             @click="pbSetupMutation.mutate()"
           >
             Подключить Profitbase
@@ -493,7 +493,7 @@ const createBatchMutation = useMutation({
         <!-- Active integration -->
         <div
           v-if="hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+          class="border border-(--ui-border) p-6 space-y-5"
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -547,7 +547,7 @@ const createBatchMutation = useMutation({
               variant="outline"
               icon="i-tabler-refresh"
               :loading="verifyMutation.isPending.value"
-              class="rounded-xl"
+              class="rounded-md"
               @click="verifyMutation.mutate()"
             >
               Проверить подключение
@@ -556,7 +556,7 @@ const createBatchMutation = useMutation({
               variant="outline"
               color="error"
               icon="i-tabler-plug-connected-x"
-              class="rounded-xl ml-auto"
+              class="ml-auto"
               @click="showRemoveConfirm = true"
             >
               Отключить
@@ -567,7 +567,7 @@ const createBatchMutation = useMutation({
         <!-- Projects selection -->
         <div
           v-if="hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-4"
+          class="border border-(--ui-border) p-6 space-y-4"
         >
           <div class="flex items-center justify-between">
             <div>
@@ -660,7 +660,7 @@ const createBatchMutation = useMutation({
                 :disabled="selectedIds.size === 0"
                 :loading="createBatchMutation.isPending.value"
                 icon="i-tabler-plus"
-                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
                 @click="createBatchMutation.mutate()"
               >
                 Добавить выбранные ({{ selectedIds.size }})
@@ -698,7 +698,7 @@ const createBatchMutation = useMutation({
         <!-- Setup form -->
         <div
           v-if="!hasIntegration"
-          class="rounded-xl border border-(--ui-border) p-6 space-y-5"
+          class="border border-(--ui-border) p-6 space-y-5"
         >
           <div class="flex items-center gap-3 mb-2">
             <div
@@ -763,7 +763,7 @@ const createBatchMutation = useMutation({
             :disabled="!canSetup"
             :loading="setupMutation.isPending.value"
             icon="i-tabler-plug-connected"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
             @click="setupMutation.mutate()"
           >
             Подключить MacroCRM
@@ -783,7 +783,7 @@ const createBatchMutation = useMutation({
           <div class="flex justify-end gap-2">
             <UButton
               variant="outline"
-              class="rounded-xl"
+              class="rounded-md"
               @click="showRemoveConfirm = false"
             >
               Отмена
@@ -791,7 +791,7 @@ const createBatchMutation = useMutation({
             <UButton
               color="error"
               :loading="removeMutation.isPending.value"
-              class="rounded-xl"
+              class="rounded-md"
               @click="removeMutation.mutate()"
             >
               Отключить

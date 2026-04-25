@@ -98,7 +98,7 @@ const updateMutation = useMutation({
         :disabled="!canSave"
         :loading="updateMutation.isPending.value"
         icon="i-tabler-device-floppy"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         @click="updateMutation.mutate()"
       >
         Сохранить

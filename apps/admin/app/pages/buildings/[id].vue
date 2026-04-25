@@ -8,10 +8,11 @@ const queryClient = useQueryClient();
 const id = computed(() => route.params.id as string);
 
 const { data: building, isPending } = useQuery(
-  computed(() => $orpc.buildings.getById.queryOptions({ input: { id: id.value } })),
+  computed(() =>
+    $orpc.buildings.getById.queryOptions({ input: { id: id.value } }),
+  ),
 );
 
-// Fetch all apartments for this building (dedicated endpoint, no pagination)
 const { data: allApartments } = useQuery(
   computed(() =>
     $orpc.apartments.listByBuilding.queryOptions({
@@ -20,7 +21,6 @@ const { data: allApartments } = useQuery(
   ),
 );
 
-// Group apartments by sectionId → floorNumber (descending) → sorted by apartmentNumber
 const checkerboardData = computed(() => {
   if (!building.value?.sections || !allApartments.value) return [];
 
@@ -45,8 +45,8 @@ const checkerboardData = computed(() => {
       .sort((a, b) => b[0] - a[0])
       .map(([floorNumber, apts]) => ({
         floorNumber,
-        apartments: apts.sort((a, b) =>
-          parseInt(a.apartmentNumber) - parseInt(b.apartmentNumber),
+        apartments: apts.sort(
+          (a, b) => parseInt(a.apartmentNumber) - parseInt(b.apartmentNumber),
         ),
       }));
 
@@ -58,7 +58,6 @@ const hasApartments = computed(() =>
   checkerboardData.value.some((s) => s.totalApts > 0),
 );
 
-// Section CRUD
 type Section = {
   id: string;
   name: string;
@@ -169,7 +168,10 @@ const deleteSectionMut = useMutation({
     const prev = queryClient.getQueryData(buildingKey.value);
     queryClient.setQueryData(buildingKey.value, (old: any) => {
       if (!old?.sections) return old;
-      return { ...old, sections: old.sections.filter((s: any) => s.id !== sid) };
+      return {
+        ...old,
+        sections: old.sections.filter((s: any) => s.id !== sid),
+      };
     });
     return { prev };
   },
@@ -199,26 +201,46 @@ const isSectionSubmitting = computed(
 
 <template>
   <PageContainer>
-    <UBreadcrumb
-      :items="[
-        { label: 'Дома', to: '/buildings', icon: 'i-tabler-building-skyscraper' },
-        { label: building?.name ?? '...' },
-      ]"
-      class="mb-6"
-    />
-
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="building">
-      <div class="mb-6 flex items-center gap-3">
-        <h1 class="text-2xl font-bold">{{ building.name }}</h1>
-        <UBadge v-if="building.integrationId" color="warning" variant="subtle">
-          Импорт
-        </UBadge>
-      </div>
+      <AppPageHeader
+        :title="building.name"
+        back="/buildings"
+        :crumbs="[
+          { label: 'Дома', to: '/buildings' },
+          { label: building.name },
+        ]"
+      >
+        <template #actions>
+          <AppStatusPill
+            v-if="building.integrationId"
+            tone="warning"
+            label="Импорт"
+            dot
+          />
+          <AppToolbarButton
+            :to="`/sections/create?buildingId=${id}`"
+            icon="i-tabler-stack-2"
+            variant="ghost"
+          >
+            Заполнить секцию
+          </AppToolbarButton>
+          <AppToolbarButton
+            icon="i-tabler-plus"
+            variant="primary"
+            @click="openCreateSection"
+          >
+            Пустая секция
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
       <UAlert
         v-if="building.integrationId"
@@ -230,189 +252,168 @@ const isSectionSubmitting = computed(
         class="mb-4"
       />
 
-      <div class="mb-8 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="flex items-start gap-3">
-            <UIcon name="i-tabler-building" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">ЖК</p>
-              <NuxtLink
-                v-if="building.project"
-                :to="`/projects/${building.project.id}`"
-                class="text-sm font-medium text-primary hover:underline"
-              >
-                {{ building.project.name }}
-              </NuxtLink>
-              <p v-else class="text-sm font-medium">—</p>
-            </div>
-          </div>
-          <div v-if="building.completionDate" class="flex items-start gap-3">
-            <UIcon name="i-tabler-calendar" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">Дата сдачи</p>
-              <p class="text-sm font-medium">{{ building.completionDate }}</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <UIcon name="i-tabler-layers-intersect" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-            <div>
-              <p class="text-xs text-(--ui-text-muted)">Секций</p>
-              <p class="text-sm font-medium">{{ building.sections?.length ?? 0 }}</p>
-            </div>
-          </div>
-        </div>
+      <!-- Hero stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-4">
+        <AppStatHero label="Всего" accent="zinc">
+          <template #value>{{ building.totalApartmentsCount ?? 0 }}</template>
+        </AppStatHero>
+        <AppStatHero label="Свободно" accent="emerald">
+          <template #value>{{ building.freeApartmentsCount ?? 0 }}</template>
+        </AppStatHero>
+        <AppStatHero label="Бронь оплачена" accent="amber">
+          <template #value>{{ building.paidReservationCount ?? 0 }}</template>
+        </AppStatHero>
+        <AppStatHero label="Бронь корп." accent="violet">
+          <template #value>{{
+            building.corporateReservationCount ?? 0
+          }}</template>
+        </AppStatHero>
+        <AppStatHero label="Продано" accent="zinc">
+          <template #value>{{ building.soldApartmentsCount ?? 0 }}</template>
+        </AppStatHero>
       </div>
 
-      <!-- Sections CRUD -->
-      <div class="mb-8">
-        <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold">
-            Секции ({{ building.sections?.length ?? 0 }})
-          </h2>
-          <div class="flex gap-2">
-            <NuxtLink :to="`/sections/create?buildingId=${id}`">
-              <UButton
-                icon="i-tabler-stack-2"
-                variant="outline"
-                color="neutral"
-                class="rounded-xl"
-              >
-                Заполнить секцию
-              </UButton>
-            </NuxtLink>
-            <UButton
-              icon="i-tabler-plus"
-              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
-              @click="openCreateSection"
+      <!-- Building meta -->
+      <AppDataCard title="Информация" class="mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div>
+            <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+              ЖК
+            </p>
+            <NuxtLink
+              v-if="building.project"
+              :to="`/projects/${building.project.id}`"
+              class="text-sm font-medium hover:underline mt-0.5 block"
             >
-              Пустая секция
-            </UButton>
+              {{ building.project.name }}
+            </NuxtLink>
+            <p v-else class="text-sm font-medium mt-0.5">—</p>
+          </div>
+          <div v-if="building.completionDate">
+            <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+              Дата сдачи
+            </p>
+            <p class="text-sm font-medium mt-0.5 tabular-nums">
+              {{ building.completionDate }}
+            </p>
+          </div>
+          <div>
+            <p class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+              Секций
+            </p>
+            <p class="text-sm font-medium mt-0.5 tabular-nums">
+              {{ building.sections?.length ?? 0 }}
+            </p>
           </div>
         </div>
+      </AppDataCard>
+
+      <!-- Sections list -->
+      <AppDataCard
+        flush
+        :title="`Секции · ${building.sections?.length ?? 0}`"
+        class="mb-4"
+      >
         <div
           v-if="building.sections?.length"
-          class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          class="divide-y divide-(--ui-border)"
         >
           <div
             v-for="section in building.sections"
             :key="section.id"
-            class="flex items-center justify-between gap-2 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4"
+            class="group flex items-center gap-3 px-4 py-2.5 hover:bg-(--ui-bg-elevated) transition"
           >
-            <div class="flex items-center gap-2 min-w-0">
-              <UIcon name="i-tabler-layers-intersect" class="size-4 shrink-0 text-(--ui-text-muted)" />
-              <div class="min-w-0">
-                <div class="font-medium truncate">{{ section.name }}</div>
-                <div v-if="section.floorsCount" class="text-xs text-(--ui-text-muted)">
-                  {{ section.floorsCount }} эт.
-                </div>
-              </div>
+            <UIcon
+              name="i-tabler-layers-intersect"
+              class="size-4 text-(--ui-text-dimmed) shrink-0"
+            />
+            <div class="flex-1 min-w-0">
+              <span class="text-sm font-medium truncate">{{ section.name }}</span>
+              <span
+                v-if="section.floorsCount"
+                class="text-[11px] text-(--ui-text-dimmed) tabular-nums ml-2"
+              >
+                · {{ section.floorsCount }} эт.
+              </span>
             </div>
-            <div class="flex shrink-0 gap-1">
-              <UButton
-                variant="ghost"
-                size="xs"
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+              <AppToolbarButton
                 icon="i-tabler-edit"
-                class="rounded-lg"
+                variant="subtle"
+                title="Редактировать"
                 @click="openEditSection(section as Section)"
               />
-              <UButton
-                variant="ghost"
-                size="xs"
+              <AppToolbarButton
                 icon="i-tabler-trash"
-                color="error"
-                class="rounded-lg"
+                variant="subtle"
+                title="Удалить"
                 @click="sectionToDelete = section as Section"
               />
             </div>
           </div>
         </div>
-        <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-8 text-center">
-          <p class="text-(--ui-text-muted)">Секций пока нет</p>
-        </div>
-      </div>
+        <AppEmptyState
+          v-else
+          compact
+          icon="i-tabler-layers-off"
+          title="Секций пока нет"
+          description="Создайте секцию или запустите мастер заполнения."
+        />
+      </AppDataCard>
 
-      <!-- Apartment Stats -->
-      <div class="mb-8">
-        <h2 class="mb-4 text-lg font-semibold">Квартиры</h2>
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-home" class="size-4 text-blue-500" />
-              <span class="text-xs text-(--ui-text-muted)">Всего</span>
-            </div>
-            <p class="mt-1 text-xl font-bold">{{ building.totalApartmentsCount ?? 0 }}</p>
+      <!-- Checkerboard -->
+      <AppDataCard v-if="hasApartments" flush title="Шахматка">
+        <template #actions>
+          <div class="flex items-center gap-3 text-[11px]">
+            <span class="flex items-center gap-1.5">
+              <span
+                class="size-2 rounded-sm bg-emerald-500/30 border border-emerald-500/50"
+              />
+              <span class="text-(--ui-text-dimmed)">Свободно</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span
+                class="size-2 rounded-sm bg-amber-500/30 border border-amber-500/50"
+              />
+              <span class="text-(--ui-text-dimmed)">Бронь</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span
+                class="size-2 rounded-sm bg-violet-500/30 border border-violet-500/50"
+              />
+              <span class="text-(--ui-text-dimmed)">Корп.</span>
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span
+                class="size-2 rounded-sm bg-zinc-500/30 border border-zinc-500/50"
+              />
+              <span class="text-(--ui-text-dimmed)">Продано</span>
+            </span>
           </div>
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-circle-check" class="size-4 text-green-500" />
-              <span class="text-xs text-(--ui-text-muted)">Свободно</span>
-            </div>
-            <p class="mt-1 text-xl font-bold text-green-600">{{ building.freeApartmentsCount ?? 0 }}</p>
-          </div>
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-circle-x" class="size-4 text-red-500" />
-              <span class="text-xs text-(--ui-text-muted)">Продано</span>
-            </div>
-            <p class="mt-1 text-xl font-bold">{{ building.soldApartmentsCount ?? 0 }}</p>
-          </div>
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-clock" class="size-4 text-yellow-500" />
-              <span class="text-xs text-(--ui-text-muted)">Бронь</span>
-            </div>
-            <p class="mt-1 text-xl font-bold">{{ building.paidReservationCount ?? 0 }}</p>
-          </div>
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-tabler-briefcase" class="size-4 text-purple-500" />
-              <span class="text-xs text-(--ui-text-muted)">Корп.</span>
-            </div>
-            <p class="mt-1 text-xl font-bold">{{ building.corporateReservationCount ?? 0 }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="hasApartments" class="mb-8">
-        <h2 class="mb-4 text-lg font-semibold">Шахматка</h2>
-        <div class="mb-4 flex flex-wrap gap-3">
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-green-100 border border-green-200 dark:bg-green-950 dark:border-green-800" />
-            <span class="text-(--ui-text-muted)">Свободно</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-blue-100 border border-blue-200 dark:bg-blue-950 dark:border-blue-800" />
-            <span class="text-(--ui-text-muted)">Бронь</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-yellow-100 border border-yellow-200 dark:bg-yellow-950 dark:border-yellow-800" />
-            <span class="text-(--ui-text-muted)">Корпоративная</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs">
-            <span class="size-3 rounded bg-red-100 border border-red-200 dark:bg-red-950 dark:border-red-800" />
-            <span class="text-(--ui-text-muted)">Продано</span>
-          </div>
-        </div>
-
-        <div class="flex items-end gap-4 overflow-x-auto pb-2">
+        </template>
+        <div class="flex items-end gap-3 overflow-x-auto p-4">
           <div
             v-for="{ section, floors } in checkerboardData"
             :key="section.id"
-            class="shrink-0 rounded-xl border border-(--ui-border) bg-(--ui-bg) shadow-sm"
+            class="shrink-0 rounded-lg border border-(--ui-border) bg-(--ui-bg)"
           >
-            <div class="border-b border-(--ui-border) px-4 py-3">
-              <h3 class="text-sm font-semibold">{{ section.name }}</h3>
+            <div class="border-b border-(--ui-border) px-3 py-2">
+              <h3 class="text-xs font-semibold tracking-tight">
+                {{ section.name }}
+              </h3>
             </div>
             <div class="space-y-1 p-2">
               <div
                 v-for="floor in floors"
                 :key="floor.floorNumber"
-                class="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-(--ui-bg-elevated)"
+                class="flex items-center gap-2 rounded-md p-1 hover:bg-(--ui-bg-elevated) transition"
               >
-                <div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-(--ui-bg-elevated) text-xs font-medium text-(--ui-text-muted)">
+                <div
+                  class="flex size-7 shrink-0 items-center justify-center rounded-md bg-(--ui-bg-elevated) text-[11px] font-medium text-(--ui-text-muted) tabular-nums"
+                >
                   {{ floor.floorNumber }}
                 </div>
-                <div class="flex flex-wrap gap-1.5">
+                <div class="flex flex-wrap gap-1">
                   <CheckerboardCell
                     v-for="apt in floor.apartments"
                     :key="apt.id"
@@ -420,13 +421,16 @@ const isSectionSubmitting = computed(
                   />
                 </div>
               </div>
-              <div v-if="!floors.length" class="px-4 py-6 text-center text-sm text-(--ui-text-muted)">
+              <div
+                v-if="!floors.length"
+                class="px-3 py-4 text-center text-xs text-(--ui-text-dimmed)"
+              >
                 Квартир нет
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </AppDataCard>
 
       <!-- Section form modal -->
       <UModal
@@ -436,34 +440,44 @@ const isSectionSubmitting = computed(
         <template #body>
           <div class="space-y-4">
             <UFormField label="Название" required>
-              <UInput v-model="sectionForm.name" placeholder="Секция 1" />
+              <UInput v-model="sectionForm.name" placeholder="Секция 1" size="sm" />
             </UFormField>
             <UFormField label="Этажей">
-              <UInput v-model.number="sectionForm.floorsCount" type="number" min="1" />
+              <UInput
+                v-model.number="sectionForm.floorsCount"
+                type="number"
+                min="1"
+                size="sm"
+              />
             </UFormField>
             <UFormField label="Мастер-план">
-              <ImageUpload v-model="sectionForm.masterplanImage" folder="sections" />
+              <ImageUpload
+                v-model="sectionForm.masterplanImage"
+                folder="sections"
+              />
             </UFormField>
           </div>
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <UButton variant="outline" class="rounded-xl" @click="sectionFormOpen = false">
+            <AppToolbarButton
+              variant="ghost"
+              @click="sectionFormOpen = false"
+            >
               Отмена
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
+              variant="primary"
               :loading="isSectionSubmitting"
               :disabled="!sectionForm.name.trim()"
-              class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
               @click="submitSection"
             >
               {{ editingSection ? "Сохранить" : "Создать" }}
-            </UButton>
+            </AppToolbarButton>
           </div>
         </template>
       </UModal>
 
-      <!-- Section delete confirm -->
       <UModal
         :open="sectionToDelete != null"
         title="Удалить секцию?"
@@ -471,23 +485,31 @@ const isSectionSubmitting = computed(
       >
         <template #body>
           <p class="text-sm text-(--ui-text-muted)">
-            Секция <b>{{ sectionToDelete?.name }}</b> будет удалена вместе с этажами,
-            планировками этажей и квартирами в ней. Действие необратимо.
+            Секция <b>{{ sectionToDelete?.name }}</b> будет удалена вместе с
+            этажами, планировками этажей и квартирами в ней. Действие
+            необратимо.
           </p>
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <UButton variant="outline" class="rounded-xl" @click="sectionToDelete = null">
+            <AppToolbarButton variant="ghost" @click="sectionToDelete = null">
               Отмена
-            </UButton>
-            <UButton
-              color="error"
-              :loading="deleteSectionMut.isPending.value"
-              class="rounded-xl"
-              @click="sectionToDelete && deleteSectionMut.mutate(sectionToDelete.id)"
+            </AppToolbarButton>
+            <button
+              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+              :disabled="deleteSectionMut.isPending.value"
+              @click="
+                sectionToDelete && deleteSectionMut.mutate(sectionToDelete.id)
+              "
             >
+              <UIcon
+                v-if="deleteSectionMut.isPending.value"
+                name="i-tabler-loader-2"
+                class="size-3.5 animate-spin"
+              />
+              <UIcon v-else name="i-tabler-trash" class="size-3.5" />
               Удалить
-            </UButton>
+            </button>
           </div>
         </template>
       </UModal>

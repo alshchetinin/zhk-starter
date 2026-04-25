@@ -64,7 +64,7 @@ function formatDate(date: string) {
           variant="outline"
           color="error"
           icon="i-tabler-trash"
-          class="rounded-xl"
+          class="rounded-md"
           :loading="deleteMutation.isPending.value"
           @click="deleteMutation.mutate()"
         >
@@ -74,7 +74,7 @@ function formatDate(date: string) {
 
       <div class="max-w-2xl space-y-6">
         <!-- Контактные данные -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
             Контактные данные
           </h2>
@@ -95,13 +95,13 @@ function formatDate(date: string) {
         </div>
 
         <!-- Сообщение -->
-        <div v-if="ticket.message" class="rounded-xl border border-(--ui-border) p-6 space-y-2">
+        <div v-if="ticket.message" class="border border-(--ui-border) p-6 space-y-2">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Сообщение</h2>
           <p class="text-(--ui-text-muted) whitespace-pre-wrap">{{ ticket.message }}</p>
         </div>
 
         <!-- Детали -->
-        <div class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div class="border border-(--ui-border) p-6 space-y-4">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Детали</h2>
           <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -130,7 +130,7 @@ function formatDate(date: string) {
         </div>
 
         <!-- UTM -->
-        <div v-if="ticket.utm && Object.keys(ticket.utm).length > 0" class="rounded-xl border border-(--ui-border) p-6 space-y-4">
+        <div v-if="ticket.utm && Object.keys(ticket.utm).length > 0" class="border border-(--ui-border) p-6 space-y-4">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">UTM-метки</h2>
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div v-for="(value, key) in ticket.utm" :key="key">

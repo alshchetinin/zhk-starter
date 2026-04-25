@@ -177,67 +177,104 @@ const isSubmitting = computed(
 <template>
   <div>
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-lg font-semibold">Планировки</h2>
-      <UButton
+      <h2 class="text-sm font-semibold tracking-tight">
+        Планировки
+        <span
+          v-if="data?.total"
+          class="text-(--ui-text-dimmed) tabular-nums ml-1.5"
+        >
+          {{ data.total }}
+        </span>
+      </h2>
+      <AppToolbarButton
         icon="i-tabler-plus"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+        variant="primary"
         @click="openCreate"
       >
         Добавить планировку
-      </UButton>
+      </AppToolbarButton>
     </div>
 
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка планировок...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
-    <div v-else-if="data?.data.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div
+      v-else-if="data?.data.length"
+      class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
       <div
         v-for="layout in data.data"
         :key="layout.id"
-        class="group relative rounded-lg border border-(--ui-border) bg-(--ui-bg) overflow-hidden transition-shadow hover:shadow-md"
+        class="group relative rounded-xl border border-(--ui-border) bg-(--ui-bg) overflow-hidden hover:border-(--ui-text-dimmed) transition"
       >
         <NuxtLink :to="`/layouts/${layout.id}`" class="block">
-          <div v-if="layout.defaultLayoutImage" class="aspect-square bg-(--ui-bg-elevated)">
-            <img :src="layout.defaultLayoutImage" :alt="layout.name" class="size-full object-contain" />
+          <div
+            v-if="layout.defaultLayoutImage"
+            class="aspect-square bg-(--ui-bg-elevated)"
+          >
+            <img
+              :src="layout.defaultLayoutImage"
+              :alt="layout.name"
+              class="size-full object-contain"
+            />
           </div>
-          <div v-else class="aspect-square bg-(--ui-bg-elevated) flex items-center justify-center">
-            <UIcon name="i-tabler-layout" class="size-12 text-(--ui-text-muted)" />
+          <div
+            v-else
+            class="aspect-square bg-(--ui-bg-elevated) flex items-center justify-center"
+          >
+            <UIcon
+              name="i-tabler-layout"
+              class="size-10 text-(--ui-text-dimmed)"
+            />
           </div>
-          <div class="p-3">
+          <div class="p-3 border-t border-(--ui-border)">
             <h3 class="font-semibold text-sm truncate">{{ layout.name }}</h3>
-            <div class="mt-1 flex items-center gap-3 text-xs text-(--ui-text-muted)">
-              <span>{{ layout.roomsCount === 0 ? 'Студия' : `${layout.roomsCount} комн.` }}</span>
+            <div class="mt-1 flex items-center gap-3 text-[11px] text-(--ui-text-dimmed) tabular-nums">
+              <span>
+                {{ layout.roomsCount === 0 ? "Студия" : `${layout.roomsCount}к` }}
+              </span>
               <span>{{ layout.area }} м²</span>
             </div>
           </div>
         </NuxtLink>
         <div class="absolute top-2 right-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
-          <UButton
-            variant="solid"
-            color="neutral"
-            size="xs"
+          <AppToolbarButton
+            variant="ghost"
             icon="i-tabler-edit"
-            class="rounded-lg"
-            @click.stop="openEdit(layout as Layout)"
+            title="Редактировать"
+            @click="openEdit(layout as Layout)"
           />
-          <UButton
-            variant="solid"
-            color="error"
-            size="xs"
+          <AppToolbarButton
+            variant="ghost"
             icon="i-tabler-trash"
-            class="rounded-lg"
-            @click.stop="toDelete = layout as Layout"
+            title="Удалить"
+            @click="toDelete = layout as Layout"
           />
         </div>
       </div>
     </div>
 
-    <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
-      <UIcon name="i-tabler-layout" class="mx-auto size-12 text-(--ui-text-muted)" />
-      <p class="mt-2 text-(--ui-text-muted)">Планировок для этого ЖК нет</p>
-    </div>
+    <AppEmptyState
+      v-else
+      icon="i-tabler-layout"
+      title="Планировок для этого ЖК нет"
+      description="Создайте первую планировку. Её можно будет привязать к квартирам."
+    >
+      <template #actions>
+        <AppToolbarButton
+          icon="i-tabler-plus"
+          variant="primary"
+          @click="openCreate"
+        >
+          Добавить планировку
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
 
     <div v-if="(data?.total ?? 0) > pageSize" class="mt-6 flex justify-center">
       <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
@@ -280,17 +317,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="formOpen = false">
+          <AppToolbarButton variant="ghost" @click="formOpen = false">
             Отмена
-          </UButton>
-          <UButton
+          </AppToolbarButton>
+          <AppToolbarButton
+            variant="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim() || form.area <= 0"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </UButton>
+          </AppToolbarButton>
         </div>
       </template>
     </UModal>
@@ -308,17 +345,22 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton variant="outline" class="rounded-xl" @click="toDelete = null">
+          <AppToolbarButton variant="ghost" @click="toDelete = null">
             Отмена
-          </UButton>
-          <UButton
-            color="error"
-            :loading="deleteMut.isPending.value"
-            class="rounded-xl"
+          </AppToolbarButton>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+            :disabled="deleteMut.isPending.value"
             @click="toDelete && deleteMut.mutate(toDelete.id)"
           >
+            <UIcon
+              v-if="deleteMut.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
+          </button>
         </div>
       </template>
     </UModal>

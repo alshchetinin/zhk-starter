@@ -17,7 +17,7 @@ const projectBlocks = computed(() =>
 </script>
 
 <template>
-  <UButton icon="i-tabler-plus" variant="outline" class="rounded-xl" @click="open = true">
+  <UButton icon="i-tabler-plus" variant="outline" class="rounded-md" @click="open = true">
     Добавить блок
   </UButton>
 

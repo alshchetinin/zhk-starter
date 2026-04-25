@@ -84,7 +84,7 @@ const updateMutation = useMutation({
         <UInput v-model="form.customDomain" placeholder="msk-neometria.ru" />
       </UFormField>
 
-      <div class="mt-4 rounded-xl border border-(--ui-border) p-5 space-y-4">
+      <div class="mt-4 border border-(--ui-border) p-5 space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Контакты на сайте</h2>
           <NuxtLink to="/contacts" class="text-sm text-(--ui-text-muted) hover:underline">
@@ -118,7 +118,7 @@ const updateMutation = useMutation({
       <div>
         <UButton
           :loading="updateMutation.isPending.value"
-          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+          class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
           @click="updateMutation.mutate()"
         >
           Сохранить

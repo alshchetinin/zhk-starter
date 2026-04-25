@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 
-const props = defineProps<{
-  project: any;
-}>();
+const props = defineProps<{ project: any }>();
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 const router = useRouter();
 
-// Cities for select
 const { data: cities } = useQuery($orpc.cities.list.queryOptions());
 
 const cityOptions = computed(() =>
   (cities.value ?? []).map((c: any) => ({ value: c.id, label: c.name })),
 );
 
-// Form state initialized from project
 const form = reactive({
   name: props.project.name ?? "",
   address: props.project.address ?? "",
@@ -47,22 +43,26 @@ const saveMutation = useMutation({
       cameraUrl: form.cameraUrl.trim() || null,
     }),
   onMutate: async () => {
-    const key = $orpc.projects.getById.queryKey({ input: { id: props.project.id } });
+    const key = $orpc.projects.getById.queryKey({
+      input: { id: props.project.id },
+    });
     await queryClient.cancelQueries({ queryKey: key });
     const prev = queryClient.getQueryData(key);
-    queryClient.setQueryData(key, (old: any) =>
-      old && {
-        ...old,
-        name: form.name.trim(),
-        address: form.address.trim(),
-        type: form.type.trim() || null,
-        cityId: form.cityId || null,
-        location: form.location.trim() || null,
-        tags: form.tags.length > 0 ? form.tags : null,
-        coordinates: form.coordinates || null,
-        gallery: form.gallery.length > 0 ? form.gallery : null,
-        cameraUrl: form.cameraUrl.trim() || null,
-      },
+    queryClient.setQueryData(
+      key,
+      (old: any) =>
+        old && {
+          ...old,
+          name: form.name.trim(),
+          address: form.address.trim(),
+          type: form.type.trim() || null,
+          cityId: form.cityId || null,
+          location: form.location.trim() || null,
+          tags: form.tags.length > 0 ? form.tags : null,
+          coordinates: form.coordinates || null,
+          gallery: form.gallery.length > 0 ? form.gallery : null,
+          cameraUrl: form.cameraUrl.trim() || null,
+        },
     );
     return { prev, key };
   },
@@ -80,112 +80,94 @@ const saveMutation = useMutation({
 </script>
 
 <template>
-  <div class="max-w-3xl space-y-6">
-    <!-- Basic Info -->
-    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-      <h2 class="text-lg font-semibold">Основная информация</h2>
+  <div class="max-w-3xl space-y-3">
+    <AppDataCard title="Основная информация">
+      <div class="space-y-4">
+        <UFormField label="Название" required>
+          <UInput
+            v-model="form.name"
+            placeholder="ЖК Солнечный"
+            icon="i-tabler-building"
+            size="sm"
+          />
+        </UFormField>
+        <UFormField label="Адрес">
+          <UInput
+            v-model="form.address"
+            placeholder="ул. Примерная, 1"
+            icon="i-tabler-map-pin"
+            size="sm"
+          />
+        </UFormField>
+        <UFormField label="Город">
+          <USelect
+            v-model="form.cityId"
+            :items="cityOptions"
+            placeholder="Выберите город"
+            size="sm"
+          />
+        </UFormField>
+        <UFormField label="Тип">
+          <UInput
+            v-model="form.type"
+            placeholder="Жилой комплекс"
+            icon="i-tabler-tag"
+            size="sm"
+          />
+        </UFormField>
+        <UFormField label="Локация (район / микрорайон)">
+          <UInput
+            v-model="form.location"
+            placeholder="Приморский район"
+            icon="i-tabler-map-2"
+            size="sm"
+          />
+        </UFormField>
+      </div>
+    </AppDataCard>
 
-      <UFormField label="Название">
-        <UInput
-          v-model="form.name"
-          placeholder="ЖК Солнечный"
-          icon="i-tabler-building"
-          size="xl"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="Адрес">
-        <UInput
-          v-model="form.address"
-          placeholder="ул. Примерная, 1"
-          icon="i-tabler-map-pin"
-          size="xl"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="Город">
-        <USelect
-          v-model="form.cityId"
-          :items="cityOptions"
-          placeholder="Выберите город"
-          size="xl"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="Тип">
-        <UInput
-          v-model="form.type"
-          placeholder="Жилой комплекс"
-          icon="i-tabler-tag"
-          size="xl"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="Локация (район / микрорайон)">
-        <UInput
-          v-model="form.location"
-          placeholder="Приморский район"
-          icon="i-tabler-map-2"
-          size="xl"
-          class="w-full"
-        />
-      </UFormField>
-    </div>
-
-    <!-- Tags -->
-    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-      <h2 class="text-lg font-semibold">Теги</h2>
+    <AppDataCard title="Теги">
       <TagInput v-model="form.tags" />
-    </div>
+    </AppDataCard>
 
-    <!-- Coordinates -->
-    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-      <h2 class="text-lg font-semibold">Координаты</h2>
+    <AppDataCard title="Координаты">
       <YandexMapPicker v-model="form.coordinates" />
-    </div>
+    </AppDataCard>
 
-    <!-- Gallery -->
-    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-      <h2 class="text-lg font-semibold">Галерея</h2>
+    <AppDataCard title="Галерея">
       <GalleryUpload v-model="form.gallery" :project-id="project.id" />
-    </div>
+    </AppDataCard>
 
-    <!-- Camera -->
-    <div class="space-y-5 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-      <h2 class="text-lg font-semibold">Онлайн-камера</h2>
-      <UFormField label="Ссылка на трансляцию" description="Камера стройки для всего проекта">
+    <AppDataCard title="Онлайн-камера">
+      <UFormField
+        label="Ссылка на трансляцию"
+        description="Камера стройки для всего проекта"
+      >
         <UInput
           v-model="form.cameraUrl"
           placeholder="https://..."
           icon="i-tabler-video"
-          size="xl"
-          class="w-full"
+          size="sm"
         />
       </UFormField>
-    </div>
+    </AppDataCard>
 
-    <!-- Actions -->
-    <div class="flex items-center gap-3">
-      <UButton
+    <div class="flex items-center gap-2 pt-2">
+      <AppToolbarButton
+        variant="primary"
+        icon="i-tabler-device-floppy"
         :disabled="!canSave"
         :loading="saveMutation.isPending.value"
-        icon="i-tabler-device-floppy"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
         @click="saveMutation.mutate()"
       >
         Сохранить
-      </UButton>
-      <UButton
-        variant="outline"
-        class="rounded-xl"
+      </AppToolbarButton>
+      <AppToolbarButton
+        variant="ghost"
         @click="router.push(`/projects/${project.id}`)"
       >
         Отмена
-      </UButton>
+      </AppToolbarButton>
     </div>
   </div>
 </template>
