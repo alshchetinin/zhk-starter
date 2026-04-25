@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { permissionSections } from "~/composables/useNavigation";
 
 const route = useRoute();
-const router = useRouter();
 const { $orpc, $orpcClient, $authClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
@@ -14,7 +13,8 @@ const id = computed(() => route.params.id as string);
 const { data: userData, isPending } = useQuery(
   computed(() => ({
     ...$orpc.users.list.queryOptions(),
-    select: (users: Array<{ id: string }>) => users.find((u) => u.id === id.value),
+    select: (users: Array<{ id: string }>) =>
+      users.find((u) => u.id === id.value),
   })),
 );
 
@@ -25,7 +25,11 @@ const allowedSiteIds = ref<string[]>([]);
 const allowedSections = ref<string[]>([]);
 const allowedActions = ref<Array<"view" | "edit" | "publish">>([]);
 
-const ALL_ACTIONS: Array<"view" | "edit" | "publish"> = ["view", "edit", "publish"];
+const ALL_ACTIONS: Array<"view" | "edit" | "publish"> = [
+  "view",
+  "edit",
+  "publish",
+];
 
 const ACTION_LABELS: Record<"view" | "edit" | "publish", string> = {
   view: "Просмотр",
@@ -51,7 +55,8 @@ watch(
 );
 
 const roleMutation = useMutation({
-  mutationFn: () => $orpcClient.users.updateRole({ id: id.value, role: role.value }),
+  mutationFn: () =>
+    $orpcClient.users.updateRole({ id: id.value, role: role.value }),
   onSuccess: () => {
     toast.add({ title: "Роль обновлена", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.users.key() });
@@ -69,7 +74,9 @@ const banMutation = useMutation({
   },
   onSuccess: (nowBanned) => {
     toast.add({
-      title: nowBanned ? "Пользователь заблокирован" : "Пользователь разблокирован",
+      title: nowBanned
+        ? "Пользователь заблокирован"
+        : "Пользователь разблокирован",
       color: "success",
     });
     queryClient.invalidateQueries({ queryKey: $orpc.users.key() });
@@ -100,155 +107,201 @@ function toggle<T>(list: T[], value: T) {
   if (i >= 0) list.splice(i, 1);
   else list.push(value);
 }
-
-function onSaveRole() {
-  roleMutation.mutate();
-}
-
-function onSavePermissions() {
-  permissionsMutation.mutate();
-}
 </script>
 
 <template>
   <PageContainer>
-    <div v-if="!isAdmin" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-8 text-center">
-      <UIcon name="i-tabler-shield-lock" class="size-12 mx-auto text-(--ui-text-muted)" />
-      <p class="mt-3 text-(--ui-text-muted)">Раздел доступен только администраторам</p>
-    </div>
+    <AppEmptyState
+      v-if="!isAdmin"
+      icon="i-tabler-shield-lock"
+      title="Только для администраторов"
+      description="У вас нет прав на просмотр этой страницы."
+    />
 
     <template v-else>
-      <div class="mb-6 flex items-center gap-3">
-        <UButton variant="ghost" icon="i-tabler-arrow-left" @click="router.push('/users')" />
-        <h1 class="text-2xl font-bold">{{ userData?.name ?? "Пользователь" }}</h1>
-        <UButton
-          v-if="userData && userData.role === 'editor' && userData.id !== me?.id"
-          variant="outline"
-          icon="i-tabler-eye"
-          class="ml-auto"
-          @click="startImpersonation(userData.id)"
-        >
-          Посмотреть глазами редактора
-        </UButton>
+      <AppPageHeader
+        :title="userData?.name ?? 'Пользователь'"
+        back="/users"
+        :crumbs="[
+          { label: 'Пользователи', to: '/users' },
+          { label: userData?.name ?? '…' },
+        ]"
+      >
+        <template #actions>
+          <AppStatusPill
+            v-if="userData"
+            :tone="userData.role === 'admin' ? 'info' : 'muted'"
+            :label="userData.role === 'admin' ? 'Admin' : 'Editor'"
+          />
+          <AppStatusPill
+            v-if="userData?.banned"
+            tone="error"
+            label="Banned"
+            dot
+          />
+          <AppToolbarButton
+            v-if="userData && userData.role === 'editor' && userData.id !== me?.id"
+            icon="i-tabler-eye"
+            variant="ghost"
+            @click="startImpersonation(userData.id)"
+          >
+            Глазами редактора
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
+
+      <div
+        v-if="isPending"
+        class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+      >
+        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        Загрузка…
       </div>
 
-      <div v-if="isPending" class="text-(--ui-text-muted)">Загрузка…</div>
-
-      <div v-else-if="userData" class="max-w-2xl flex flex-col gap-6">
-        <section class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-          <h3 class="text-lg font-semibold mb-4">Роль</h3>
+      <div v-else-if="userData" class="max-w-2xl space-y-3">
+        <!-- Role -->
+        <AppDataCard title="Роль">
           <URadioGroup
             v-model="role"
             :items="[
               { value: 'admin', label: 'Admin — полный доступ ко всему' },
-              { value: 'editor', label: 'Editor — доступ ограничен правами ниже' },
+              { value: 'editor', label: 'Editor — доступ ограничен правами' },
             ]"
           />
-          <button
-            type="button"
-            class="mt-4 text-sm font-medium px-4 py-2 bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
-            :disabled="roleMutation.isPending.value"
-            @click="onSaveRole"
-          >
-            {{ roleMutation.isPending.value ? "Сохранение…" : "Сохранить роль" }}
-          </button>
-        </section>
-
-        <section v-if="role === 'editor'" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 flex flex-col gap-5">
-          <h3 class="text-lg font-semibold">Права редактора</h3>
-
-          <div>
-            <h4 class="text-sm font-medium mb-2">Разрешённые сайты</h4>
-            <p class="text-xs text-(--ui-text-muted) mb-3">Пусто = все сайты</p>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="s in (sitesData ?? [])"
-                :key="s.id"
-                type="button"
-                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
-                :class="allowedSiteIds.includes(s.id)
-                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
-                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
-                @click="toggle(allowedSiteIds, s.id)"
-              >
-                {{ s.name }}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <h4 class="text-sm font-medium mb-2">Разрешённые разделы</h4>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="sec in permissionSections"
-                :key="sec.id"
-                type="button"
-                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
-                :class="allowedSections.includes(sec.id)
-                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
-                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
-                @click="toggle(allowedSections, sec.id)"
-              >
-                {{ sec.label }}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <h4 class="text-sm font-medium mb-2">Действия</h4>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="a in ALL_ACTIONS"
-                :key="a"
-                type="button"
-                class="text-xs font-medium px-3 py-1.5 rounded-md transition-colors select-none"
-                :class="allowedActions.includes(a)
-                  ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted)'
-                  : 'ring ring-inset ring-(--ui-border-accented) text-(--ui-text) bg-(--ui-bg-elevated) hover:bg-(--ui-bg-muted)'"
-                @click="toggle(allowedActions, a)"
-              >
-                {{ ACTION_LABELS[a] }}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="button"
-              class="text-sm font-medium px-4 py-2 bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) disabled:opacity-60"
-              :disabled="permissionsMutation.isPending.value"
-              @click="onSavePermissions"
+          <div class="mt-4">
+            <AppToolbarButton
+              variant="primary"
+              icon="i-tabler-device-floppy"
+              :loading="roleMutation.isPending.value"
+              @click="roleMutation.mutate()"
             >
-              {{ permissionsMutation.isPending.value ? "Сохранение…" : "Сохранить права" }}
+              Сохранить роль
+            </AppToolbarButton>
+          </div>
+        </AppDataCard>
+
+        <!-- Permissions -->
+        <AppDataCard v-if="role === 'editor'" title="Права редактора">
+          <div class="space-y-5">
+            <div>
+              <h4 class="text-xs font-medium text-(--ui-text) mb-1">
+                Разрешённые сайты
+              </h4>
+              <p class="text-[11px] text-(--ui-text-dimmed) mb-2">
+                Пусто = все сайты
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="s in sitesData ?? []"
+                  :key="s.id"
+                  type="button"
+                  class="text-[11px] font-medium px-2.5 py-1 rounded-md transition select-none border"
+                  :class="
+                    allowedSiteIds.includes(s.id)
+                      ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted) border-(--ui-bg-inverted)'
+                      : 'border-(--ui-border) text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated)'
+                  "
+                  @click="toggle(allowedSiteIds, s.id)"
+                >
+                  {{ s.name }}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-medium text-(--ui-text) mb-2">
+                Разрешённые разделы
+              </h4>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="sec in permissionSections"
+                  :key="sec.id"
+                  type="button"
+                  class="text-[11px] font-medium px-2.5 py-1 rounded-md transition select-none border"
+                  :class="
+                    allowedSections.includes(sec.id)
+                      ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted) border-(--ui-bg-inverted)'
+                      : 'border-(--ui-border) text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated)'
+                  "
+                  @click="toggle(allowedSections, sec.id)"
+                >
+                  {{ sec.label }}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-medium text-(--ui-text) mb-2">
+                Действия
+              </h4>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  v-for="a in ALL_ACTIONS"
+                  :key="a"
+                  type="button"
+                  class="text-[11px] font-medium px-2.5 py-1 rounded-md transition select-none border"
+                  :class="
+                    allowedActions.includes(a)
+                      ? 'bg-(--ui-bg-inverted) text-(--ui-text-inverted) border-(--ui-bg-inverted)'
+                      : 'border-(--ui-border) text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated)'
+                  "
+                  @click="toggle(allowedActions, a)"
+                >
+                  {{ ACTION_LABELS[a] }}
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-1">
+              <AppToolbarButton
+                variant="primary"
+                icon="i-tabler-device-floppy"
+                :loading="permissionsMutation.isPending.value"
+                @click="permissionsMutation.mutate()"
+              >
+                Сохранить права
+              </AppToolbarButton>
+            </div>
+          </div>
+        </AppDataCard>
+
+        <!-- Ban / Unban -->
+        <AppDataCard
+          v-if="userData.id !== me?.id"
+          :title="userData.banned ? 'Пользователь заблокирован' : 'Доступ'"
+        >
+          <div class="flex items-start gap-4 justify-between">
+            <p class="text-xs text-(--ui-text-muted)">
+              {{
+                userData.banned
+                  ? "Пользователь не сможет войти, пока вы его не разблокируете."
+                  : "Блокировка запретит вход, но сохранит историю и контент."
+              }}
+            </p>
+            <button
+              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition disabled:opacity-40 shrink-0 border"
+              :class="
+                userData.banned
+                  ? 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10'
+                  : 'border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10'
+              "
+              :disabled="banMutation.isPending.value"
+              @click="banMutation.mutate()"
+            >
+              <UIcon
+                v-if="banMutation.isPending.value"
+                name="i-tabler-loader-2"
+                class="size-3.5 animate-spin"
+              />
+              <UIcon
+                v-else
+                :name="userData.banned ? 'i-tabler-lock-open' : 'i-tabler-lock'"
+                class="size-3.5"
+              />
+              {{ userData.banned ? "Разблокировать" : "Заблокировать" }}
             </button>
           </div>
-        </section>
-
-        <section
-          v-if="userData.id !== me?.id"
-          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 flex items-center justify-between gap-4"
-        >
-          <div>
-            <h3 class="text-lg font-semibold">
-              {{ userData.banned ? "Пользователь заблокирован" : "Статус доступа" }}
-            </h3>
-            <p class="text-sm text-(--ui-text-muted) mt-1">
-              {{ userData.banned
-                ? "Пользователь не сможет войти, пока вы его не разблокируете."
-                : "Блокировка запретит вход, но сохранит историю и контент пользователя." }}
-            </p>
-          </div>
-          <UButton
-            :color="userData.banned ? 'primary' : 'error'"
-            variant="outline"
-            :icon="userData.banned ? 'i-tabler-lock-open' : 'i-tabler-lock'"
-            class="shrink-0"
-            :loading="banMutation.isPending.value"
-            @click="banMutation.mutate()"
-          >
-            {{ userData.banned ? "Разблокировать" : "Заблокировать" }}
-          </UButton>
-        </section>
+        </AppDataCard>
       </div>
     </template>
   </PageContainer>

@@ -122,10 +122,11 @@ const triggerMutation = useMutation({
 
 const statusBadge = computed(() => {
   const s = integration.value?.status;
-  if (s === "success") return { color: "success" as const, label: "Готово" };
-  if (s === "failed") return { color: "error" as const, label: "Ошибка" };
-  if (s === "loading") return { color: "warning" as const, label: "Идёт синхронизация" };
-  return { color: "neutral" as const, label: "Ожидание" };
+  if (s === "success") return { tone: "success" as const, label: "Готово" };
+  if (s === "failed") return { tone: "error" as const, label: "Ошибка" };
+  if (s === "loading")
+    return { tone: "warning" as const, label: "Идёт синхронизация" };
+  return { tone: "muted" as const, label: "Ожидание" };
 });
 
 const isPaused = computed(() => {
@@ -136,198 +137,195 @@ const isPaused = computed(() => {
 
 <template>
   <PageContainer>
-    <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+    <div
+      v-if="loading"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="integration">
-      <div class="mb-6 flex items-start justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-            Настройки синхронизации
-          </h1>
-          <p class="text-(--ui-text-muted) text-sm mt-1">
-            Автоматические обновления и история запусков
-          </p>
-        </div>
-        <UButton
-          variant="outline"
-          icon="i-tabler-history"
-          class="rounded-md"
-          to="/integrations/logs"
-        >
-          Логи
-        </UButton>
-      </div>
+      <AppPageHeader
+        title="Настройки синхронизации"
+        subtitle="Автоматические обновления и история запусков"
+        back="/integrations"
+        :crumbs="[
+          { label: 'Интеграции', to: '/integrations' },
+          { label: 'Синхронизация' },
+        ]"
+      >
+        <template #actions>
+          <AppToolbarButton
+            to="/integrations/logs"
+            icon="i-tabler-history"
+            variant="ghost"
+          >
+            Логи
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
-      <div class="max-w-2xl space-y-6">
-        <!-- Статус -->
-        <div class="border border-(--ui-border) p-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <div class="font-medium text-(--ui-text-highlighted)">Статус</div>
-            <UBadge :color="statusBadge.color" variant="subtle">
-              {{ statusBadge.label }}
-            </UBadge>
-          </div>
-          <div class="grid grid-cols-2 gap-4 text-sm">
+      <div class="max-w-2xl space-y-3">
+        <!-- Status -->
+        <AppDataCard title="Статус">
+          <template #actions>
+            <AppStatusPill
+              :tone="statusBadge.tone"
+              :label="statusBadge.label"
+              dot
+              :pulse="integration.status === 'loading'"
+            />
+          </template>
+          <div class="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <div class="text-(--ui-text-dimmed)">Последняя синхронизация</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Последняя синхронизация
+              </div>
+              <div class="text-sm font-medium tabular-nums mt-0.5">
                 {{ fmtDate(integration.lastSyncAt) }}
               </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Длительность</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Длительность
+              </div>
+              <div class="text-sm font-medium tabular-nums mt-0.5">
                 {{ fmtDuration(integration.lastSyncDurationMs) }}
               </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Следующий запуск</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Следующий запуск
+              </div>
+              <div class="text-sm font-medium tabular-nums mt-0.5">
                 {{ isPaused ? "На паузе" : fmtDate(integration.nextSyncAt) }}
               </div>
             </div>
             <div v-if="isPaused">
-              <div class="text-(--ui-text-dimmed)">Пауза до</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Пауза до
+              </div>
+              <div class="text-sm font-medium tabular-nums mt-0.5">
                 {{ fmtDate(integration.pausedUntil) }}
               </div>
             </div>
           </div>
-          <div class="flex gap-2 pt-3 border-t border-(--ui-border)">
-            <UButton
+          <div class="flex gap-2 mt-4 pt-4 border-t border-(--ui-border)">
+            <AppToolbarButton
+              variant="primary"
+              icon="i-tabler-refresh"
               :loading="triggerMutation.isPending.value"
               :disabled="integration.status === 'loading'"
-              icon="i-tabler-refresh"
-              variant="outline"
-              class="rounded-md"
               @click="triggerMutation.mutate()"
             >
               Запустить сейчас
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
               v-if="integration.status === 'loading'"
-              :loading="cancelMutation.isPending.value"
+              variant="ghost"
               icon="i-tabler-player-stop"
-              color="warning"
-              variant="outline"
-              class="rounded-md"
+              :loading="cancelMutation.isPending.value"
               @click="cancelMutation.mutate()"
             >
               Отменить
-            </UButton>
+            </AppToolbarButton>
           </div>
-        </div>
+        </AppDataCard>
 
-        <!-- Автосинхронизация -->
-        <div class="border border-(--ui-border) p-6 space-y-5">
-          <div class="flex items-center justify-between">
+        <!-- Auto-sync -->
+        <AppDataCard>
+          <div class="flex items-center justify-between mb-4">
             <div>
-              <div class="font-medium text-(--ui-text-highlighted)">
-                Автоматическая синхронизация
-              </div>
-              <div class="text-sm text-(--ui-text-muted)">
+              <div class="text-sm font-semibold">Автоматическая синхронизация</div>
+              <div class="text-xs text-(--ui-text-dimmed) mt-0.5">
                 Запускать импорт по расписанию
               </div>
             </div>
             <USwitch v-model="form.autoSyncEnabled" />
           </div>
 
-          <UFormField label="Интервал">
-            <USelect
-              v-model="form.syncIntervalMinutes"
-              :items="intervalOptions"
-              :disabled="!form.autoSyncEnabled"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <div class="grid grid-cols-2 gap-3">
-            <UFormField
-              label="Окно с часа"
-              description="Синхронизировать только в указанные часы (опц.)"
-            >
-              <UInput
-                v-model.number="form.syncWindowStart"
-                type="number"
-                min="0"
-                max="23"
-                placeholder="Любое"
+          <div class="space-y-3">
+            <UFormField label="Интервал">
+              <USelect
+                v-model="form.syncIntervalMinutes"
+                :items="intervalOptions"
                 :disabled="!form.autoSyncEnabled"
-                size="xl"
-                class="w-full"
+                size="sm"
               />
             </UFormField>
-            <UFormField label="до часа">
-              <UInput
-                v-model.number="form.syncWindowEnd"
-                type="number"
-                min="0"
-                max="23"
-                placeholder="Любое"
-                :disabled="!form.autoSyncEnabled"
-                size="xl"
-                class="w-full"
-              />
-            </UFormField>
-          </div>
-        </div>
 
-        <!-- Пауза -->
-        <div class="border border-(--ui-border) p-6 space-y-4">
-          <div>
-            <div class="font-medium text-(--ui-text-highlighted)">Пауза</div>
-            <div class="text-sm text-(--ui-text-muted)">
-              Временно остановить автосинхронизацию
+            <div class="grid grid-cols-2 gap-3">
+              <UFormField
+                label="Окно с часа"
+                description="Синхронизировать только в указанные часы"
+              >
+                <UInput
+                  v-model.number="form.syncWindowStart"
+                  type="number"
+                  min="0"
+                  max="23"
+                  placeholder="Любое"
+                  :disabled="!form.autoSyncEnabled"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="до часа">
+                <UInput
+                  v-model.number="form.syncWindowEnd"
+                  type="number"
+                  min="0"
+                  max="23"
+                  placeholder="Любое"
+                  :disabled="!form.autoSyncEnabled"
+                  size="sm"
+                />
+              </UFormField>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2">
-            <UButton
+        </AppDataCard>
+
+        <!-- Pause -->
+        <AppDataCard title="Пауза">
+          <p class="text-xs text-(--ui-text-dimmed) mb-3">
+            Временно остановить автосинхронизацию
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <AppToolbarButton
+              variant="ghost"
               :loading="pauseMutation.isPending.value"
-              variant="outline"
-              class="rounded-md"
               @click="pauseMutation.mutate(1)"
             >
               На 1 час
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
+              variant="ghost"
               :loading="pauseMutation.isPending.value"
-              variant="outline"
-              class="rounded-md"
               @click="pauseMutation.mutate(24)"
             >
               На 24 часа
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
+              variant="ghost"
               :loading="pauseMutation.isPending.value"
-              variant="outline"
-              class="rounded-md"
               @click="pauseMutation.mutate(168)"
             >
               На неделю
-            </UButton>
-            <UButton
+            </AppToolbarButton>
+            <AppToolbarButton
               v-if="isPaused"
+              variant="primary"
+              icon="i-tabler-player-play"
               :loading="pauseMutation.isPending.value"
-              variant="outline"
-              color="success"
-              class="rounded-md"
               @click="pauseMutation.mutate(null)"
             >
               Снять паузу
-            </UButton>
+            </AppToolbarButton>
           </div>
-        </div>
+        </AppDataCard>
 
-        <!-- Ретраи -->
-        <div class="border border-(--ui-border) p-6 space-y-4">
-          <div>
-            <div class="font-medium text-(--ui-text-highlighted)">
-              Повторные попытки при ошибке
-            </div>
-          </div>
+        <!-- Retries -->
+        <AppDataCard title="Повторные попытки при ошибке">
           <div class="grid grid-cols-2 gap-3">
             <UFormField label="Количество попыток">
               <UInput
@@ -335,8 +333,7 @@ const isPaused = computed(() => {
                 type="number"
                 min="0"
                 max="10"
-                size="xl"
-                class="w-full"
+                size="sm"
               />
             </UFormField>
             <UFormField label="Задержка (мин.)">
@@ -345,128 +342,124 @@ const isPaused = computed(() => {
                 type="number"
                 min="1"
                 max="1440"
-                size="xl"
-                class="w-full"
+                size="sm"
               />
             </UFormField>
           </div>
-        </div>
+        </AppDataCard>
 
-        <!-- Хранение логов -->
-        <div class="border border-(--ui-border) p-6 space-y-4">
-          <div>
-            <div class="font-medium text-(--ui-text-highlighted)">
-              Хранение логов
-            </div>
-            <div class="text-sm text-(--ui-text-muted)">
-              Старые записи автоматически удаляются раз в час
-            </div>
-          </div>
+        <!-- Logs retention -->
+        <AppDataCard title="Хранение логов">
+          <p class="text-xs text-(--ui-text-dimmed) mb-3">
+            Старые записи автоматически удаляются раз в час
+          </p>
           <UFormField label="Хранить (дней)">
             <UInput
               v-model.number="form.logsRetentionDays"
               type="number"
               min="1"
               max="365"
-              size="xl"
-              class="w-full"
+              size="sm"
             />
           </UFormField>
-        </div>
+        </AppDataCard>
 
-        <!-- Уведомления -->
-        <div class="border border-(--ui-border) p-6 space-y-5">
-          <div>
-            <div class="font-medium text-(--ui-text-highlighted)">
-              Уведомления в Telegram
-            </div>
-            <div class="text-sm text-(--ui-text-muted)">
-              Отдельный бот для сообщений о синхронизации
-            </div>
-          </div>
-
-          <UFormField label="Что отправлять">
-            <USelect
-              v-model="form.notifyLevel"
-              :items="[
-                { value: 'none', label: 'Ничего' },
-                { value: 'errors', label: 'Только ошибки' },
-                { value: 'all', label: 'Все события (успех + ошибки)' },
-              ]"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            label="Bot Token"
-            description="Создайте бота через @BotFather и вставьте токен"
-          >
-            <UInput
-              v-model="form.notifyTelegramBotToken"
-              type="password"
-              placeholder="123456:ABC-DEF..."
-              :disabled="form.notifyLevel === 'none'"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField
-            label="Chat ID"
-            description="ID чата или канала, куда слать уведомления"
-          >
-            <UInput
-              v-model="form.notifyTelegramChatId"
-              placeholder="-1001234567890"
-              :disabled="form.notifyLevel === 'none'"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UButton
-            variant="outline"
-            icon="i-tabler-send"
-            :loading="testNotifyMutation.isPending.value"
-            :disabled="
-              !integration.notifyTelegramBotToken ||
-              !integration.notifyTelegramChatId
-            "
-            class="rounded-md"
-            @click="testNotifyMutation.mutate()"
-          >
-            Отправить тестовое сообщение
-          </UButton>
-          <p
-            v-if="
-              !integration.notifyTelegramBotToken ||
-              !integration.notifyTelegramChatId
-            "
-            class="text-xs text-(--ui-text-dimmed)"
-          >
-            Сохраните настройки, чтобы проверить отправку
+        <!-- Notifications -->
+        <AppDataCard title="Уведомления в Telegram">
+          <p class="text-xs text-(--ui-text-dimmed) mb-4">
+            Отдельный бот для сообщений о синхронизации
           </p>
-        </div>
 
-        <div class="flex justify-end gap-2">
-          <UButton
-            :loading="updateMutation.isPending.value"
+          <div class="space-y-3">
+            <UFormField label="Что отправлять">
+              <USelect
+                v-model="form.notifyLevel"
+                :items="[
+                  { value: 'none', label: 'Ничего' },
+                  { value: 'errors', label: 'Только ошибки' },
+                  { value: 'all', label: 'Все события (успех + ошибки)' },
+                ]"
+                size="sm"
+              />
+            </UFormField>
+
+            <UFormField
+              label="Bot Token"
+              description="Создайте бота через @BotFather"
+            >
+              <UInput
+                v-model="form.notifyTelegramBotToken"
+                type="password"
+                placeholder="123456:ABC-DEF..."
+                :disabled="form.notifyLevel === 'none'"
+                size="sm"
+              />
+            </UFormField>
+
+            <UFormField
+              label="Chat ID"
+              description="ID чата или канала"
+            >
+              <UInput
+                v-model="form.notifyTelegramChatId"
+                placeholder="-1001234567890"
+                :disabled="form.notifyLevel === 'none'"
+                size="sm"
+              />
+            </UFormField>
+
+            <AppToolbarButton
+              variant="ghost"
+              icon="i-tabler-send"
+              :loading="testNotifyMutation.isPending.value"
+              :disabled="
+                !integration.notifyTelegramBotToken ||
+                !integration.notifyTelegramChatId
+              "
+              @click="testNotifyMutation.mutate()"
+            >
+              Отправить тестовое сообщение
+            </AppToolbarButton>
+            <p
+              v-if="
+                !integration.notifyTelegramBotToken ||
+                !integration.notifyTelegramChatId
+              "
+              class="text-[11px] text-(--ui-text-dimmed)"
+            >
+              Сохраните настройки, чтобы проверить отправку
+            </p>
+          </div>
+        </AppDataCard>
+
+        <div class="flex justify-end pt-1">
+          <AppToolbarButton
+            variant="primary"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
+            :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </UButton>
+          </AppToolbarButton>
         </div>
       </div>
     </template>
 
-    <div v-else class="text-center py-20">
-      <p class="text-(--ui-text-muted)">Интеграция не настроена</p>
-      <UButton to="/integrations" variant="outline" class="mt-4">
-        К настройке интеграции
-      </UButton>
-    </div>
+    <AppEmptyState
+      v-else
+      icon="i-tabler-plug-off"
+      title="Интеграция не настроена"
+      description="Подключите CRM, чтобы настроить расписание синхронизации."
+    >
+      <template #actions>
+        <AppToolbarButton
+          to="/integrations"
+          icon="i-tabler-plug-connected"
+          variant="primary"
+        >
+          К настройке интеграции
+        </AppToolbarButton>
+      </template>
+    </AppEmptyState>
   </PageContainer>
 </template>

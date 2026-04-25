@@ -35,14 +35,14 @@ const selectedLog = computed(() =>
   items.value.find((i) => i.id === selectedLogId.value) ?? null,
 );
 
-const statusColor = (s: string) =>
+const statusTone = (s: string): "success" | "warning" | "error" | "muted" =>
   s === "success"
     ? "success"
     : s === "failed"
       ? "error"
       : s === "running"
         ? "warning"
-        : "neutral";
+        : "muted";
 
 const statusLabel = (s: string) =>
   ({
@@ -58,108 +58,110 @@ const triggerLabel = (t: string) =>
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-start justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-          Логи синхронизации
-        </h1>
-        <p class="text-(--ui-text-muted) text-sm mt-1">
-          История запусков импорта данных
-        </p>
-      </div>
-      <UButton
-        variant="outline"
-        icon="i-tabler-settings"
-        class="rounded-md"
-        to="/integrations/settings"
-      >
-        Настройки
-      </UButton>
-    </div>
+    <AppPageHeader
+      title="Логи синхронизации"
+      subtitle="История запусков импорта данных"
+      back="/integrations"
+      :crumbs="[
+        { label: 'Интеграции', to: '/integrations' },
+        { label: 'Логи' },
+      ]"
+    >
+      <template #actions>
+        <AppToolbarButton
+          to="/integrations/settings"
+          icon="i-tabler-settings"
+          variant="ghost"
+        >
+          Настройки
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
-    <div class="mb-4 flex items-center gap-3">
+    <div class="mb-4 flex items-center gap-2">
       <USelect
         v-model="statusFilter"
         :items="statusOptions"
-        size="md"
-        class="w-56"
+        size="sm"
+        class="max-w-[200px]"
       />
-      <div class="text-sm text-(--ui-text-muted)">
+      <span class="text-xs text-(--ui-text-dimmed) tabular-nums ml-auto">
         Всего: {{ total }}
-      </div>
-    </div>
-
-    <div v-if="isPending" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+      </span>
     </div>
 
     <div
-      v-else-if="items.length === 0"
-      class="text-center py-20 text-(--ui-text-muted)"
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      Запусков пока не было
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
-    <div v-else class="border border-(--ui-border) overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-(--ui-bg-elevated)">
-          <tr class="text-left text-(--ui-text-muted)">
-            <th class="px-4 py-3 font-medium">Старт</th>
-            <th class="px-4 py-3 font-medium">Статус</th>
-            <th class="px-4 py-3 font-medium">Триггер</th>
-            <th class="px-4 py-3 font-medium">Длительность</th>
-            <th class="px-4 py-3 font-medium">Статистика</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="log in items"
-            :key="log.id"
-            class="border-t border-(--ui-border) hover:bg-(--ui-bg-elevated) cursor-pointer"
-            @click="selectedLogId = log.id"
-          >
-            <td class="px-4 py-3 text-(--ui-text-highlighted)">
-              {{ fmtDate(log.startedAt) }}
-            </td>
-            <td class="px-4 py-3">
-              <UBadge :color="statusColor(log.status)" variant="subtle">
-                {{ statusLabel(log.status) }}
-              </UBadge>
-            </td>
-            <td class="px-4 py-3 text-(--ui-text-muted)">
-              {{ triggerLabel(log.trigger) }}
-            </td>
-            <td class="px-4 py-3 text-(--ui-text-muted)">
-              {{ fmtDuration(log.durationMs) }}
-            </td>
-            <td class="px-4 py-3 text-(--ui-text-muted) text-xs">
-              <template v-if="log.stats">
-                +{{ log.stats.created ?? 0 }} / ~{{ log.stats.updated ?? 0 }}
-              </template>
-              <span v-else>—</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <AppEmptyState
+      v-else-if="items.length === 0"
+      icon="i-tabler-history-off"
+      title="Запусков ещё не было"
+      description="Здесь появятся логи синхронизации с Profitbase / MacroCRM."
+    />
+
+    <AppDataCard v-else flush>
+      <div
+        class="grid grid-cols-[minmax(160px,1.5fr)_120px_140px_120px_minmax(0,1fr)] gap-3 px-4 py-2 text-[10px] uppercase tracking-wider text-(--ui-text-dimmed) border-b border-(--ui-border) font-medium"
+      >
+        <div>Старт</div>
+        <div>Статус</div>
+        <div>Триггер</div>
+        <div>Длительность</div>
+        <div>Статистика</div>
+      </div>
+      <div class="divide-y divide-(--ui-border)">
+        <button
+          v-for="log in items"
+          :key="log.id"
+          class="grid grid-cols-[minmax(160px,1.5fr)_120px_140px_120px_minmax(0,1fr)] gap-3 px-4 py-2.5 text-xs items-center text-left hover:bg-(--ui-bg-elevated) transition w-full"
+          @click="selectedLogId = log.id"
+        >
+          <span class="truncate tabular-nums font-medium">
+            {{ fmtDate(log.startedAt) }}
+          </span>
+          <AppStatusPill
+            :tone="statusTone(log.status)"
+            :label="statusLabel(log.status)"
+            dot
+            :pulse="log.status === 'running'"
+          />
+          <span class="text-(--ui-text-muted)">
+            {{ triggerLabel(log.trigger) }}
+          </span>
+          <span class="tabular-nums text-(--ui-text-muted)">
+            {{ fmtDuration(log.durationMs) }}
+          </span>
+          <span class="text-[11px] text-(--ui-text-dimmed) tabular-nums truncate">
+            <template v-if="log.stats">
+              +{{ log.stats.created ?? 0 }} / ~{{ log.stats.updated ?? 0 }}
+            </template>
+            <span v-else>—</span>
+          </span>
+        </button>
+      </div>
+    </AppDataCard>
 
     <div v-if="total > limit" class="mt-4 flex justify-center gap-2">
-      <UButton
+      <AppToolbarButton
+        variant="ghost"
         :disabled="page === 0"
-        variant="outline"
-        class="rounded-md"
         @click="page = Math.max(0, page - 1)"
       >
         Назад
-      </UButton>
-      <UButton
+      </AppToolbarButton>
+      <AppToolbarButton
+        variant="ghost"
         :disabled="(page + 1) * limit >= total"
-        variant="outline"
-        class="rounded-md"
         @click="page = page + 1"
       >
         Вперёд
-      </UButton>
+      </AppToolbarButton>
     </div>
 
     <UModal
@@ -168,49 +170,73 @@ const triggerLabel = (t: string) =>
       @update:open="(v) => { if (!v) selectedLogId = null }"
     >
       <template #body>
-        <div v-if="selectedLog" class="space-y-4 text-sm">
+        <div v-if="selectedLog" class="space-y-4 text-xs">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <div class="text-(--ui-text-dimmed)">Статус</div>
-              <UBadge :color="statusColor(selectedLog.status)" variant="subtle">
-                {{ statusLabel(selectedLog.status) }}
-              </UBadge>
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+                Статус
+              </div>
+              <AppStatusPill
+                :tone="statusTone(selectedLog.status)"
+                :label="statusLabel(selectedLog.status)"
+                dot
+              />
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Триггер</div>
-              <div>{{ triggerLabel(selectedLog.trigger) }}</div>
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+                Триггер
+              </div>
+              <div class="text-sm font-medium">
+                {{ triggerLabel(selectedLog.trigger) }}
+              </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Старт</div>
-              <div>{{ fmtDate(selectedLog.startedAt) }}</div>
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+                Старт
+              </div>
+              <div class="text-sm font-medium tabular-nums">
+                {{ fmtDate(selectedLog.startedAt) }}
+              </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Завершение</div>
-              <div>{{ fmtDate(selectedLog.finishedAt) }}</div>
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+                Завершение
+              </div>
+              <div class="text-sm font-medium tabular-nums">
+                {{ fmtDate(selectedLog.finishedAt) }}
+              </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Длительность</div>
-              <div>{{ fmtDuration(selectedLog.durationMs) }}</div>
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+                Длительность
+              </div>
+              <div class="text-sm font-medium tabular-nums">
+                {{ fmtDuration(selectedLog.durationMs) }}
+              </div>
             </div>
           </div>
 
           <div v-if="selectedLog.stats">
-            <div class="text-(--ui-text-dimmed) mb-1">Статистика</div>
-            <pre
-              class="bg-(--ui-bg-elevated) rounded-lg p-3 text-xs overflow-auto"
-            >{{ JSON.stringify(selectedLog.stats, null, 2) }}</pre>
+            <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+              Статистика
+            </div>
+            <pre class="bg-(--ui-bg-elevated) rounded-md p-3 text-[11px] overflow-auto font-mono">{{ JSON.stringify(selectedLog.stats, null, 2) }}</pre>
           </div>
 
           <div v-if="selectedLog.error">
-            <div class="text-(--ui-text-dimmed) mb-1">Ошибка</div>
-            <div class="text-red-500">{{ selectedLog.error }}</div>
+            <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+              Ошибка
+            </div>
+            <div class="text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2 text-sm">
+              {{ selectedLog.error }}
+            </div>
           </div>
 
           <div v-if="selectedLog.errorStack">
-            <div class="text-(--ui-text-dimmed) mb-1">Stack trace</div>
-            <pre
-              class="bg-(--ui-bg-elevated) rounded-lg p-3 text-xs overflow-auto max-h-80"
-            >{{ selectedLog.errorStack }}</pre>
+            <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider mb-1">
+              Stack trace
+            </div>
+            <pre class="bg-(--ui-bg-elevated) rounded-md p-3 text-[11px] overflow-auto max-h-80 font-mono">{{ selectedLog.errorStack }}</pre>
           </div>
         </div>
       </template>

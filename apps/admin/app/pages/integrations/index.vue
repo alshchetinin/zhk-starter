@@ -5,7 +5,6 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
-// Fetch current integration
 const { data: integration, isPending: loading } = useQuery(
   $orpc.integration.get.queryOptions(),
 );
@@ -22,7 +21,7 @@ const hasIntegration = computed(
   () => integration.value != null && integration.value.isActive,
 );
 
-// Setup form
+// MacroCRM setup
 const domain = ref("");
 const apiDomain = ref("api.macroserver.ru");
 const appSecret = ref("");
@@ -33,7 +32,6 @@ const macroTypeOptions = [
   { value: "comm", label: "Коммерческая недвижимость" },
 ];
 
-// Setup mutation
 const setupMutation = useMutation({
   mutationFn: () =>
     $orpcClient.integration.setup({
@@ -55,7 +53,6 @@ const setupMutation = useMutation({
   },
 });
 
-// Verify mutation
 const verifyMutation = useMutation({
   mutationFn: () => $orpcClient.integration.verifyConnection(),
   onSuccess: (result: any) => {
@@ -68,7 +65,6 @@ const verifyMutation = useMutation({
   },
 });
 
-// Remove mutation
 const showRemoveConfirm = ref(false);
 
 const removeMutation = useMutation({
@@ -84,7 +80,7 @@ const canSetup = computed(
   () => domain.value.trim().length > 0 && appSecret.value.trim().length > 0,
 );
 
-// === Profitbase ===
+// Profitbase
 const pbApiKey = ref("");
 const pbAccountId = ref("");
 
@@ -119,13 +115,11 @@ const pbVerifyMutation = useMutation({
 });
 
 const canSetupProfitbase = computed(
-  () => pbApiKey.value.trim().length > 0 && pbAccountId.value.trim().length > 0,
+  () =>
+    pbApiKey.value.trim().length > 0 && pbAccountId.value.trim().length > 0,
 );
 
-const {
-  data: pbProjectsData,
-  isPending: loadingPbProjects,
-} = useQuery(
+const { data: pbProjectsData, isPending: loadingPbProjects } = useQuery(
   computed(() => ({
     ...$orpc.integration.getProfitbaseProjects.queryOptions(),
     enabled:
@@ -178,12 +172,8 @@ function pluralize(n: number, forms: [string, string, string]) {
   return forms[2];
 }
 
-// === Projects selection ===
-
-const {
-  data: complexesData,
-  isPending: loadingComplexes,
-} = useQuery(
+// MacroCRM complexes
+const { data: complexesData, isPending: loadingComplexes } = useQuery(
   computed(() => ({
     ...$orpc.integration.getComplexes.queryOptions(),
     enabled:
@@ -195,14 +185,15 @@ const complexes = computed(() => complexesData.value?.complexes ?? []);
 const existingComplexIds = computed(
   () => new Set(complexesData.value?.existingComplexIds ?? []),
 );
-const integrationId = computed(() => complexesData.value?.integrationId ?? null);
+const integrationId = computed(
+  () => complexesData.value?.integrationId ?? null,
+);
+
+const selectedIds = ref(new Set<number>());
 
 const availableComplexes = computed(() =>
   complexes.value.filter((c) => !existingComplexIds.value.has(c.id)),
 );
-
-// Selected complex IDs (only non-existing ones)
-const selectedIds = ref(new Set<number>());
 
 const allSelected = computed(
   () =>
@@ -226,11 +217,8 @@ function toggleAll() {
 
 function toggleComplex(id: number) {
   const next = new Set(selectedIds.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else {
-    next.add(id);
-  }
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
   selectedIds.value = next;
 }
 
@@ -259,122 +247,109 @@ const createBatchMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+    <div
+      v-if="loading"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else>
-      <div class="mb-6 flex items-start justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-            Интеграция {{ providerLabel }}
-          </h1>
-          <p class="text-(--ui-text-muted) text-sm mt-1">
-            Подключение к CRM-системе и импорт объектов
-          </p>
-        </div>
-        <div v-if="hasIntegration" class="flex gap-2">
-          <UButton
-            variant="outline"
-            icon="i-tabler-settings"
-            class="rounded-md"
+      <AppPageHeader
+        :title="`Интеграция · ${providerLabel}`"
+        subtitle="Подключение к CRM-системе и импорт объектов"
+      >
+        <template #actions>
+          <AppToolbarButton
+            v-if="hasIntegration"
             to="/integrations/settings"
+            icon="i-tabler-settings"
+            variant="ghost"
           >
             Синхронизация
-          </UButton>
-          <UButton
-            variant="outline"
-            icon="i-tabler-history"
-            class="rounded-md"
+          </AppToolbarButton>
+          <AppToolbarButton
+            v-if="hasIntegration"
             to="/integrations/logs"
+            icon="i-tabler-history"
+            variant="ghost"
           >
             Логи
-          </UButton>
-        </div>
-      </div>
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
+      <!-- ============== PROFITBASE ============== -->
       <div
         v-if="activeProvider?.provider === 'profitbase'"
-        class="max-w-2xl space-y-6"
+        class="max-w-2xl space-y-3"
       >
-        <!-- Active Profitbase -->
-        <div
-          v-if="hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-5"
-        >
+        <!-- Active connection -->
+        <AppDataCard v-if="hasIntegration">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center"
+                class="size-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"
               >
                 <UIcon
                   name="i-tabler-plug-connected"
-                  class="text-blue-600 dark:text-blue-400 text-xl"
+                  class="size-5 text-indigo-600 dark:text-indigo-400"
                 />
               </div>
               <div>
-                <div class="font-medium text-(--ui-text-highlighted)">
-                  Profitbase
-                </div>
-                <div class="text-sm text-(--ui-text-muted)">
+                <div class="text-sm font-semibold">Profitbase</div>
+                <div class="text-xs text-(--ui-text-dimmed) font-mono">
                   pb{{ integration!.profitbaseAccountId }}.profitbase.ru
                 </div>
               </div>
             </div>
-            <UBadge color="success" variant="subtle">Подключено</UBadge>
+            <AppStatusPill tone="success" label="Подключено" dot />
           </div>
-
-          <div class="flex items-center gap-2 pt-2 border-t border-(--ui-border)">
-            <UButton
-              variant="outline"
+          <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
+            <AppToolbarButton
+              variant="ghost"
               icon="i-tabler-refresh"
               :loading="pbVerifyMutation.isPending.value"
-              class="rounded-md"
               @click="pbVerifyMutation.mutate()"
             >
-              Проверить подключение
-            </UButton>
-            <UButton
-              variant="outline"
-              color="error"
-              icon="i-tabler-plug-connected-x"
-              class="ml-auto"
+              Проверить
+            </AppToolbarButton>
+            <button
+              class="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
               @click="showRemoveConfirm = true"
             >
+              <UIcon name="i-tabler-plug-connected-x" class="size-3.5" />
               Отключить
-            </UButton>
+            </button>
           </div>
-        </div>
+        </AppDataCard>
 
-        <!-- Projects from Profitbase -->
-        <div
-          v-if="hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-4"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="font-medium text-(--ui-text-highlighted)">
-                Проекты Profitbase
-              </div>
-              <div class="text-sm text-(--ui-text-muted)">
-                Выберите проекты для синхронизации
-              </div>
-            </div>
-            <UBadge v-if="pbProjects.length" variant="subtle" color="neutral">
+        <!-- Projects -->
+        <AppDataCard v-if="hasIntegration" title="Проекты Profitbase">
+          <template #actions>
+            <span
+              v-if="pbProjects.length"
+              class="text-[11px] text-(--ui-text-dimmed) tabular-nums"
+            >
               {{ pbProjects.length }}
-            </UBadge>
-          </div>
+            </span>
+          </template>
 
-          <div v-if="loadingPbProjects" class="flex justify-center py-8">
-            <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
+          <div
+            v-if="loadingPbProjects"
+            class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-6 justify-center"
+          >
+            <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+            Загрузка…
           </div>
 
           <template v-else-if="pbProjects.length > 0">
-            <div class="space-y-1">
+            <div class="space-y-0.5">
               <label
                 v-for="project in pbProjects"
                 :key="project.id"
-                class="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-(--ui-bg-elevated) cursor-pointer"
+                class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md hover:bg-(--ui-bg-elevated) cursor-pointer transition"
               >
                 <UCheckbox
                   :model-value="
@@ -384,236 +359,212 @@ const createBatchMutation = useMutation({
                   :disabled="pbExistingIds.has(project.id)"
                   @update:model-value="togglePbProject(project.id)"
                 />
-                <div class="flex-1 min-w-0 text-sm text-(--ui-text-highlighted) truncate">
+                <span class="flex-1 min-w-0 text-sm truncate">
                   {{ project.title }}
-                </div>
-                <UBadge
+                </span>
+                <AppStatusPill
                   v-if="pbExistingIds.has(project.id)"
-                  variant="subtle"
-                  color="success"
-                  size="xs"
-                >
-                  Синхронизирован
-                </UBadge>
+                  tone="success"
+                  label="Синхронизирован"
+                />
               </label>
             </div>
 
             <div
               v-if="pbAvailable.length"
-              class="pt-3 border-t border-(--ui-border)"
+              class="pt-3 mt-3 border-t border-(--ui-border)"
             >
-              <UButton
+              <AppToolbarButton
+                variant="primary"
+                icon="i-tabler-download"
                 :disabled="pbSelectedIds.size === 0"
                 :loading="pbSyncMutation.isPending.value"
-                icon="i-tabler-download"
-                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
                 @click="pbSyncMutation.mutate()"
               >
                 Импортировать выбранные ({{ pbSelectedIds.size }})
-              </UButton>
+              </AppToolbarButton>
             </div>
           </template>
 
-          <div v-else class="text-center py-6">
-            <UIcon
-              name="i-tabler-building-off"
-              class="text-3xl text-(--ui-text-dimmed) mb-2"
-            />
-            <p class="text-sm text-(--ui-text-muted)">Проекты не найдены</p>
-          </div>
-        </div>
+          <AppEmptyState
+            v-else
+            compact
+            icon="i-tabler-building-off"
+            title="Проекты не найдены"
+          />
+        </AppDataCard>
 
-        <!-- Setup Profitbase -->
-        <div
-          v-if="!hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-5"
-        >
-          <div class="flex items-center gap-3 mb-2">
+        <!-- Setup -->
+        <AppDataCard v-if="!hasIntegration">
+          <div class="flex items-center gap-3 mb-4">
             <div
-              class="w-10 h-10 rounded-lg bg-(--ui-bg-muted) flex items-center justify-center"
+              class="size-10 rounded-lg bg-(--ui-bg-elevated) flex items-center justify-center"
             >
               <UIcon
                 name="i-tabler-plug"
-                class="text-(--ui-text-dimmed) text-xl"
+                class="size-5 text-(--ui-text-dimmed)"
               />
             </div>
             <div>
-              <div class="font-medium text-(--ui-text-highlighted)">
-                Profitbase
-              </div>
-              <div class="text-sm text-(--ui-text-muted)">
+              <div class="text-sm font-semibold">Profitbase</div>
+              <div class="text-xs text-(--ui-text-dimmed)">
                 Подключите Profitbase для импорта объектов
               </div>
             </div>
           </div>
 
-          <UFormField
-            label="Account ID"
-            description="Числовой ID из URL: pb{ID}.profitbase.ru"
-          >
-            <UInput
-              v-model="pbAccountId"
-              placeholder="1234"
-              icon="i-tabler-hash"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
+          <div class="space-y-3">
+            <UFormField
+              label="Account ID"
+              description="Числовой ID из URL: pb{ID}.profitbase.ru"
+            >
+              <UInput
+                v-model="pbAccountId"
+                placeholder="1234"
+                icon="i-tabler-hash"
+                size="sm"
+              />
+            </UFormField>
 
-          <UFormField
-            label="API Key"
-            description="Создаётся в Profitbase → Настройки → API"
-          >
-            <UInput
-              v-model="pbApiKey"
-              type="password"
-              placeholder="pb_api_key..."
-              icon="i-tabler-key"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
+            <UFormField
+              label="API Key"
+              description="Profitbase → Настройки → API"
+            >
+              <UInput
+                v-model="pbApiKey"
+                type="password"
+                placeholder="pb_api_key…"
+                icon="i-tabler-key"
+                size="sm"
+              />
+            </UFormField>
 
-          <UButton
-            :disabled="!canSetupProfitbase"
-            :loading="pbSetupMutation.isPending.value"
-            icon="i-tabler-plug-connected"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
-            @click="pbSetupMutation.mutate()"
-          >
-            Подключить Profitbase
-          </UButton>
-        </div>
+            <AppToolbarButton
+              variant="primary"
+              icon="i-tabler-plug-connected"
+              :disabled="!canSetupProfitbase"
+              :loading="pbSetupMutation.isPending.value"
+              @click="pbSetupMutation.mutate()"
+            >
+              Подключить Profitbase
+            </AppToolbarButton>
+          </div>
+        </AppDataCard>
       </div>
 
-      <div
-        v-else
-        class="max-w-2xl space-y-6"
-      >
-        <!-- Active integration -->
-        <div
-          v-if="hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-5"
-        >
+      <!-- ============== MACROCRM ============== -->
+      <div v-else class="max-w-2xl space-y-3">
+        <AppDataCard v-if="hasIntegration">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center"
+                class="size-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"
               >
                 <UIcon
                   name="i-tabler-plug-connected"
-                  class="text-blue-600 dark:text-blue-400 text-xl"
+                  class="size-5 text-indigo-600 dark:text-indigo-400"
                 />
               </div>
               <div>
-                <div class="font-medium text-(--ui-text-highlighted)">
-                  MacroCRM
-                </div>
-                <div class="text-sm text-(--ui-text-muted)">
+                <div class="text-sm font-semibold">MacroCRM</div>
+                <div class="text-xs text-(--ui-text-dimmed) font-mono">
                   {{ integration!.domain }}
                 </div>
               </div>
             </div>
-            <UBadge color="success" variant="subtle">Подключено</UBadge>
+            <AppStatusPill tone="success" label="Подключено" dot />
           </div>
 
-          <div class="grid grid-cols-2 gap-4 text-sm">
+          <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-(--ui-border) text-xs">
             <div>
-              <div class="text-(--ui-text-dimmed)">Тип объектов</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Тип объектов
+              </div>
+              <div class="text-sm font-medium mt-0.5">
                 {{
                   integration!.macroType === "living"
-                    ? "Жилая недвижимость"
+                    ? "Жилая"
                     : integration!.macroType === "comm"
-                      ? "Коммерческая недвижимость"
+                      ? "Коммерческая"
                       : "Не указан"
                 }}
               </div>
             </div>
             <div>
-              <div class="text-(--ui-text-dimmed)">Последняя проверка</div>
-              <div class="text-(--ui-text-highlighted)">
+              <div class="text-[11px] text-(--ui-text-dimmed) uppercase tracking-wider">
+                Последняя проверка
+              </div>
+              <div class="text-sm font-medium mt-0.5 tabular-nums">
                 {{
                   integration!.lastVerifiedAt
                     ? new Date(integration!.lastVerifiedAt).toLocaleString("ru-RU")
-                    : "Не проверялось"
+                    : "—"
                 }}
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 pt-2 border-t border-(--ui-border)">
-            <UButton
-              variant="outline"
+          <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
+            <AppToolbarButton
+              variant="ghost"
               icon="i-tabler-refresh"
               :loading="verifyMutation.isPending.value"
-              class="rounded-md"
               @click="verifyMutation.mutate()"
             >
-              Проверить подключение
-            </UButton>
-            <UButton
-              variant="outline"
-              color="error"
-              icon="i-tabler-plug-connected-x"
-              class="ml-auto"
+              Проверить
+            </AppToolbarButton>
+            <button
+              class="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
               @click="showRemoveConfirm = true"
             >
+              <UIcon name="i-tabler-plug-connected-x" class="size-3.5" />
               Отключить
-            </UButton>
+            </button>
           </div>
-        </div>
+        </AppDataCard>
 
-        <!-- Projects selection -->
-        <div
-          v-if="hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-4"
-        >
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="font-medium text-(--ui-text-highlighted)">
-                Проекты
-              </div>
-              <div class="text-sm text-(--ui-text-muted)">
-                Выберите комплексы для добавления
-              </div>
-            </div>
-            <UBadge v-if="complexes.length > 0" variant="subtle" color="neutral">
+        <!-- Complexes -->
+        <AppDataCard v-if="hasIntegration" title="Проекты">
+          <template #actions>
+            <span
+              v-if="complexes.length > 0"
+              class="text-[11px] text-(--ui-text-dimmed) tabular-nums"
+            >
               {{ complexes.length }}
-            </UBadge>
+            </span>
+          </template>
+
+          <div
+            v-if="loadingComplexes"
+            class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-6 justify-center"
+          >
+            <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+            Загрузка…
           </div>
 
-          <!-- Loading -->
-          <div v-if="loadingComplexes" class="flex justify-center py-8">
-            <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
-          </div>
-
-          <!-- Complex list -->
           <template v-else-if="complexes.length > 0">
-            <!-- Select all -->
             <label
               v-if="availableComplexes.length > 0"
-              class="flex items-center gap-3 py-2 px-3 rounded-lg bg-(--ui-bg-elevated) cursor-pointer"
+              class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md bg-(--ui-bg-elevated) cursor-pointer mb-1"
             >
               <UCheckbox
                 :model-value="allSelected"
                 :indeterminate="someSelected"
                 @update:model-value="toggleAll"
               />
-              <span class="text-sm font-medium text-(--ui-text-highlighted)">
-                Выбрать все
-              </span>
-              <UBadge variant="subtle" color="neutral" size="xs" class="ml-auto">
-                {{ availableComplexes.length }} доступно
-              </UBadge>
+              <span class="text-xs font-medium">Выбрать все</span>
+              <AppStatusPill
+                tone="muted"
+                :label="`${availableComplexes.length} доступно`"
+                class="ml-auto"
+              />
             </label>
 
-            <!-- Complex items -->
-            <div class="space-y-1">
+            <div class="space-y-0.5">
               <label
                 v-for="complex in complexes"
                 :key="complex.id"
-                class="flex items-center gap-3 py-2.5 px-3 rounded-lg transition-colors"
+                class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition"
                 :class="
                   existingComplexIds.has(complex.id)
                     ? 'opacity-60'
@@ -629,173 +580,148 @@ const createBatchMutation = useMutation({
                   @update:model-value="toggleComplex(complex.id)"
                 />
                 <div class="flex-1 min-w-0">
-                  <div class="text-sm text-(--ui-text-highlighted) truncate">
-                    {{ complex.name }}
-                  </div>
+                  <div class="text-sm truncate">{{ complex.name }}</div>
                   <div
                     v-if="complex.houses?.length"
-                    class="text-xs text-(--ui-text-dimmed)"
+                    class="text-[11px] text-(--ui-text-dimmed) tabular-nums"
                   >
                     {{ complex.houses.length }}
-                    {{ pluralize(complex.houses.length, ['дом', 'дома', 'домов']) }}
+                    {{ pluralize(complex.houses.length, ["дом", "дома", "домов"]) }}
                   </div>
                 </div>
-                <UBadge
+                <AppStatusPill
                   v-if="existingComplexIds.has(complex.id)"
-                  variant="subtle"
-                  color="success"
-                  size="xs"
-                >
-                  Добавлен
-                </UBadge>
+                  tone="success"
+                  label="Добавлен"
+                />
               </label>
             </div>
 
-            <!-- Add button -->
             <div
               v-if="availableComplexes.length > 0"
-              class="pt-3 border-t border-(--ui-border)"
+              class="pt-3 mt-3 border-t border-(--ui-border)"
             >
-              <UButton
+              <AppToolbarButton
+                variant="primary"
+                icon="i-tabler-plus"
                 :disabled="selectedIds.size === 0"
                 :loading="createBatchMutation.isPending.value"
-                icon="i-tabler-plus"
-                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
                 @click="createBatchMutation.mutate()"
               >
                 Добавить выбранные ({{ selectedIds.size }})
-              </UButton>
+              </AppToolbarButton>
             </div>
 
-            <!-- All added state -->
             <div
               v-if="availableComplexes.length === 0"
               class="text-center py-4"
             >
               <UIcon
                 name="i-tabler-circle-check"
-                class="text-2xl text-green-500 mb-1"
+                class="size-6 text-emerald-500 mx-auto mb-1"
               />
-              <p class="text-sm text-(--ui-text-muted)">
+              <p class="text-xs text-(--ui-text-muted)">
                 Все комплексы добавлены
               </p>
             </div>
           </template>
 
-          <!-- Empty state -->
-          <div v-else class="text-center py-6">
-            <UIcon
-              name="i-tabler-building-off"
-              class="text-3xl text-(--ui-text-dimmed) mb-2"
-            />
-            <p class="text-sm text-(--ui-text-muted)">Комплексы не найдены</p>
-            <p class="text-xs text-(--ui-text-dimmed) mt-1">
-              Проверьте настройки интеграции MacroCRM
-            </p>
-          </div>
-        </div>
+          <AppEmptyState
+            v-else
+            compact
+            icon="i-tabler-building-off"
+            title="Комплексы не найдены"
+            description="Проверьте настройки интеграции."
+          />
+        </AppDataCard>
 
         <!-- Setup form -->
-        <div
-          v-if="!hasIntegration"
-          class="border border-(--ui-border) p-6 space-y-5"
-        >
-          <div class="flex items-center gap-3 mb-2">
+        <AppDataCard v-if="!hasIntegration">
+          <div class="flex items-center gap-3 mb-4">
             <div
-              class="w-10 h-10 rounded-lg bg-(--ui-bg-muted) flex items-center justify-center"
+              class="size-10 rounded-lg bg-(--ui-bg-elevated) flex items-center justify-center"
             >
               <UIcon
                 name="i-tabler-plug"
-                class="text-(--ui-text-dimmed) text-xl"
+                class="size-5 text-(--ui-text-dimmed)"
               />
             </div>
             <div>
-              <div class="font-medium text-(--ui-text-highlighted)">
-                MacroCRM
-              </div>
-              <div class="text-sm text-(--ui-text-muted)">
+              <div class="text-sm font-semibold">MacroCRM</div>
+              <div class="text-xs text-(--ui-text-dimmed)">
                 Подключите CRM для импорта объектов
               </div>
             </div>
           </div>
 
-          <UFormField label="Домен">
-            <UInput
-              v-model="domain"
-              placeholder="yourcompany"
-              icon="i-tabler-world"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
+          <div class="space-y-3">
+            <UFormField label="Домен">
+              <UInput
+                v-model="domain"
+                placeholder="yourcompany"
+                icon="i-tabler-world"
+                size="sm"
+              />
+            </UFormField>
+            <UFormField label="API домен">
+              <UInput
+                v-model="apiDomain"
+                placeholder="api.macroserver.ru"
+                icon="i-tabler-server"
+                size="sm"
+              />
+            </UFormField>
+            <UFormField label="App Secret">
+              <UInput
+                v-model="appSecret"
+                type="password"
+                placeholder="Секретный ключ"
+                icon="i-tabler-key"
+                size="sm"
+              />
+            </UFormField>
+            <UFormField label="Тип объектов">
+              <USelect v-model="macroType" :items="macroTypeOptions" size="sm" />
+            </UFormField>
 
-          <UFormField label="API домен">
-            <UInput
-              v-model="apiDomain"
-              placeholder="api.macroserver.ru"
-              icon="i-tabler-server"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="App Secret">
-            <UInput
-              v-model="appSecret"
-              type="password"
-              placeholder="Секретный ключ из настроек MacroCRM"
-              icon="i-tabler-key"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UFormField label="Тип объектов">
-            <USelect
-              v-model="macroType"
-              :items="macroTypeOptions"
-              size="xl"
-              class="w-full"
-            />
-          </UFormField>
-
-          <UButton
-            :disabled="!canSetup"
-            :loading="setupMutation.isPending.value"
-            icon="i-tabler-plug-connected"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
-            @click="setupMutation.mutate()"
-          >
-            Подключить MacroCRM
-          </UButton>
-        </div>
+            <AppToolbarButton
+              variant="primary"
+              icon="i-tabler-plug-connected"
+              :disabled="!canSetup"
+              :loading="setupMutation.isPending.value"
+              @click="setupMutation.mutate()"
+            >
+              Подключить MacroCRM
+            </AppToolbarButton>
+          </div>
+        </AppDataCard>
       </div>
 
-      <!-- Remove confirmation modal -->
       <UModal v-model:open="showRemoveConfirm" title="Отключить интеграцию?">
         <template #body>
           <p class="text-sm text-(--ui-text-muted)">
-            Подключение к MacroCRM будет удалено. Существующие проекты,
-            использующие эту интеграцию, не смогут синхронизироваться.
+            Подключение будет удалено. Существующие проекты, использующие эту
+            интеграцию, не смогут синхронизироваться.
           </p>
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <UButton
-              variant="outline"
-              class="rounded-md"
-              @click="showRemoveConfirm = false"
-            >
+            <AppToolbarButton variant="ghost" @click="showRemoveConfirm = false">
               Отмена
-            </UButton>
-            <UButton
-              color="error"
-              :loading="removeMutation.isPending.value"
-              class="rounded-md"
+            </AppToolbarButton>
+            <button
+              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
+              :disabled="removeMutation.isPending.value"
               @click="removeMutation.mutate()"
             >
+              <UIcon
+                v-if="removeMutation.isPending.value"
+                name="i-tabler-loader-2"
+                class="size-3.5 animate-spin"
+              />
+              <UIcon v-else name="i-tabler-plug-connected-x" class="size-3.5" />
               Отключить
-            </UButton>
+            </button>
           </div>
         </template>
       </UModal>
