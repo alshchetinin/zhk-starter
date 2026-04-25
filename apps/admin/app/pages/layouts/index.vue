@@ -89,7 +89,14 @@ const { data, isPending } = useQuery(
           </div>
         </div>
         <div class="p-3 border-t border-(--ui-border)">
-          <h3 class="font-semibold text-sm truncate mb-1">{{ layout.name }}</h3>
+          <div class="flex items-center gap-1.5 mb-1">
+            <h3 class="font-semibold text-sm truncate flex-1">{{ layout.name }}</h3>
+            <AppStatusPill
+              v-if="layout.integrationId"
+              tone="warning"
+              label="Импорт"
+            />
+          </div>
           <div
             class="flex items-center gap-3 text-[11px] text-(--ui-text-dimmed) tabular-nums mb-2"
           >

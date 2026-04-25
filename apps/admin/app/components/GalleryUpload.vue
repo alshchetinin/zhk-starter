@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
 import type { AllowedImageType } from "~/utils/upload";
+import type { GalleryItem } from "~/types/gallery";
 
-const model = defineModel<string[]>({ default: () => [] });
+type ModelValue = Array<string | GalleryItem>;
+
+const model = defineModel<ModelValue>({ default: () => [] });
 const props = withDefaults(
   defineProps<{
     projectId?: string;
     folder?: string;
+    withCaptions?: boolean;
+    disabled?: boolean;
   }>(),
   {
     folder: "uploads/gallery",
+    withCaptions: false,
+    disabled: false,
   },
 );
 
@@ -21,14 +28,29 @@ const uploadProgress = ref<Record<string, number>>({});
 const dropZoneRef = ref<HTMLLabelElement>();
 const showMediaPicker = ref(false);
 
+function toItem(x: string | GalleryItem): GalleryItem {
+  return typeof x === "string" ? { url: x } : x;
+}
+
+const items = computed<GalleryItem[]>(() => model.value.map(toItem));
+
+function wrap(url: string): string | GalleryItem {
+  return props.withCaptions ? { url } : url;
+}
+
+function appendUrls(urls: string[]) {
+  if (!urls.length) return;
+  model.value = [...model.value, ...urls.map(wrap)];
+}
+
 function onPickMultiple(urls: string[]) {
-  if (urls.length) model.value = [...model.value, ...urls];
+  appendUrls(urls);
   showMediaPicker.value = false;
 }
 
 const { isOverDropZone } = useDropZone(dropZoneRef, {
   onDrop: (files) => {
-    if (uploading.value || !files?.length) return;
+    if (props.disabled || uploading.value || !files?.length) return;
     processFiles(Array.from(files));
   },
 });
@@ -72,9 +94,7 @@ async function processFiles(files: File[]) {
     }
   }
 
-  if (newUrls.length > 0) {
-    model.value = [...model.value, ...newUrls];
-  }
+  appendUrls(newUrls);
 
   uploading.value = false;
   uploadProgress.value = {};
@@ -90,41 +110,89 @@ function handleFiles(event: Event) {
 function removeImage(index: number) {
   model.value = model.value.filter((_, i) => i !== index);
 }
+
+function updateCaption(
+  index: number,
+  field: "title" | "description",
+  value: string,
+) {
+  if (!props.withCaptions) return;
+  const current = items.value[index];
+  if (!current) return;
+  const normalized = value || null;
+  if ((current[field] ?? null) === normalized) return;
+  const next = [...items.value];
+  next[index] = { ...current, [field]: normalized };
+  model.value = next;
+}
 </script>
 
 <template>
   <div class="space-y-4">
-    <p class="text-xs text-(--ui-text-dimmed)">
+    <p v-if="!withCaptions" class="text-xs text-(--ui-text-dimmed)">
       Первое изображение будет использоваться как заглавное в карточке проекта
     </p>
 
     <!-- Existing images grid -->
-    <div v-if="model.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+    <div
+      v-if="items.length"
+      :class="[
+        'grid gap-3',
+        withCaptions
+          ? 'grid-cols-1 sm:grid-cols-2'
+          : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+      ]"
+    >
       <div
-        v-for="(url, i) in model"
-        :key="url"
-        class="group relative aspect-video overflow-hidden rounded-lg border-2"
-        :class="i === 0 ? 'border-(--ui-primary)' : 'border-(--ui-border)'"
+        v-for="(item, i) in items"
+        :key="`${item.url}-${i}`"
+        class="space-y-2"
       >
-        <img :src="url" class="h-full w-full object-cover" />
-        <!-- "Main" label on first image -->
-        <span
-          v-if="i === 0"
-          class="absolute left-2 top-2 rounded bg-(--ui-primary) px-1.5 py-0.5 text-[10px] font-medium text-(--ui-text-inverted)"
+        <div
+          class="group relative aspect-video overflow-hidden rounded-lg border-2"
+          :class="!withCaptions && i === 0 ? 'border-(--ui-primary)' : 'border-(--ui-border)'"
         >
-          Заглавная
-        </span>
-        <button
-          class="absolute right-2 top-2 rounded-full bg-black/50 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-          @click="removeImage(i)"
-        >
-          <UIcon name="i-tabler-x" class="size-4 text-white" />
-        </button>
+          <img :src="item.url" class="h-full w-full object-cover" />
+          <span
+            v-if="!withCaptions && i === 0"
+            class="absolute left-2 top-2 rounded bg-(--ui-primary) px-1.5 py-0.5 text-[10px] font-medium text-(--ui-text-inverted)"
+          >
+            Заглавная
+          </span>
+          <button
+            v-if="!disabled"
+            class="absolute right-2 top-2 rounded-full bg-black/50 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+            @click="removeImage(i)"
+          >
+            <UIcon name="i-tabler-x" class="size-4 text-white" />
+          </button>
+        </div>
+
+        <div v-if="withCaptions" class="space-y-1.5">
+          <UInput
+            :model-value="item.title ?? ''"
+            placeholder="Заголовок (необязательно)"
+            size="sm"
+            :disabled="disabled"
+            class="w-full"
+            @update:model-value="(v: string | number) => updateCaption(i, 'title', String(v))"
+          />
+          <UTextarea
+            :model-value="item.description ?? ''"
+            placeholder="Описание (необязательно)"
+            size="sm"
+            :rows="2"
+            :disabled="disabled"
+            class="w-full"
+            @update:model-value="(v: string | number) => updateCaption(i, 'description', String(v))"
+          />
+        </div>
       </div>
     </div>
 
     <!-- Upload area with drag & drop -->
     <label
+      v-if="!disabled"
       ref="dropZoneRef"
       class="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors"
       :class="
@@ -159,7 +227,7 @@ function removeImage(index: number) {
       />
     </label>
 
-    <div class="flex justify-center">
+    <div v-if="!disabled" class="flex justify-center">
       <UButton
         variant="ghost"
         size="xs"

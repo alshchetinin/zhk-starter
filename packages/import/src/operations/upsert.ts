@@ -131,6 +131,10 @@ export async function upsertRecords(
       continue;
     }
 
+    if (tableName === "apartment_layouts") {
+      item.syncedFields = computeSyncedFields(item);
+    }
+
     const existingId = existingMap.get(externalId);
 
     if (existingId) {
@@ -182,3 +186,20 @@ async function upsertJoinTable(
 }
 
 export { toDbValues };
+
+const SYNCED_FIELDS_EXCLUDE = new Set([
+  "externalId",
+  "integrationId",
+  "siteId",
+  "id",
+  "createdAt",
+  "updatedAt",
+  "gallery",
+  "syncedFields",
+]);
+
+function computeSyncedFields(item: Record<string, unknown>): string[] {
+  return Object.keys(item).filter(
+    (k) => !SYNCED_FIELDS_EXCLUDE.has(k) && item[k] !== undefined,
+  );
+}

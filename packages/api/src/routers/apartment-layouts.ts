@@ -6,6 +6,12 @@ import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 
+const galleryItemSchema = z.object({
+  url: z.string().min(1),
+  title: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+});
+
 export const apartmentLayoutsRouter = {
   list: protectedProcedure
     .input(
@@ -46,7 +52,7 @@ export const apartmentLayoutsRouter = {
     .handler(async ({ input }) => {
       const layout = await db.query.apartmentLayouts.findFirst({
         where: eq(apartmentLayouts.id, input.id),
-        with: { tags: { with: { tag: true } } },
+        with: { tags: { with: { tag: true } }, integration: true },
       });
       if (!layout) {
         throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
@@ -89,8 +95,10 @@ export const apartmentLayoutsRouter = {
         defaultLayoutImage: z.string().nullable().optional(),
         furnishedLayoutImage: z.string().nullable().optional(),
         threeDLayoutImage: z.string().nullable().optional(),
+        threeDTourUrl: z.string().nullable().optional(),
         sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         ceilingHeight: z.number().positive().nullable().optional(),
+        gallery: z.array(galleryItemSchema).max(50).nullable().optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -105,9 +113,11 @@ export const apartmentLayoutsRouter = {
           defaultLayoutImage: input.defaultLayoutImage ?? null,
           furnishedLayoutImage: input.furnishedLayoutImage ?? null,
           threeDLayoutImage: input.threeDLayoutImage ?? null,
+          threeDTourUrl: input.threeDTourUrl ?? null,
           sunPosition: input.sunPosition ?? null,
           ceilingHeight:
             input.ceilingHeight != null ? String(input.ceilingHeight) : null,
+          gallery: input.gallery ?? null,
         })
         .returning();
       return created;
@@ -125,8 +135,10 @@ export const apartmentLayoutsRouter = {
         defaultLayoutImage: z.string().nullable().optional(),
         furnishedLayoutImage: z.string().nullable().optional(),
         threeDLayoutImage: z.string().nullable().optional(),
+        threeDTourUrl: z.string().nullable().optional(),
         sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         ceilingHeight: z.number().positive().nullable().optional(),
+        gallery: z.array(galleryItemSchema).max(50).nullable().optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -137,15 +149,30 @@ export const apartmentLayoutsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
       }
 
+      const lockedFields =
+        existing.integrationId && existing.syncedFields
+          ? new Set(existing.syncedFields)
+          : null;
+
       const { id, ...fields } = input;
       const updates: Record<string, unknown> = {};
+      const ignored: string[] = [];
       for (const [key, value] of Object.entries(fields)) {
         if (value === undefined) continue;
+        if (key !== "gallery" && lockedFields?.has(key)) {
+          ignored.push(key);
+          continue;
+        }
         if (key === "area" || key === "ceilingHeight") {
           updates[key] = value == null ? null : String(value);
         } else {
           updates[key] = value;
         }
+      }
+      if (ignored.length) {
+        console.warn(
+          `[apartmentLayouts.update] ignored locked fields for layout ${input.id}: ${ignored.join(", ")}`,
+        );
       }
       if (Object.keys(updates).length === 0) return existing;
 
