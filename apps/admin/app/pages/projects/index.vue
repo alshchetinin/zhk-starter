@@ -122,6 +122,14 @@ function formatDate(date: string | Date | null | undefined) {
         >
           Синхронизировать все
         </UButton>
+        <NuxtLink to="/projects/create">
+          <UButton
+            icon="i-tabler-plus"
+            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
+          >
+            Создать ЖК
+          </UButton>
+        </NuxtLink>
       </div>
     </div>
 

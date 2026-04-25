@@ -3,6 +3,7 @@ import { publicProcedure } from "../index";
 import { integrationRouter } from "./integration";
 import { projectsRouter } from "./projects";
 import { buildingsRouter } from "./buildings";
+import { sectionsRouter } from "./sections";
 import { apartmentsRouter } from "./apartments";
 import { commerceRouter } from "./commerce";
 import { parkingRouter } from "./parking";
@@ -40,6 +41,7 @@ export const appRouter = {
   integration: integrationRouter,
   projects: projectsRouter,
   buildings: buildingsRouter,
+  sections: sectionsRouter,
   apartments: apartmentsRouter,
   commerce: commerceRouter,
   parking: parkingRouter,
