@@ -1,9 +1,11 @@
 <script setup lang="ts">
 const sections = [
+  { id: "blocks", label: "Блоки", icon: "i-tabler-stack-2" },
+  { id: "collections", label: "Коллекции", icon: "i-tabler-database" },
   { id: "modals", label: "Модальные окна", icon: "i-tabler-app-window" },
 ];
 
-const activeSection = ref("modals");
+const activeSection = ref("blocks");
 </script>
 
 <template>
@@ -28,6 +30,265 @@ const activeSection = ref("modals");
           {{ s.label }}
         </button>
       </aside>
+
+      <article v-if="activeSection === 'blocks'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Блоки</h2>
+          <p>
+            Блок — типизированная секция контента. Хранится как JSONB в БД (поле
+            <code>blocks</code> у страниц/коллекций), редактируется в админке через
+            <code>BlockDynamicZone</code>, рендерится на сайте одноимённым компонентом.
+            Source of truth — файл <code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code>
+            с вызовом <code>defineBlock({ type, label, icon, description, dataSchema, defaultData })</code>:
+            оттуда тянутся Zod-схема, метаданные для picker и default-значения.
+          </p>
+          <p class="callout callout-info">
+            <strong>Не правь руками</strong> ни реестр <code>blocks/index.ts</code>, ни default data,
+            ни авто-регистрацию в admin/web. Всё собирается генератором и
+            <code>import.meta.glob</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>1. Создать блок (интерактивно)</h3>
+          <p>
+            Запусти мастер из корня монорепо:
+          </p>
+          <pre><code>pnpm generate:block</code></pre>
+          <p>Мастер последовательно спросит:</p>
+          <ul>
+            <li><strong>Имя</strong> в kebab-case, например <code>hero-banner</code>;</li>
+            <li><strong>Label</strong> (видно в picker блоков), напр. «Hero-баннер»;</li>
+            <li><strong>Описание</strong> — короткая подсказка для контент-менеджера;</li>
+            <li><strong>Иконка</strong> в формате <code>i-tabler-*</code>;</li>
+            <li><strong>Поля</strong> — циклом, по каждому: имя, тип, label, обязательность.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>2. Создать блок через JSON-конфиг</h3>
+          <p>
+            Удобно, когда поля известны заранее (например, после анализа PNG-прототипа).
+            Конфиг кладётся в <code>design/blocks/&lt;name&gt;.json</code>:
+          </p>
+          <pre><code>{
+  "name": "feature-grid",
+  "label": "Сетка преимуществ",
+  "description": "3–6 карточек с иконкой и текстом",
+  "icon": "i-tabler-layout-grid",
+  "fields": [
+    { "name": "title", "type": "string", "label": "Заголовок", "required": true },
+    { "name": "subtitle", "type": "text", "label": "Подзаголовок", "required": false },
+    {
+      "name": "items", "type": "repeater", "label": "Карточки", "required": true,
+      "minItems": 3, "maxItems": 6,
+      "subFields": [
+        { "name": "icon", "type": "string", "label": "Иконка lucide", "required": true },
+        { "name": "title", "type": "string", "label": "Заголовок", "required": true },
+        { "name": "text", "type": "text", "label": "Описание", "required": true }
+      ]
+    }
+  ]
+}</code></pre>
+          <p>Запуск:</p>
+          <pre><code>pnpm generate:block --config design/blocks/feature-grid.json</code></pre>
+        </section>
+
+        <section>
+          <h3>3. Типы полей</h3>
+          <table>
+            <thead>
+              <tr><th>Тип</th><th>Описание</th><th>Доп. параметры</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>string</code></td><td>Однострочный текст (UInput)</td><td>—</td></tr>
+              <tr><td><code>text</code></td><td>Многострочный (UTextarea)</td><td>—</td></tr>
+              <tr><td><code>richtext</code></td><td>Форматированный (UEditor)</td><td>—</td></tr>
+              <tr><td><code>number</code></td><td>Число</td><td>—</td></tr>
+              <tr><td><code>boolean</code></td><td>Переключатель (USwitch)</td><td>—</td></tr>
+              <tr><td><code>url</code></td><td>Ссылка</td><td>—</td></tr>
+              <tr><td><code>image</code></td><td>Один файл (ImageUpload)</td><td>—</td></tr>
+              <tr><td><code>images</code></td><td>Галерея (GalleryUpload)</td><td>—</td></tr>
+              <tr><td><code>select</code></td><td>Выбор из списка</td><td><code>options: string[]</code></td></tr>
+              <tr><td><code>repeater</code></td><td>Массив повторяющихся групп</td><td><code>subFields[]</code>, <code>minItems</code>, <code>maxItems</code></td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h3>4. Что генерируется</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code> — <code>defineBlock(...)</code> с Zod-схемой и default data</li>
+            <li><code>apps/admin/app/components/blocks/editors/&lt;Pascal&gt;Block.vue</code> — редактор</li>
+            <li><code>apps/web/app/components/blocks/renderers/&lt;Pascal&gt;Block.vue</code> — рендерер (stub)</li>
+          </ul>
+          <p>
+            Регистрация в <code>packages/api/src/shared/blocks/index.ts</code> делается генератором.
+            Editor и renderer подхватываются автоматически через <code>import.meta.glob</code>
+            по соглашению об именах (<code>&lt;PascalCase&gt;Block.vue</code> → тип <code>&lt;kebab-case&gt;</code>).
+          </p>
+        </section>
+
+        <section>
+          <h3>5. Доработать web-рендерер</h3>
+          <p>
+            Генератор оставляет stub <code v-pre>&lt;pre&gt;{{ $props }}&lt;/pre&gt;</code>.
+            Замени на вёрстку по прототипу. Памятка по соглашениям apps/web:
+          </p>
+          <ul>
+            <li>обёртка: <code>&lt;div class="section"&gt;&lt;div class="container-web"&gt;…&lt;/div&gt;&lt;/div&gt;</code>;</li>
+            <li>цвета и фоны через CSS-токены: <code>var(--web-text-primary)</code>, <code>var(--web-accent)</code>, <code>var(--web-bg-muted)</code>, <code>var(--web-border)</code>;</li>
+            <li>иконки — <code>&lt;Icon name="lucide:..."/&gt;</code>;</li>
+            <li>richtext — <code>v-html</code> + <code>class="prose-web"</code>;</li>
+            <li>ссылки из полей блока пропускай через <code>useActionLink(href)</code>, чтобы поддержать <code>modal:&lt;slug&gt;</code>;</li>
+            <li>анимации — <code>useMotionPresets()</code> (<code>fadeUp</code>, <code>staggerContainer</code> и т.д.) + <code>&lt;Motion as="div" :while-in-view="…" :in-view-options="{ once: true }"&gt;</code>.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>6. Workflow PNG → блок</h3>
+          <ol>
+            <li>Положи PNG-прототип в <code>design/blocks/&lt;name&gt;.png</code>;</li>
+            <li>AI читает картинку и предлагает структуру полей (тип, label, repeater);</li>
+            <li>после подтверждения сохраняется <code>design/blocks/&lt;name&gt;.json</code>;</li>
+            <li>AI запускает <code>pnpm generate:block --config design/blocks/&lt;name&gt;.json</code>;</li>
+            <li>AI заменяет stub renderer вёрсткой по прототипу.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h3>7. Удалить блок</h3>
+          <p>
+            Удали три файла блока (<code>shared/blocks/&lt;type&gt;.ts</code>, admin editor, web renderer)
+            и убери импорт+entry из массива <code>allBlocks</code> в
+            <code>packages/api/src/shared/blocks/index.ts</code>. Больше ничего трогать не нужно —
+            existing записи в БД с этим <code>type</code> просто перестанут рендериться (можно
+            предусмотреть миграцию, если они есть в проде).
+          </p>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'collections'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Коллекции</h2>
+          <p>
+            Коллекция — отдельная CRUD-сущность с таблицей в БД, oRPC-роутером и
+            страницами <code>list</code> / <code>create</code> / <code>[id]</code> в админке.
+            Подходит для повторяющегося контента — новости, команда, статьи блога,
+            FAQ и т.п. Если контент привязан к странице или другой сущности — это
+            не коллекция, а блок или вложенная связь.
+          </p>
+        </section>
+
+        <section>
+          <h3>1. Создать коллекцию</h3>
+          <pre><code>pnpm generate:collection</code></pre>
+          <p>Мастер спросит:</p>
+          <ul>
+            <li><strong>Имя</strong> в kebab-case, например <code>team-members</code>;</li>
+            <li><strong>Label мн. ч.</strong> на русском, напр. «Сотрудники»;</li>
+            <li><strong>Label ед. ч.</strong>, напр. «Сотрудник» — используется в заголовках страниц <code>create</code>/<code>[id]</code>;</li>
+            <li><strong>Иконка</strong> в формате <code>i-tabler-*</code> для пункта сайдбара;</li>
+            <li><strong>Поля</strong> — циклом (помимо обязательного <code>title</code>).</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>2. Типы полей</h3>
+          <table>
+            <thead>
+              <tr><th>Тип</th><th>Drizzle</th><th>UI в форме</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>string</code></td><td><code>text</code></td><td><code>UInput</code></td></tr>
+              <tr><td><code>textarea</code></td><td><code>text</code></td><td><code>UTextarea</code> (4 строки)</td></tr>
+              <tr><td><code>number</code></td><td><code>integer</code></td><td><code>UInput type="number"</code></td></tr>
+              <tr><td><code>boolean</code></td><td><code>boolean</code> (default false)</td><td><code>USwitch</code></td></tr>
+              <tr><td><code>image</code></td><td><code>text</code> (URL)</td><td><code>ImageUpload</code></td></tr>
+              <tr><td><code>images</code></td><td><code>jsonb</code> (string[])</td><td><code>GalleryUpload</code></td></tr>
+              <tr><td><code>dynamic-blocks</code></td><td><code>jsonb</code> (ContentBlock[])</td><td><code>BlockDynamicZone</code></td></tr>
+            </tbody>
+          </table>
+          <p class="callout callout-info">
+            Полный исходник типов и шаблонов — в
+            <code>scripts/generate-collection/field-types.ts</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>3. Что генерируется</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/db/src/schema/&lt;name&gt;.ts</code> — Drizzle-таблица + регистрация в <code>schema/index.ts</code></li>
+            <li><code>packages/api/src/routers/&lt;name&gt;.ts</code> — oRPC CRUD: <code>list</code>, <code>getById</code>, <code>create</code>, <code>update</code>, <code>delete</code>; регистрация в <code>routers/index.ts</code></li>
+            <li><code>apps/admin/app/pages/&lt;name&gt;/index.vue</code> — список с пагинацией</li>
+            <li><code>apps/admin/app/pages/&lt;name&gt;/create.vue</code> — форма создания</li>
+            <li><code>apps/admin/app/pages/&lt;name&gt;/[id].vue</code> — форма редактирования</li>
+            <li><code>apps/admin/app/composables/useNavigation.ts</code> — пункт сайдбара</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>4. После генератора</h3>
+          <ol>
+            <li>Сгенерируй и применить миграцию:
+              <pre><code>pnpm --filter @zhk/db db:generate
+pnpm --filter @zhk/db db:migrate</code></pre>
+            </li>
+            <li>Перезапусти dev-сервер (<code>pnpm --filter zhk-admin dev</code>) — Nuxt подхватит новые роуты.</li>
+            <li>Открой коллекцию по адресу <code>/&lt;name&gt;</code> в админке.</li>
+          </ol>
+          <p class="callout callout-warn">
+            Если коллекция должна быть доступна публично (на сайте) — добавь
+            публичный роутер вручную в <code>packages/api/src/routers/public/</code>.
+            Генератор по умолчанию делает только админский CRUD.
+          </p>
+        </section>
+
+        <section>
+          <h3>5. Паттерны страниц</h3>
+          <p>
+            Страницы коллекций используют те же оптимистичные паттерны, что и
+            остальные admin-страницы (vue-query + oRPC):
+          </p>
+          <ul>
+            <li><strong>List</strong> — <code>placeholderData: keepPreviousData</code> убирает мигание при пагинации; <code>@mouseenter</code> на строке делает <code>queryClient.prefetchQuery($orpc.&lt;name&gt;.getById.queryOptions(...))</code> — клик открывает деталь мгновенно;</li>
+            <li><strong>Delete</strong> — optimistic: в <code>onMutate</code> снять снапшот через <code>getQueriesData({ queryKey: $orpc.&lt;name&gt;.list.key() })</code>, отфильтровать <code>data</code> и уменьшить <code>total</code>; в <code>onError</code> откатить; в <code>onSettled</code> — <code>invalidateQueries</code>;</li>
+            <li><strong>Update</strong> — optimistic: <code>setQueryData($orpc.&lt;name&gt;.getById.queryKey({ input: { id } }), ...)</code>, rollback в <code>onError</code>;</li>
+            <li><strong>Тосты</strong> показываем в <code>onSuccess</code>, не в <code>onMutate</code>.</li>
+          </ul>
+          <p>
+            Ключи: <code>.key()</code> — partial match, для <code>invalidateQueries</code> по
+            всему роутеру; <code>.queryKey({ input })</code> — full match, для точечного
+            <code>setQueryData</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>6. Коллекция с динамическими блоками</h3>
+          <p>
+            Если выбрать тип поля <code>dynamic-blocks</code>, страница редактирования
+            подключит <code>&lt;BlockDynamicZone&gt;</code> — тот же редактор блоков, что у
+            обычных страниц. Удобно для статей и лендингов внутри коллекции.
+          </p>
+          <p>
+            Drizzle-колонка получит тип <code>jsonb</code> с
+            <code>$type&lt;ContentBlock[]&gt;()</code>, Zod-схема — <code>contentBlocksSchema</code>.
+            Для рендеринга на сайте нужна публичная процедура
+            <code>getBySlug</code>/<code>getById</code> и страница в <code>apps/web</code> с
+            <code>&lt;BlockRenderer :blocks="..."&gt;</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>7. Где что лежит</h3>
+          <ul class="font-mono text-xs">
+            <li><code>scripts/generate-collection.ts</code> — entrypoint мастера</li>
+            <li><code>scripts/generate-collection/field-types.ts</code> — типы полей</li>
+            <li><code>scripts/generate-collection/templates/</code> — шаблоны schema / router / страниц</li>
+            <li><code>scripts/generate-collection/registrations/</code> — авто-вставки в индексы и navigation</li>
+          </ul>
+        </section>
+      </article>
 
       <article v-if="activeSection === 'modals'" class="space-y-8 prose-docs">
         <section>
