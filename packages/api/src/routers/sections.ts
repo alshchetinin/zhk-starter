@@ -245,13 +245,6 @@ export const sectionsRouter = {
       }
 
       await db.transaction(async (tx) => {
-        const floorIds = (
-          await tx
-            .select({ id: floors.id })
-            .from(floors)
-            .where(eq(floors.sectionId, input.id))
-        ).map((r) => r.id);
-
         const apartmentIds = (
           await tx
             .select({ id: apartments.id })
@@ -272,11 +265,7 @@ export const sectionsRouter = {
         await tx
           .delete(floorLayouts)
           .where(eq(floorLayouts.sectionId, input.id));
-
-        if (floorIds.length) {
-          await tx.delete(floors).where(inArray(floors.id, floorIds));
-        }
-
+        await tx.delete(floors).where(eq(floors.sectionId, input.id));
         await tx.delete(entrances).where(eq(entrances.sectionId, input.id));
         await tx.delete(sections).where(eq(sections.id, input.id));
       });

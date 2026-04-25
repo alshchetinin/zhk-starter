@@ -66,7 +66,7 @@ function freshStack(startFloor = 1, endFloor = 9): FormStack {
 
 const stacks = reactive<FormStack[]>(
   draft.value?.stacks?.length
-    ? JSON.parse(JSON.stringify(draft.value.stacks))
+    ? structuredClone(toRaw(draft.value.stacks))
     : [freshStack()],
 );
 const numberingScheme = ref<NumberingScheme>(
@@ -83,7 +83,7 @@ watchDebounced(
   [stacks, numberingScheme, sectionName, useExistingSection, selectedSectionId],
   () => {
     draft.value = {
-      stacks: JSON.parse(JSON.stringify(stacks)),
+      stacks: structuredClone(toRaw(stacks)),
       numberingScheme: numberingScheme.value,
       sectionName: sectionName.value,
       useExistingSection: useExistingSection.value,
@@ -226,8 +226,6 @@ const sectionPrefix = computed(() => {
 });
 
 function computeApartmentNumber(
-  _stack: FormStack,
-  _apt: FormApartment,
   floor: number,
   sequentialIdx: number,
   positionOnFloor: number,
@@ -295,13 +293,7 @@ const previewGrid = computed<PreviewGridRow[]>(() => {
       return {
         stackId: stack.id,
         apartmentId: seg.id,
-        apartmentNumber: computeApartmentNumber(
-          stack,
-          { id: seg.id, roomsCount: seg.roomsCount, area: seg.area } as any,
-          f,
-          seq,
-          pos,
-        ),
+        apartmentNumber: computeApartmentNumber(f, seq, pos),
         roomsCount: seg.roomsCount,
         area: seg.area,
         conflict: occupiedFloors.value.has(f),
@@ -378,10 +370,6 @@ const stackErrors = computed(() => {
   return errors;
 });
 
-// Нет cross-stack overlap: два разных стояка могут быть на одном этаже —
-// это разные колонки в шахматке. Оставляем пусто.
-const overlapErrors = computed<string[]>(() => []);
-
 const conflictCount = computed(
   () => preview.value.filter((f) => f.apartments.some((a) => a.conflict)).length,
 );
@@ -391,7 +379,6 @@ const canSubmit = computed(() => {
   if (useExistingSection.value && !selectedSectionId.value) return false;
   if (!useExistingSection.value && !sectionName.value.trim()) return false;
   if (Object.keys(stackErrors.value).length) return false;
-  if (overlapErrors.value.length) return false;
   if (conflictCount.value > 0) return false;
   return true;
 });
@@ -579,7 +566,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                     :class="stackAccent(i).bar"
                   />
                   <span>
-                    #{{ i + 1 }} · {{ stack.startFloor }}–{{ stack.endFloor }}
+                    #{{ i + 1 }} · {{ stackRange(stack).lo }}–{{ stackRange(stack).hi }}
                   </span>
                 </div>
               </div>
@@ -745,19 +732,8 @@ const schemeItems = computed(() => numberingSchemeItems);
         </section>
 
         <!-- Inline warnings -->
-        <div v-if="overlapErrors.length || conflictCount > 0" class="space-y-1.5">
+        <div v-if="conflictCount > 0" class="space-y-1.5">
           <div
-            v-if="overlapErrors.length"
-            class="flex items-start gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 rounded-md px-3 py-2"
-          >
-            <UIcon name="i-tabler-alert-triangle" class="size-3.5 mt-0.5 shrink-0" />
-            <div>
-              <div class="font-medium">Пересечения стояков</div>
-              <div class="text-(--ui-text-muted)">{{ overlapErrors.join("; ") }}</div>
-            </div>
-          </div>
-          <div
-            v-if="conflictCount > 0"
             class="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-md px-3 py-2"
           >
             <UIcon name="i-tabler-alert-circle" class="size-3.5 mt-0.5 shrink-0" />
