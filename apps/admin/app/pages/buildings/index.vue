@@ -10,11 +10,9 @@ const { data: projectsData } = useQuery(
   $orpc.projects.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );
 
-const projectItems = computed(() => [
-  { label: "Все ЖК", value: "" },
-  ...(projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ??
-    []),
-]);
+const projectItems = computed(() =>
+  projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ?? [],
+);
 
 watch(projectFilter, () => {
   page.value = 1;
@@ -57,6 +55,13 @@ function soldPct(b: {
         placeholder="Все ЖК"
         size="sm"
         class="max-w-xs"
+      />
+      <AppToolbarButton
+        v-if="projectFilter"
+        variant="subtle"
+        icon="i-tabler-x"
+        title="Сбросить фильтр"
+        @click="projectFilter = ''"
       />
     </div>
 

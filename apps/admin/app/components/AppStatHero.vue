@@ -22,14 +22,16 @@ const gradientClass: Record<Accent, string> = {
   zinc: "from-zinc-500/[0.04]",
   sky: "from-sky-500/[0.05]",
 };
+
+const baseClass =
+  "group relative block overflow-hidden rounded-xl border border-(--ui-border) bg-(--ui-bg) p-4 transition-all";
 </script>
 
 <template>
-  <component
-    :is="to ? 'NuxtLink' : 'div'"
+  <NuxtLink
+    v-if="to"
     :to="to"
-    class="group relative overflow-hidden rounded-xl border border-(--ui-border) bg-(--ui-bg) p-4 transition-all"
-    :class="to && 'hover:border-(--ui-text-dimmed)'"
+    :class="[baseClass, 'hover:border-(--ui-text-dimmed)']"
   >
     <div
       class="absolute inset-0 bg-gradient-to-br via-transparent to-transparent pointer-events-none"
@@ -44,7 +46,6 @@ const gradientClass: Record<Accent, string> = {
           {{ label }}
         </span>
         <UIcon
-          v-if="to"
           name="i-tabler-arrow-up-right"
           class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
         />
@@ -59,5 +60,30 @@ const gradientClass: Record<Accent, string> = {
       </div>
       <slot />
     </div>
-  </component>
+  </NuxtLink>
+  <div v-else :class="baseClass">
+    <div
+      class="absolute inset-0 bg-gradient-to-br via-transparent to-transparent pointer-events-none"
+      :class="gradientClass[accent]"
+    />
+    <div class="relative">
+      <div class="flex items-center justify-between mb-2">
+        <span
+          class="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-(--ui-text-dimmed) font-medium"
+        >
+          <UIcon v-if="icon" :name="icon" class="size-3.5" />
+          {{ label }}
+        </span>
+        <slot name="badge" />
+      </div>
+      <div v-if="value != null || $slots.value" class="flex items-baseline gap-2 mb-3">
+        <span class="text-3xl font-semibold tabular-nums tracking-tight">
+          <slot name="value">{{ value }}</slot>
+        </span>
+        <span v-if="sub" class="text-xs text-(--ui-text-dimmed)">{{ sub }}</span>
+        <slot name="sub" />
+      </div>
+      <slot />
+    </div>
+  </div>
 </template>

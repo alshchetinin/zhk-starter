@@ -14,14 +14,11 @@ const { data: projectsData } = useQuery(
   $orpc.projects.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );
 
-const projectItems = computed(() => [
-  { label: "Все ЖК", value: "" },
-  ...(projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ??
-    []),
-]);
+const projectItems = computed(() =>
+  projectsData.value?.data.map((p) => ({ label: p.name, value: p.id })) ?? [],
+);
 
 const statusItems = [
-  { label: "Все статусы", value: "" },
   { label: "Свободно", value: "free" },
   { label: "Бронь оплачена", value: "paid_reservation" },
   { label: "Бронь корп.", value: "corporate_reservation" },
@@ -29,7 +26,6 @@ const statusItems = [
 ];
 
 const roomsItems = [
-  { label: "Все", value: "" },
   { label: "Студия", value: "0" },
   { label: "1к", value: "1" },
   { label: "2к", value: "2" },

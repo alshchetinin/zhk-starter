@@ -7,7 +7,6 @@ const pageSize = 20;
 const roomsFilter = ref("");
 
 const roomsItems = [
-  { label: "Все", value: "" },
   { label: "Студия", value: "0" },
   { label: "1к", value: "1" },
   { label: "2к", value: "2" },
@@ -44,9 +43,16 @@ const { data, isPending } = useQuery(
       <USelect
         v-model="roomsFilter"
         :items="roomsItems"
-        placeholder="Комнаты"
+        placeholder="Все комнаты"
         size="sm"
         class="max-w-[180px]"
+      />
+      <AppToolbarButton
+        v-if="roomsFilter"
+        variant="subtle"
+        icon="i-tabler-x"
+        title="Сбросить"
+        @click="roomsFilter = ''"
       />
     </div>
 
