@@ -68,13 +68,13 @@ const triggerLabel = (t: string) =>
       ]"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/integrations/settings"
           icon="i-tabler-settings"
-          variant="ghost"
+          variant="outline"
         >
           Настройки
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -148,20 +148,20 @@ const triggerLabel = (t: string) =>
     </AppDataCard>
 
     <div v-if="total > limit" class="mt-4 flex justify-center gap-2">
-      <AppToolbarButton
-        variant="ghost"
+      <UButton
+        variant="outline"
         :disabled="page === 0"
         @click="page = Math.max(0, page - 1)"
       >
         Назад
-      </AppToolbarButton>
-      <AppToolbarButton
-        variant="ghost"
+      </UButton>
+      <UButton
+        variant="outline"
         :disabled="(page + 1) * limit >= total"
         @click="page = page + 1"
       >
         Вперёд
-      </AppToolbarButton>
+      </UButton>
     </div>
 
     <UModal

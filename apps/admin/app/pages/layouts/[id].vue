@@ -135,14 +135,14 @@ function fmtPrice(price: string | number) {
           <AppDataCard title="Положение солнца">
             <SunPositionSelector v-model="sunPosition" />
             <div class="mt-4 flex">
-              <AppToolbarButton
-                variant="primary"
+              <UButton
+                color="primary"
                 icon="i-tabler-device-floppy"
                 :loading="sunMutation.isPending.value"
                 @click="sunMutation.mutate()"
               >
                 Сохранить
-              </AppToolbarButton>
+              </UButton>
             </div>
           </AppDataCard>
         </div>
@@ -192,9 +192,9 @@ function fmtPrice(price: string | number) {
           </template>
 
           <template #actions-cell="{ row }">
-            <AppToolbarButton
+            <UButton
               :to="`/apartments/${row.original.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-eye"
               title="Открыть"
             />

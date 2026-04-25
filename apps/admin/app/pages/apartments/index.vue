@@ -94,9 +94,9 @@ function fmtRooms(n: number) {
       :subtitle="data?.total != null ? `${data.total} лотов` : undefined"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           icon="i-tabler-filter"
-          variant="ghost"
+          variant="outline"
           @click="filterOpen = true"
         >
           Фильтры
@@ -106,7 +106,7 @@ function fmtRooms(n: number) {
           >
             {{ activeFiltersCount }}
           </span>
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -123,20 +123,20 @@ function fmtRooms(n: number) {
             <USelect v-model="roomsFilter" :items="roomsItems" size="sm" />
           </UFormField>
           <div class="flex gap-2 mt-2">
-            <AppToolbarButton
-              variant="primary"
+            <UButton
+              color="primary"
               class="flex-1 justify-center"
               @click="filterOpen = false"
             >
               Применить
-            </AppToolbarButton>
-            <AppToolbarButton
-              variant="ghost"
+            </UButton>
+            <UButton
+              variant="outline"
               class="flex-1 justify-center"
               @click="clearFilters"
             >
               Сбросить
-            </AppToolbarButton>
+            </UButton>
           </div>
         </div>
       </template>

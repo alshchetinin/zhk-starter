@@ -153,21 +153,21 @@ const saveMutation = useMutation({
     </AppDataCard>
 
     <div class="flex items-center gap-2 pt-2">
-      <AppToolbarButton
-        variant="primary"
+      <UButton
+        color="primary"
         icon="i-tabler-device-floppy"
         :disabled="!canSave"
         :loading="saveMutation.isPending.value"
         @click="saveMutation.mutate()"
       >
         Сохранить
-      </AppToolbarButton>
-      <AppToolbarButton
-        variant="ghost"
+      </UButton>
+      <UButton
+        variant="outline"
         @click="router.push(`/projects/${project.id}`)"
       >
         Отмена
-      </AppToolbarButton>
+      </UButton>
     </div>
   </div>
 </template>

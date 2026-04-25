@@ -83,18 +83,18 @@ function submit() {
         </UFormField>
 
         <div class="flex gap-2 pt-2 border-t border-(--ui-border) -mx-4 px-4 -mb-4 pb-4 mt-6">
-          <AppToolbarButton variant="ghost" @click="router.push('/projects')">
+          <UButton variant="outline" @click="router.push('/projects')">
             Отмена
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             icon="i-tabler-plus"
             :loading="createMut.isPending.value"
             :disabled="!form.name.trim()"
             @click="submit"
           >
             Создать
-          </AppToolbarButton>
+          </UButton>
         </div>
       </div>
     </AppDataCard>

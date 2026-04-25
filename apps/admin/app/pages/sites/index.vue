@@ -53,13 +53,13 @@ const primaryMutation = useMutation({
       subtitle="Главный сайт отдаётся на голом домене, остальные — по поддоменам"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
           @click="showCreate = true"
         >
           Новый сайт
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -112,23 +112,23 @@ const primaryMutation = useMutation({
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-            <AppToolbarButton
+            <UButton
               v-if="!item.isPrimary"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-home-star"
               title="Сделать главным"
               :loading="primaryMutation.isPending.value"
               @click="primaryMutation.mutate(item.id)"
             />
-            <AppToolbarButton
+            <UButton
               :to="`/sites/${item.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-edit"
               title="Редактировать"
             />
-            <AppToolbarButton
+            <UButton
               v-if="!item.isPrimary"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-trash"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
@@ -146,13 +146,13 @@ const primaryMutation = useMutation({
       description="Создайте сайт для нового региона."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
           @click="showCreate = true"
         >
           Новый сайт
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 
@@ -176,17 +176,17 @@ const primaryMutation = useMutation({
       </template>
       <template #footer>
         <div class="flex gap-2 justify-end w-full">
-          <AppToolbarButton variant="ghost" @click="showCreate = false">
+          <UButton variant="outline" @click="showCreate = false">
             Отмена
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             :loading="createMutation.isPending.value"
             :disabled="!form.slug.trim() || !form.name.trim()"
             @click="createMutation.mutate()"
           >
             Создать
-          </AppToolbarButton>
+          </UButton>
         </div>
       </template>
     </UModal>

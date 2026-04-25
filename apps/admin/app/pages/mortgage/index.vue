@@ -55,12 +55,12 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} программ` : undefined"
     >
       <template #actions>
-        <AppToolbarButton to="/mortgage/banks" icon="i-tabler-building-bank" variant="ghost">
+        <UButton to="/mortgage/banks" icon="i-tabler-building-bank" variant="outline">
           Банки
-        </AppToolbarButton>
-        <AppToolbarButton to="/mortgage/create" icon="i-tabler-plus" variant="primary">
+        </UButton>
+        <UButton to="/mortgage/create" icon="i-tabler-plus" color="primary">
           Новая программа
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -86,9 +86,9 @@ const deleteMutation = useMutation({
         size="sm"
         class="max-w-[200px]"
       />
-      <AppToolbarButton
+      <UButton
         v-if="bankFilter"
-        variant="subtle"
+        variant="ghost"
         icon="i-tabler-x"
         @click="bankFilter = undefined"
       />
@@ -163,14 +163,14 @@ const deleteMutation = useMutation({
           </div>
 
           <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-            <AppToolbarButton
+            <UButton
               :to="`/mortgage/${item.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-edit"
               title="Редактировать"
             />
-            <AppToolbarButton
-              variant="subtle"
+            <UButton
+              variant="ghost"
               icon="i-tabler-trash"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
@@ -188,9 +188,9 @@ const deleteMutation = useMutation({
       description="Создайте первую программу с банком и ставкой."
     >
       <template #actions>
-        <AppToolbarButton to="/mortgage/create" icon="i-tabler-plus" variant="primary">
+        <UButton to="/mortgage/create" icon="i-tabler-plus" color="primary">
           Создать программу
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 

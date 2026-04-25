@@ -177,9 +177,9 @@ const draftsTotal = computed(() => draftItems.value.reduce((s, i) => s + i.n, 0)
       </div>
 
       <div class="flex items-center gap-1.5">
-        <AppToolbarButton to="/projects/create" icon="i-tabler-plus">ЖК</AppToolbarButton>
-        <AppToolbarButton to="/buildings" icon="i-tabler-plus">Дом</AppToolbarButton>
-        <AppToolbarButton to="/news" icon="i-tabler-plus">Новость</AppToolbarButton>
+        <UButton variant="outline" to="/projects/create" icon="i-tabler-plus">ЖК</UButton>
+        <UButton variant="outline" to="/buildings" icon="i-tabler-plus">Дом</UButton>
+        <UButton variant="outline" to="/news" icon="i-tabler-plus">Новость</UButton>
       </div>
     </header>
 

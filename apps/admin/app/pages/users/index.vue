@@ -88,13 +88,13 @@ function onSubmit() {
         subtitle="Управление ролями и правами"
       >
         <template #actions>
-          <AppToolbarButton
+          <UButton
             icon="i-tabler-user-plus"
-            variant="primary"
+            color="primary"
             @click="isCreateOpen = true"
           >
             Добавить пользователя
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 
@@ -152,13 +152,13 @@ function onSubmit() {
             <UFormField label="Пароль" required>
               <div class="flex gap-2">
                 <UInput v-model="form.password" type="text" placeholder="Минимум 8 символов" class="flex-1" autocomplete="new-password" />
-                <AppToolbarButton
-                  variant="ghost"
+                <UButton
+                  variant="outline"
                   icon="i-tabler-refresh"
                   @click="generatePassword"
                 >
                   Сгенерировать
-                </AppToolbarButton>
+                </UButton>
               </div>
             </UFormField>
             <UFormField label="Роль">
@@ -174,20 +174,20 @@ function onSubmit() {
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               :disabled="createMutation.isPending.value"
               @click="isCreateOpen = false"
             >
               Отмена
-            </AppToolbarButton>
-            <AppToolbarButton
-              variant="primary"
+            </UButton>
+            <UButton
+              color="primary"
               :loading="createMutation.isPending.value"
               @click="onSubmit"
             >
               Создать
-            </AppToolbarButton>
+            </UButton>
           </div>
         </template>
       </UModal>

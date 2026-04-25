@@ -64,15 +64,15 @@ const createMutation = useMutation({
       ]"
     >
       <template #actions>
-        <AppToolbarButton
-          variant="primary"
+        <UButton
+          color="primary"
           icon="i-tabler-device-floppy"
           :loading="createMutation.isPending.value"
           :disabled="!form.title"
           @click="createMutation.mutate()"
         >
           Сохранить
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 

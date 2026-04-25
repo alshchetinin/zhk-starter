@@ -47,9 +47,9 @@ const { data, isPending } = useQuery(
         size="sm"
         class="max-w-[180px]"
       />
-      <AppToolbarButton
+      <UButton
         v-if="roomsFilter"
-        variant="subtle"
+        variant="ghost"
         icon="i-tabler-x"
         title="Сбросить"
         @click="roomsFilter = ''"

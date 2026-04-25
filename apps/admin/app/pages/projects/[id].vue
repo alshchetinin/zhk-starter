@@ -79,14 +79,14 @@ const activeTabIdx = computed(() => {
             :label="statusLabel[project.status] ?? project.status"
             dot
           />
-          <AppToolbarButton
+          <UButton
             v-if="!isEditPage"
             :to="`/projects/${id}/edit`"
             icon="i-tabler-pencil"
-            variant="ghost"
+            variant="outline"
           >
             Редактировать
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 

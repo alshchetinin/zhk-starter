@@ -303,16 +303,16 @@ const isSubmitting = computed(
 <template>
   <div>
     <div class="mb-4 flex items-center justify-between gap-2">
-      <AppToolbarButton
+      <UButton
         icon="i-tabler-plus"
-        variant="primary"
+        color="primary"
         @click="openCreate"
       >
         Добавить квартиру
-      </AppToolbarButton>
-      <AppToolbarButton
+      </UButton>
+      <UButton
         icon="i-tabler-filter"
-        variant="ghost"
+        variant="outline"
         @click="filterOpen = true"
       >
         Фильтры
@@ -322,7 +322,7 @@ const isSubmitting = computed(
         >
           {{ activeFiltersCount }}
         </span>
-      </AppToolbarButton>
+      </UButton>
     </div>
 
     <USlideover v-model:open="filterOpen" title="Фильтры" side="right">
@@ -338,12 +338,12 @@ const isSubmitting = computed(
             <USelect v-model="roomsFilter" :items="roomsItems" placeholder="Все" size="sm" />
           </UFormField>
           <div class="flex gap-2 mt-2">
-            <AppToolbarButton variant="primary" class="flex-1 justify-center" @click="filterOpen = false">
+            <UButton color="primary" class="flex-1 justify-center" @click="filterOpen = false">
               Применить
-            </AppToolbarButton>
-            <AppToolbarButton variant="ghost" class="flex-1 justify-center" @click="clearFilters">
+            </UButton>
+            <UButton variant="outline" class="flex-1 justify-center" @click="clearFilters">
               Сброс
-            </AppToolbarButton>
+            </UButton>
           </div>
         </div>
       </template>
@@ -372,14 +372,14 @@ const isSubmitting = computed(
       </template>
       <template #actions-cell="{ row }">
         <div class="flex gap-1">
-          <AppToolbarButton
-            variant="subtle"
+          <UButton
+            variant="ghost"
             icon="i-tabler-edit"
             title="Редактировать"
             @click="openEdit(row.original as Apartment)"
           />
-          <AppToolbarButton
-            variant="subtle"
+          <UButton
+            variant="ghost"
             icon="i-tabler-trash"
             title="Удалить"
             @click="toDelete = row.original as Apartment"
@@ -438,17 +438,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="formOpen = false">
+          <UButton variant="outline" @click="formOpen = false">
             Отмена
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim() || !form.apartmentNumber.trim() || form.area <= 0"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </AppToolbarButton>
+          </UButton>
         </div>
       </template>
     </UModal>
@@ -466,22 +466,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="toDelete = null">
+          <UButton variant="outline" @click="toDelete = null">
             Отмена
-          </AppToolbarButton>
-          <button
-            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
-            :disabled="deleteMut.isPending.value"
+          </UButton>
+          <UButton
+            color="error"
+            icon="i-tabler-trash"
+            :loading="deleteMut.isPending.value"
             @click="toDelete && deleteMut.mutate(toDelete.id)"
           >
-            <UIcon
-              v-if="deleteMut.isPending.value"
-              name="i-tabler-loader-2"
-              class="size-3.5 animate-spin"
-            />
-            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </button>
+          </UButton>
         </div>
       </template>
     </UModal>

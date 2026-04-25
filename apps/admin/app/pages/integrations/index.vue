@@ -261,22 +261,22 @@ const createBatchMutation = useMutation({
         subtitle="Подключение к CRM-системе и импорт объектов"
       >
         <template #actions>
-          <AppToolbarButton
+          <UButton
             v-if="hasIntegration"
             to="/integrations/settings"
             icon="i-tabler-settings"
-            variant="ghost"
+            variant="outline"
           >
             Синхронизация
-          </AppToolbarButton>
-          <AppToolbarButton
+          </UButton>
+          <UButton
             v-if="hasIntegration"
             to="/integrations/logs"
             icon="i-tabler-history"
-            variant="ghost"
+            variant="outline"
           >
             Логи
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 
@@ -307,21 +307,23 @@ const createBatchMutation = useMutation({
             <AppStatusPill tone="success" label="Подключено" dot />
           </div>
           <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               icon="i-tabler-refresh"
               :loading="pbVerifyMutation.isPending.value"
               @click="pbVerifyMutation.mutate()"
             >
               Проверить
-            </AppToolbarButton>
-            <button
-              class="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
+            </UButton>
+            <UButton
+              class="ml-auto"
+              color="error"
+              variant="outline"
+              icon="i-tabler-plug-connected-x"
               @click="showRemoveConfirm = true"
             >
-              <UIcon name="i-tabler-plug-connected-x" class="size-3.5" />
               Отключить
-            </button>
+            </UButton>
           </div>
         </AppDataCard>
 
@@ -374,15 +376,15 @@ const createBatchMutation = useMutation({
               v-if="pbAvailable.length"
               class="pt-3 mt-3 border-t border-(--ui-border)"
             >
-              <AppToolbarButton
-                variant="primary"
+              <UButton
+                color="primary"
                 icon="i-tabler-download"
                 :disabled="pbSelectedIds.size === 0"
                 :loading="pbSyncMutation.isPending.value"
                 @click="pbSyncMutation.mutate()"
               >
                 Импортировать выбранные ({{ pbSelectedIds.size }})
-              </AppToolbarButton>
+              </UButton>
             </div>
           </template>
 
@@ -439,15 +441,15 @@ const createBatchMutation = useMutation({
               />
             </UFormField>
 
-            <AppToolbarButton
-              variant="primary"
+            <UButton
+              color="primary"
               icon="i-tabler-plug-connected"
               :disabled="!canSetupProfitbase"
               :loading="pbSetupMutation.isPending.value"
               @click="pbSetupMutation.mutate()"
             >
               Подключить Profitbase
-            </AppToolbarButton>
+            </UButton>
           </div>
         </AppDataCard>
       </div>
@@ -505,21 +507,23 @@ const createBatchMutation = useMutation({
           </div>
 
           <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               icon="i-tabler-refresh"
               :loading="verifyMutation.isPending.value"
               @click="verifyMutation.mutate()"
             >
               Проверить
-            </AppToolbarButton>
-            <button
-              class="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition"
+            </UButton>
+            <UButton
+              class="ml-auto"
+              color="error"
+              variant="outline"
+              icon="i-tabler-plug-connected-x"
               @click="showRemoveConfirm = true"
             >
-              <UIcon name="i-tabler-plug-connected-x" class="size-3.5" />
               Отключить
-            </button>
+            </UButton>
           </div>
         </AppDataCard>
 
@@ -601,15 +605,15 @@ const createBatchMutation = useMutation({
               v-if="availableComplexes.length > 0"
               class="pt-3 mt-3 border-t border-(--ui-border)"
             >
-              <AppToolbarButton
-                variant="primary"
+              <UButton
+                color="primary"
                 icon="i-tabler-plus"
                 :disabled="selectedIds.size === 0"
                 :loading="createBatchMutation.isPending.value"
                 @click="createBatchMutation.mutate()"
               >
                 Добавить выбранные ({{ selectedIds.size }})
-              </AppToolbarButton>
+              </UButton>
             </div>
 
             <div
@@ -684,15 +688,15 @@ const createBatchMutation = useMutation({
               <USelect v-model="macroType" :items="macroTypeOptions" size="sm" />
             </UFormField>
 
-            <AppToolbarButton
-              variant="primary"
+            <UButton
+              color="primary"
               icon="i-tabler-plug-connected"
               :disabled="!canSetup"
               :loading="setupMutation.isPending.value"
               @click="setupMutation.mutate()"
             >
               Подключить MacroCRM
-            </AppToolbarButton>
+            </UButton>
           </div>
         </AppDataCard>
       </div>
@@ -706,22 +710,17 @@ const createBatchMutation = useMutation({
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <AppToolbarButton variant="ghost" @click="showRemoveConfirm = false">
+            <UButton variant="outline" @click="showRemoveConfirm = false">
               Отмена
-            </AppToolbarButton>
-            <button
-              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
-              :disabled="removeMutation.isPending.value"
-              @click="removeMutation.mutate()"
-            >
-              <UIcon
-                v-if="removeMutation.isPending.value"
-                name="i-tabler-loader-2"
-                class="size-3.5 animate-spin"
-              />
-              <UIcon v-else name="i-tabler-plug-connected-x" class="size-3.5" />
-              Отключить
-            </button>
+            </UButton>
+            <UButton
+            color="error"
+            icon="i-tabler-plug-connected-x"
+            :loading="removeMutation.isPending.value"
+            @click="removeMutation.mutate()"
+          >
+            Отключить
+          </UButton>
           </div>
         </template>
       </UModal>

@@ -65,21 +65,22 @@ const saveMutation = useMutation({
         subtitle="Контент и SEO главной"
       >
         <template #actions>
-          <AppToolbarButton
+          <UButton
             icon="i-tabler-eye"
-            :variant="showPreview ? 'primary' : 'ghost'"
+            :variant="showPreview ? 'solid' : 'outline'"
+            :color="showPreview ? 'primary' : 'neutral'"
             @click="showPreview = !showPreview"
           >
             Превью
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             icon="i-tabler-device-floppy"
             :loading="saveMutation.isPending.value"
             @click="saveMutation.mutate()"
           >
             Сохранить
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 

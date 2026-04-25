@@ -56,9 +56,9 @@ function soldPct(b: {
         size="sm"
         class="max-w-xs"
       />
-      <AppToolbarButton
+      <UButton
         v-if="projectFilter"
-        variant="subtle"
+        variant="ghost"
         icon="i-tabler-x"
         title="Сбросить фильтр"
         @click="projectFilter = ''"

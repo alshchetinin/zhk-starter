@@ -44,13 +44,13 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} акций` : undefined"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/promotions/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Новая акция
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -126,14 +126,14 @@ const deleteMutation = useMutation({
           </div>
 
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-            <AppToolbarButton
+            <UButton
               :to="`/promotions/${item.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-edit"
               title="Редактировать"
             />
-            <AppToolbarButton
-              variant="subtle"
+            <UButton
+              variant="ghost"
               icon="i-tabler-trash"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
@@ -151,13 +151,13 @@ const deleteMutation = useMutation({
       description="Создайте первую акцию для привлечения клиентов."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/promotions/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Создать акцию
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 

@@ -11,7 +11,11 @@ export default defineAppConfig({
       slots: { root: "w-full" },
     },
     button: {
-      slots: { base: "cursor-pointer" },
+      slots: { base: "cursor-pointer rounded-md font-medium" },
+      defaultVariants: {
+        size: "sm",
+        color: "neutral",
+      },
     },
     tabs: {
       slots: { trigger: "cursor-pointer" },

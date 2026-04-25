@@ -65,9 +65,9 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} страниц` : undefined"
     >
       <template #actions>
-        <AppToolbarButton to="/pages/create" icon="i-tabler-plus" variant="primary">
+        <UButton to="/pages/create" icon="i-tabler-plus" color="primary">
           Новая страница
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -110,8 +110,8 @@ const deleteMutation = useMutation({
             </div>
           </div>
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-            <AppToolbarButton :to="`/pages/${item.id}`" variant="subtle" icon="i-tabler-edit" title="Редактировать" />
-            <AppToolbarButton variant="subtle" icon="i-tabler-trash" title="Удалить" :loading="deleteMutation.isPending.value" @click="deleteMutation.mutate(item.id)" />
+            <UButton :to="`/pages/${item.id}`" variant="ghost" icon="i-tabler-edit" title="Редактировать" />
+            <UButton variant="ghost" icon="i-tabler-trash" title="Удалить" :loading="deleteMutation.isPending.value" @click="deleteMutation.mutate(item.id)" />
           </div>
         </div>
       </div>
@@ -124,9 +124,9 @@ const deleteMutation = useMutation({
       description="Создайте первую страницу для сайта."
     >
       <template #actions>
-        <AppToolbarButton to="/pages/create" icon="i-tabler-plus" variant="primary">
+        <UButton to="/pages/create" icon="i-tabler-plus" color="primary">
           Создать страницу
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 

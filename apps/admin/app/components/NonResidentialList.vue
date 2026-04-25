@@ -241,9 +241,9 @@ const columns = computed(() => {
       :subtitle="data?.total != null ? `${data.total} объектов` : undefined"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           icon="i-tabler-filter"
-          variant="ghost"
+          variant="outline"
           @click="filterOpen = true"
         >
           Фильтры
@@ -253,14 +253,14 @@ const columns = computed(() => {
           >
             {{ activeFiltersCount }}
           </span>
-        </AppToolbarButton>
-        <AppToolbarButton
+        </UButton>
+        <UButton
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
           @click="openCreate"
         >
           Добавить
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -271,12 +271,12 @@ const columns = computed(() => {
             <USelect v-model="projectFilter" :items="projectItems" placeholder="Все" size="sm" />
           </UFormField>
           <div class="flex gap-2 mt-2">
-            <AppToolbarButton variant="primary" class="flex-1 justify-center" @click="filterOpen = false">
+            <UButton color="primary" class="flex-1 justify-center" @click="filterOpen = false">
               Применить
-            </AppToolbarButton>
-            <AppToolbarButton variant="ghost" class="flex-1 justify-center" @click="clearFilters">
+            </UButton>
+            <UButton variant="outline" class="flex-1 justify-center" @click="clearFilters">
               Сброс
-            </AppToolbarButton>
+            </UButton>
           </div>
         </div>
       </template>
@@ -318,14 +318,14 @@ const columns = computed(() => {
 
       <template #actions-cell="{ row }">
         <div class="flex gap-1">
-          <AppToolbarButton
-            variant="subtle"
+          <UButton
+            variant="ghost"
             icon="i-tabler-edit"
             title="Редактировать"
             @click="openEdit(row.original as Item)"
           />
-          <AppToolbarButton
-            variant="subtle"
+          <UButton
+            variant="ghost"
             icon="i-tabler-trash"
             title="Удалить"
             @click="toDelete = row.original as Item"
@@ -375,17 +375,17 @@ const columns = computed(() => {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="formOpen = false">
+          <UButton variant="outline" @click="formOpen = false">
             Отмена
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim() || !form.projectId"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </AppToolbarButton>
+          </UButton>
         </div>
       </template>
     </UModal>
@@ -402,9 +402,9 @@ const columns = computed(() => {
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="toDelete = null">
+          <UButton variant="outline" @click="toDelete = null">
             Отмена
-          </AppToolbarButton>
+          </UButton>
           <button
             class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
             :disabled="deleteMut.isPending.value"

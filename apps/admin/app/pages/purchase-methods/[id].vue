@@ -106,27 +106,23 @@ const deleteMutation = useMutation({
         ]"
       >
         <template #actions>
-          <button
-            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition disabled:opacity-40"
-            :disabled="deleteMutation.isPending.value"
+          <UButton
+            color="error"
+            variant="outline"
+            icon="i-tabler-trash"
+            :loading="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >
-            <UIcon
-              v-if="deleteMutation.isPending.value"
-              name="i-tabler-loader-2"
-              class="size-3.5 animate-spin"
-            />
-            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </button>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             icon="i-tabler-device-floppy"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 

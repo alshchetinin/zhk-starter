@@ -186,13 +186,13 @@ const isSubmitting = computed(
           {{ data.total }}
         </span>
       </h2>
-      <AppToolbarButton
+      <UButton
         icon="i-tabler-plus"
-        variant="primary"
+        color="primary"
         @click="openCreate"
       >
         Добавить планировку
-      </AppToolbarButton>
+      </UButton>
     </div>
 
     <div
@@ -243,14 +243,14 @@ const isSubmitting = computed(
           </div>
         </NuxtLink>
         <div class="absolute top-2 right-2 flex gap-1 opacity-0 transition group-hover:opacity-100">
-          <AppToolbarButton
-            variant="ghost"
+          <UButton
+            variant="outline"
             icon="i-tabler-edit"
             title="Редактировать"
             @click="openEdit(layout as Layout)"
           />
-          <AppToolbarButton
-            variant="ghost"
+          <UButton
+            variant="outline"
             icon="i-tabler-trash"
             title="Удалить"
             @click="toDelete = layout as Layout"
@@ -266,13 +266,13 @@ const isSubmitting = computed(
       description="Создайте первую планировку. Её можно будет привязать к квартирам."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
           @click="openCreate"
         >
           Добавить планировку
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 
@@ -317,17 +317,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="formOpen = false">
+          <UButton variant="outline" @click="formOpen = false">
             Отмена
-          </AppToolbarButton>
-          <AppToolbarButton
-            variant="primary"
+          </UButton>
+          <UButton
+            color="primary"
             :loading="isSubmitting"
             :disabled="!form.name.trim() || form.area <= 0"
             @click="submit"
           >
             {{ editing ? "Сохранить" : "Создать" }}
-          </AppToolbarButton>
+          </UButton>
         </div>
       </template>
     </UModal>
@@ -345,22 +345,17 @@ const isSubmitting = computed(
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="toDelete = null">
+          <UButton variant="outline" @click="toDelete = null">
             Отмена
-          </AppToolbarButton>
-          <button
-            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
-            :disabled="deleteMut.isPending.value"
+          </UButton>
+          <UButton
+            color="error"
+            icon="i-tabler-trash"
+            :loading="deleteMut.isPending.value"
             @click="toDelete && deleteMut.mutate(toDelete.id)"
           >
-            <UIcon
-              v-if="deleteMut.isPending.value"
-              name="i-tabler-loader-2"
-              class="size-3.5 animate-spin"
-            />
-            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </button>
+          </UButton>
         </div>
       </template>
     </UModal>

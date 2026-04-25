@@ -65,9 +65,9 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} статей` : undefined"
     >
       <template #actions>
-        <AppToolbarButton to="/news/create" icon="i-tabler-plus" variant="primary">
+        <UButton to="/news/create" icon="i-tabler-plus" color="primary">
           Новая статья
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -150,14 +150,14 @@ const deleteMutation = useMutation({
           </div>
 
           <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-            <AppToolbarButton
+            <UButton
               :to="`/news/${item.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-edit"
               title="Редактировать"
             />
-            <AppToolbarButton
-              variant="subtle"
+            <UButton
+              variant="ghost"
               icon="i-tabler-trash"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
@@ -175,9 +175,9 @@ const deleteMutation = useMutation({
       description="Создайте первую статью для сайта."
     >
       <template #actions>
-        <AppToolbarButton to="/news/create" icon="i-tabler-plus" variant="primary">
+        <UButton to="/news/create" icon="i-tabler-plus" color="primary">
           Создать статью
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 

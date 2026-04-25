@@ -51,13 +51,13 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} банков` : undefined"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/mortgage/banks/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Новый банк
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -119,14 +119,14 @@ const deleteMutation = useMutation({
           </div>
 
           <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition">
-            <AppToolbarButton
+            <UButton
               :to="`/mortgage/banks/${item.id}`"
-              variant="subtle"
+              variant="ghost"
               icon="i-tabler-edit"
               title="Редактировать"
             />
-            <AppToolbarButton
-              variant="subtle"
+            <UButton
+              variant="ghost"
               icon="i-tabler-trash"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
@@ -144,13 +144,13 @@ const deleteMutation = useMutation({
       description="Добавьте первый банк, чтобы привязывать к нему ипотечные программы."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/mortgage/banks/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Добавить банк
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 

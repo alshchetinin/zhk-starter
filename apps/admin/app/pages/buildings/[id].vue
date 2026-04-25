@@ -225,20 +225,20 @@ const isSectionSubmitting = computed(
             label="Импорт"
             dot
           />
-          <AppToolbarButton
+          <UButton
             :to="`/sections/create?buildingId=${id}`"
             icon="i-tabler-stack-2"
-            variant="ghost"
+            variant="outline"
           >
             Заполнить секцию
-          </AppToolbarButton>
-          <AppToolbarButton
+          </UButton>
+          <UButton
             icon="i-tabler-plus"
-            variant="primary"
+            color="primary"
             @click="openCreateSection"
           >
             Пустая секция
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 
@@ -337,15 +337,15 @@ const isSectionSubmitting = computed(
               </span>
             </div>
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
-              <AppToolbarButton
+              <UButton
                 icon="i-tabler-edit"
-                variant="subtle"
+                variant="ghost"
                 title="Редактировать"
                 @click="openEditSection(section as Section)"
               />
-              <AppToolbarButton
+              <UButton
                 icon="i-tabler-trash"
-                variant="subtle"
+                variant="ghost"
                 title="Удалить"
                 @click="sectionToDelete = section as Section"
               />
@@ -460,20 +460,20 @@ const isSectionSubmitting = computed(
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               @click="sectionFormOpen = false"
             >
               Отмена
-            </AppToolbarButton>
-            <AppToolbarButton
-              variant="primary"
+            </UButton>
+            <UButton
+              color="primary"
               :loading="isSectionSubmitting"
               :disabled="!sectionForm.name.trim()"
               @click="submitSection"
             >
               {{ editingSection ? "Сохранить" : "Создать" }}
-            </AppToolbarButton>
+            </UButton>
           </div>
         </template>
       </UModal>
@@ -492,24 +492,19 @@ const isSectionSubmitting = computed(
         </template>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <AppToolbarButton variant="ghost" @click="sectionToDelete = null">
+            <UButton variant="outline" @click="sectionToDelete = null">
               Отмена
-            </AppToolbarButton>
-            <button
-              class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
-              :disabled="deleteSectionMut.isPending.value"
-              @click="
+            </UButton>
+            <UButton
+            color="error"
+            icon="i-tabler-trash"
+            :loading="deleteSectionMut.isPending.value"
+            @click="
                 sectionToDelete && deleteSectionMut.mutate(sectionToDelete.id)
               "
-            >
-              <UIcon
-                v-if="deleteSectionMut.isPending.value"
-                name="i-tabler-loader-2"
-                class="size-3.5 animate-spin"
-              />
-              <UIcon v-else name="i-tabler-trash" class="size-3.5" />
-              Удалить
-            </button>
+          >
+            Удалить
+          </UButton>
           </div>
         </template>
       </UModal>

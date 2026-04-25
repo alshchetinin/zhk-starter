@@ -156,13 +156,13 @@ const isPaused = computed(() => {
         ]"
       >
         <template #actions>
-          <AppToolbarButton
+          <UButton
             to="/integrations/logs"
             icon="i-tabler-history"
-            variant="ghost"
+            variant="outline"
           >
             Логи
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 
@@ -212,24 +212,24 @@ const isPaused = computed(() => {
             </div>
           </div>
           <div class="flex gap-2 mt-4 pt-4 border-t border-(--ui-border)">
-            <AppToolbarButton
-              variant="primary"
+            <UButton
+              color="primary"
               icon="i-tabler-refresh"
               :loading="triggerMutation.isPending.value"
               :disabled="integration.status === 'loading'"
               @click="triggerMutation.mutate()"
             >
               Запустить сейчас
-            </AppToolbarButton>
-            <AppToolbarButton
+            </UButton>
+            <UButton
               v-if="integration.status === 'loading'"
-              variant="ghost"
+              variant="outline"
               icon="i-tabler-player-stop"
               :loading="cancelMutation.isPending.value"
               @click="cancelMutation.mutate()"
             >
               Отменить
-            </AppToolbarButton>
+            </UButton>
           </div>
         </AppDataCard>
 
@@ -291,36 +291,36 @@ const isPaused = computed(() => {
             Временно остановить автосинхронизацию
           </p>
           <div class="flex flex-wrap gap-1.5">
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               :loading="pauseMutation.isPending.value"
               @click="pauseMutation.mutate(1)"
             >
               На 1 час
-            </AppToolbarButton>
-            <AppToolbarButton
-              variant="ghost"
+            </UButton>
+            <UButton
+              variant="outline"
               :loading="pauseMutation.isPending.value"
               @click="pauseMutation.mutate(24)"
             >
               На 24 часа
-            </AppToolbarButton>
-            <AppToolbarButton
-              variant="ghost"
+            </UButton>
+            <UButton
+              variant="outline"
               :loading="pauseMutation.isPending.value"
               @click="pauseMutation.mutate(168)"
             >
               На неделю
-            </AppToolbarButton>
-            <AppToolbarButton
+            </UButton>
+            <UButton
               v-if="isPaused"
-              variant="primary"
+              color="primary"
               icon="i-tabler-player-play"
               :loading="pauseMutation.isPending.value"
               @click="pauseMutation.mutate(null)"
             >
               Снять паузу
-            </AppToolbarButton>
+            </UButton>
           </div>
         </AppDataCard>
 
@@ -408,8 +408,8 @@ const isPaused = computed(() => {
               />
             </UFormField>
 
-            <AppToolbarButton
-              variant="ghost"
+            <UButton
+              variant="outline"
               icon="i-tabler-send"
               :loading="testNotifyMutation.isPending.value"
               :disabled="
@@ -419,7 +419,7 @@ const isPaused = computed(() => {
               @click="testNotifyMutation.mutate()"
             >
               Отправить тестовое сообщение
-            </AppToolbarButton>
+            </UButton>
             <p
               v-if="
                 !integration.notifyTelegramBotToken ||
@@ -433,14 +433,14 @@ const isPaused = computed(() => {
         </AppDataCard>
 
         <div class="flex justify-end pt-1">
-          <AppToolbarButton
-            variant="primary"
+          <UButton
+            color="primary"
             icon="i-tabler-device-floppy"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </AppToolbarButton>
+          </UButton>
         </div>
       </div>
     </template>
@@ -452,13 +452,13 @@ const isPaused = computed(() => {
       description="Подключите CRM, чтобы настроить расписание синхронизации."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/integrations"
           icon="i-tabler-plug-connected"
-          variant="primary"
+          color="primary"
         >
           К настройке интеграции
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
   </PageContainer>

@@ -139,14 +139,14 @@ function toggle<T>(list: T[], value: T) {
             label="Banned"
             dot
           />
-          <AppToolbarButton
+          <UButton
             v-if="userData && userData.role === 'editor' && userData.id !== me?.id"
             icon="i-tabler-eye"
-            variant="ghost"
+            variant="outline"
             @click="startImpersonation(userData.id)"
           >
             Глазами редактора
-          </AppToolbarButton>
+          </UButton>
         </template>
       </AppPageHeader>
 
@@ -169,14 +169,14 @@ function toggle<T>(list: T[], value: T) {
             ]"
           />
           <div class="mt-4">
-            <AppToolbarButton
-              variant="primary"
+            <UButton
+              color="primary"
               icon="i-tabler-device-floppy"
               :loading="roleMutation.isPending.value"
               @click="roleMutation.mutate()"
             >
               Сохранить роль
-            </AppToolbarButton>
+            </UButton>
           </div>
         </AppDataCard>
 
@@ -253,14 +253,14 @@ function toggle<T>(list: T[], value: T) {
             </div>
 
             <div class="pt-1">
-              <AppToolbarButton
-                variant="primary"
+              <UButton
+                color="primary"
                 icon="i-tabler-device-floppy"
                 :loading="permissionsMutation.isPending.value"
                 @click="permissionsMutation.mutate()"
               >
                 Сохранить права
-              </AppToolbarButton>
+              </UButton>
             </div>
           </div>
         </AppDataCard>

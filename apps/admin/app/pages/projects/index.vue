@@ -145,22 +145,22 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
       "
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           v-if="hasSyncableProjects"
           icon="i-tabler-refresh"
-          variant="ghost"
+          variant="outline"
           :loading="syncAllMutation.isPending.value"
           @click="syncAllMutation.mutate()"
         >
           Синхронизировать все
-        </AppToolbarButton>
-        <AppToolbarButton
+        </UButton>
+        <UButton
           to="/projects/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Новый ЖК
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -303,15 +303,15 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
             <div
               class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
             >
-              <AppToolbarButton
+              <UButton
                 :to="`/projects/${project.id}`"
                 icon="i-tabler-edit"
-                variant="subtle"
+                variant="ghost"
                 title="Редактировать"
               />
-              <AppToolbarButton
+              <UButton
                 icon="i-tabler-trash"
-                variant="subtle"
+                variant="ghost"
                 title="Удалить"
                 @click="showDeleteId = project.id"
               />
@@ -328,20 +328,20 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
       description="Создайте новый ЖК вручную или подключите интеграцию для импорта из MacroCRM / Profitbase."
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/projects/create"
           icon="i-tabler-plus"
-          variant="primary"
+          color="primary"
         >
           Создать ЖК
-        </AppToolbarButton>
-        <AppToolbarButton
+        </UButton>
+        <UButton
           to="/integrations"
           icon="i-tabler-plug-connected"
-          variant="ghost"
+          variant="outline"
         >
           Интеграции
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppEmptyState>
 
@@ -369,24 +369,19 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <AppToolbarButton variant="ghost" @click="showDeleteId = null">
+          <UButton variant="outline" @click="showDeleteId = null">
             Отмена
-          </AppToolbarButton>
-          <button
-            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition disabled:opacity-40"
-            :disabled="deleteMutation.isPending.value"
+          </UButton>
+          <UButton
+            color="error"
+            icon="i-tabler-trash"
+            :loading="deleteMutation.isPending.value"
             @click="
               projectToDelete && deleteMutation.mutate(projectToDelete.id)
             "
           >
-            <UIcon
-              v-if="deleteMutation.isPending.value"
-              name="i-tabler-loader-2"
-              class="size-3.5 animate-spin"
-            />
-            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </button>
+          </UButton>
         </div>
       </template>
     </UModal>

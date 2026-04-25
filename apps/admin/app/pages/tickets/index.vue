@@ -138,13 +138,13 @@ function onRowClick(_e: Event, row: any) {
       :subtitle="`${total} ${total === 1 ? 'заявка' : 'заявок'}`"
     >
       <template #actions>
-        <AppToolbarButton
+        <UButton
           to="/tickets/settings"
           icon="i-tabler-settings"
-          variant="ghost"
+          variant="outline"
         >
           Настройки
-        </AppToolbarButton>
+        </UButton>
       </template>
     </AppPageHeader>
 
@@ -191,23 +191,23 @@ function onRowClick(_e: Event, row: any) {
     </AppDataCard>
 
     <div v-if="totalPages > 1" class="flex justify-center mt-4 gap-2">
-      <AppToolbarButton
-        variant="ghost"
+      <UButton
+        variant="outline"
         :disabled="page <= 1"
         @click="page--"
       >
         Назад
-      </AppToolbarButton>
+      </UButton>
       <span class="flex items-center text-xs text-(--ui-text-muted) px-3 tabular-nums">
         {{ page }} / {{ totalPages }}
       </span>
-      <AppToolbarButton
-        variant="ghost"
+      <UButton
+        variant="outline"
         :disabled="page >= totalPages"
         @click="page++"
       >
         Вперёд
-      </AppToolbarButton>
+      </UButton>
     </div>
   </PageContainer>
 </template>

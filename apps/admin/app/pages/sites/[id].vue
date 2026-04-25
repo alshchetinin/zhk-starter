@@ -158,14 +158,14 @@ const updateMutation = useMutation({
         </AppDataCard>
 
         <div class="flex items-center gap-2 pt-1">
-          <AppToolbarButton
-            variant="primary"
+          <UButton
+            color="primary"
             icon="i-tabler-device-floppy"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </AppToolbarButton>
+          </UButton>
         </div>
 
         <SocialLinksEditor
