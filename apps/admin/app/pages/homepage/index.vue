@@ -17,13 +17,17 @@ const form = reactive({
   ogImage: null as string | null,
 });
 
-whenever(data, (val) => {
-  if (!val) return;
-  form.contentBlocks = (val.contentBlocks as ContentBlock[]) ?? [];
-  form.metaTitle = val.metaTitle ?? "";
-  form.metaDescription = val.metaDescription ?? "";
-  form.ogImage = val.ogImage ?? null;
-}, { once: true, immediate: true });
+whenever(
+  data,
+  (val) => {
+    if (!val) return;
+    form.contentBlocks = (val.contentBlocks as ContentBlock[]) ?? [];
+    form.metaTitle = val.metaTitle ?? "";
+    form.metaDescription = val.metaDescription ?? "";
+    form.ogImage = val.ogImage ?? null;
+  },
+  { once: true, immediate: true },
+);
 
 const showPreview = ref(false);
 
@@ -47,39 +51,37 @@ const saveMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+    <div
+      v-if="loading"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else>
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
-            Главная страница
-          </h1>
-          <p class="text-(--ui-text-muted) text-sm mt-1">
-            Контент и SEO главной страницы сайта
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
-          <UButton
-            :variant="showPreview ? 'solid' : 'outline'"
+      <AppPageHeader
+        title="Главная страница"
+        subtitle="Контент и SEO главной"
+      >
+        <template #actions>
+          <AppToolbarButton
             icon="i-tabler-eye"
-            class="rounded-md"
+            :variant="showPreview ? 'primary' : 'ghost'"
             @click="showPreview = !showPreview"
           >
             Превью
-          </UButton>
-          <UButton
-            :loading="saveMutation.isPending.value"
+          </AppToolbarButton>
+          <AppToolbarButton
+            variant="primary"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
+            :loading="saveMutation.isPending.value"
             @click="saveMutation.mutate()"
           >
             Сохранить
-          </UButton>
-        </div>
-      </div>
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
       <div
         class="grid grid-cols-1 gap-3"
@@ -87,10 +89,9 @@ const saveMutation = useMutation({
       >
         <!-- Main content -->
         <div class="space-y-3" :class="showPreview ? '' : 'lg:col-span-2'">
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="text-lg font-semibold mb-4">Контент</h3>
+          <AppDataCard title="Контент">
             <BlockDynamicZone v-model="form.contentBlocks" />
-          </div>
+          </AppDataCard>
         </div>
 
         <!-- Sidebar: preview OR seo -->
@@ -114,12 +115,14 @@ const saveMutation = useMutation({
               metaDescription: form.metaDescription,
               ogImage: form.ogImage,
             }"
-            @restore="(snap: any) => {
-              form.contentBlocks = snap.contentBlocks ?? [];
-              form.metaTitle = snap.metaTitle ?? '';
-              form.metaDescription = snap.metaDescription ?? '';
-              form.ogImage = snap.ogImage ?? null;
-            }"
+            @restore="
+              (snap: any) => {
+                form.contentBlocks = snap.contentBlocks ?? [];
+                form.metaTitle = snap.metaTitle ?? '';
+                form.metaDescription = snap.metaDescription ?? '';
+                form.ogImage = snap.ogImage ?? null;
+              }
+            "
           />
         </div>
       </div>
