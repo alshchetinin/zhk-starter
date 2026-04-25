@@ -27,9 +27,18 @@ export const apartmentLayouts = pgTable("apartment_layouts", {
   defaultLayoutImage: text("default_layout_image"),
   furnishedLayoutImage: text("furnished_layout_image"),
   threeDLayoutImage: text("3d_layout_image"),
+  threeDTourUrl: text("3d_tour_url"),
   sunPosition: integer("sun_position"),
   ceilingHeight: numeric("ceiling_height", { precision: 4, scale: 2 }),
   additionalArea: jsonb("additional_area"),
+  gallery: jsonb("gallery").$type<
+    Array<{
+      url: string;
+      title?: string | null;
+      description?: string | null;
+    }>
+  >(),
+  syncedFields: jsonb("synced_fields").$type<string[]>(),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),
   createdAt: timestamp("created_at", { withTimezone: true })
