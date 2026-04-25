@@ -64,72 +64,85 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="bank">
-      <div class="mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <NuxtLink to="/mortgage/banks">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
-          </NuxtLink>
-          <h1 class="text-2xl font-bold">{{ form.name || "Редактирование" }}</h1>
-        </div>
-        <div class="flex items-center gap-2">
-          <UButton
-            variant="outline"
-            color="error"
-            icon="i-tabler-trash"
-            class="rounded-md"
-            :loading="deleteMutation.isPending.value"
+      <AppPageHeader
+        :title="form.name || 'Редактирование'"
+        back="/mortgage/banks"
+        :crumbs="[
+          { label: 'Ипотека', to: '/mortgage' },
+          { label: 'Банки', to: '/mortgage/banks' },
+          { label: form.name || '…' },
+        ]"
+      >
+        <template #actions>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition disabled:opacity-40"
+            :disabled="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >
+            <UIcon
+              v-if="deleteMutation.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
-          <UButton
+          </button>
+          <AppToolbarButton
+            variant="primary"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </UButton>
-        </div>
-      </div>
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div class="lg:col-span-2 space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Название">
-              <UInput v-model="form.name" placeholder="Например, Сбербанк" size="lg" />
-            </UFormField>
-
-            <UFormField label="Описание">
-              <UTextarea v-model="form.description" :rows="3" />
-            </UFormField>
-
-            <UFormField label="Сайт">
-              <UInput v-model="form.website" placeholder="https://..." />
-            </UFormField>
-
-            <UFormField label="Фирменный цвет" hint="HEX, например #1a7a3a">
-              <UInput v-model="form.brandColor" placeholder="#..." />
-            </UFormField>
-          </div>
+          <AppDataCard title="Основные">
+            <div class="space-y-3">
+              <UFormField label="Название" required>
+                <UInput
+                  v-model="form.name"
+                  placeholder="Например, Сбербанк"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Описание">
+                <UTextarea v-model="form.description" :rows="3" />
+              </UFormField>
+              <UFormField label="Сайт">
+                <UInput
+                  v-model="form.website"
+                  placeholder="https://…"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Фирменный цвет" hint="HEX, например #1a7a3a">
+                <UInput
+                  v-model="form.brandColor"
+                  placeholder="#…"
+                  size="sm"
+                />
+              </UFormField>
+            </div>
+          </AppDataCard>
         </div>
 
         <div class="space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Логотип">
-              <ImageUpload v-model="form.logo" folder="banks/logos" />
-            </UFormField>
-          </div>
+          <AppDataCard title="Логотип">
+            <ImageUpload v-model="form.logo" folder="banks/logos" />
+          </AppDataCard>
         </div>
       </div>
     </template>

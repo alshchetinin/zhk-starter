@@ -88,75 +88,81 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="program">
-      <div class="mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <NuxtLink to="/mortgage">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
-          </NuxtLink>
-          <h1 class="text-2xl font-bold">{{ form.name || "Редактирование" }}</h1>
-        </div>
-        <div class="flex items-center gap-2">
-          <UButton
-            variant="outline"
-            color="error"
-            icon="i-tabler-trash"
-            class="rounded-md"
-            :loading="deleteMutation.isPending.value"
+      <AppPageHeader
+        :title="form.name || 'Редактирование'"
+        back="/mortgage"
+        :crumbs="[
+          { label: 'Ипотека', to: '/mortgage' },
+          { label: form.name || '…' },
+        ]"
+      >
+        <template #actions>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition disabled:opacity-40"
+            :disabled="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >
+            <UIcon
+              v-if="deleteMutation.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
-          <UButton
+          </button>
+          <AppToolbarButton
+            variant="primary"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </UButton>
-        </div>
-      </div>
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div class="lg:col-span-2 space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Название">
-              <UInput v-model="form.name" size="lg" />
-            </UFormField>
-
-            <UFormField label="Описание">
-              <UTextarea v-model="form.description" :rows="3" />
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="Ставка, %">
-                <UInput v-model="form.rate" />
+          <AppDataCard title="Основные">
+            <div class="space-y-3">
+              <UFormField label="Название" required>
+                <UInput v-model="form.name" size="sm" />
               </UFormField>
-              <UFormField label="Первый взнос от, %">
-                <UInput v-model="form.minDownPaymentPercent" />
+              <UFormField label="Описание">
+                <UTextarea v-model="form.description" :rows="3" />
               </UFormField>
-              <UFormField label="Макс. сумма кредита, ₽">
-                <UInput v-model="form.maxLoanAmount" />
-              </UFormField>
-              <UFormField label="Срок, мес.">
-                <UInput v-model.number="form.termMonths" type="number" />
-              </UFormField>
+              <div class="grid grid-cols-2 gap-3">
+                <UFormField label="Ставка, %">
+                  <UInput v-model="form.rate" size="sm" />
+                </UFormField>
+                <UFormField label="Первый взнос от, %">
+                  <UInput v-model="form.minDownPaymentPercent" size="sm" />
+                </UFormField>
+                <UFormField label="Макс. сумма, ₽">
+                  <UInput v-model="form.maxLoanAmount" size="sm" />
+                </UFormField>
+                <UFormField label="Срок, мес.">
+                  <UInput
+                    v-model.number="form.termMonths"
+                    type="number"
+                    size="sm"
+                  />
+                </UFormField>
+              </div>
             </div>
-          </div>
+          </AppDataCard>
 
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <h3 class="text-sm font-semibold">Доступна для проектов</h3>
-            <p class="text-xs text-(--ui-text-muted)">
+          <AppDataCard title="Доступна для проектов">
+            <p class="text-xs text-(--ui-text-dimmed) mb-2">
               Если не выбран ни один — программа действует для всех проектов.
             </p>
             <USelectMenu
@@ -165,22 +171,31 @@ const deleteMutation = useMutation({
               value-key="value"
               multiple
               placeholder="Выберите проекты"
+              size="sm"
+              class="w-full"
             />
-          </div>
+          </AppDataCard>
         </div>
 
         <div class="space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Статус">
-              <USelect v-model="form.status" :items="mortgageProgramStatusOptions" />
-            </UFormField>
-
-            <UFormField label="Банк">
-              <USelect v-model="form.bankId" :items="bankOptions" />
-            </UFormField>
-          </div>
+          <AppDataCard title="Настройки">
+            <div class="space-y-3">
+              <UFormField label="Статус">
+                <USelect
+                  v-model="form.status"
+                  :items="mortgageProgramStatusOptions"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Банк">
+                <USelect
+                  v-model="form.bankId"
+                  :items="bankOptions"
+                  size="sm"
+                />
+              </UFormField>
+            </div>
+          </AppDataCard>
         </div>
       </div>
     </template>

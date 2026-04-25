@@ -54,62 +54,73 @@ const createMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div class="mb-6 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <NuxtLink to="/mortgage">
-          <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
-        </NuxtLink>
-        <h1 class="text-2xl font-bold">Новая ипотечная программа</h1>
-      </div>
-      <UButton
-        icon="i-tabler-device-floppy"
-        class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
-        :loading="createMutation.isPending.value"
-        :disabled="!form.name || !form.rate"
-        @click="createMutation.mutate()"
-      >
-        Сохранить
-      </UButton>
-    </div>
+    <AppPageHeader
+      title="Новая ипотечная программа"
+      back="/mortgage"
+      :crumbs="[
+        { label: 'Ипотека', to: '/mortgage' },
+        { label: 'Новая программа' },
+      ]"
+    >
+      <template #actions>
+        <AppToolbarButton
+          variant="primary"
+          icon="i-tabler-device-floppy"
+          :loading="createMutation.isPending.value"
+          :disabled="!form.name || !form.rate"
+          @click="createMutation.mutate()"
+        >
+          Сохранить
+        </AppToolbarButton>
+      </template>
+    </AppPageHeader>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
       <div class="lg:col-span-2 space-y-3">
-        <div
-          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-        >
-          <UFormField label="Название">
-            <UInput
-              v-model="form.name"
-              placeholder="Например, Семейная ипотека 6%"
-              size="lg"
-            />
-          </UFormField>
-
-          <UFormField label="Описание">
-            <UTextarea v-model="form.description" :rows="3" />
-          </UFormField>
-
-          <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Ставка, %" hint="например 5.5">
-              <UInput v-model="form.rate" placeholder="0.00" />
+        <AppDataCard title="Основные">
+          <div class="space-y-3">
+            <UFormField label="Название" required>
+              <UInput
+                v-model="form.name"
+                placeholder="Например, Семейная ипотека 6%"
+                size="sm"
+              />
             </UFormField>
-            <UFormField label="Первый взнос от, %">
-              <UInput v-model="form.minDownPaymentPercent" placeholder="0" />
+            <UFormField label="Описание">
+              <UTextarea v-model="form.description" :rows="3" />
             </UFormField>
-            <UFormField label="Макс. сумма кредита, ₽">
-              <UInput v-model="form.maxLoanAmount" placeholder="12000000" />
-            </UFormField>
-            <UFormField label="Срок, мес.">
-              <UInput v-model.number="form.termMonths" type="number" placeholder="360" />
-            </UFormField>
+            <div class="grid grid-cols-2 gap-3">
+              <UFormField label="Ставка, %" hint="например 5.5">
+                <UInput v-model="form.rate" placeholder="0.00" size="sm" />
+              </UFormField>
+              <UFormField label="Первый взнос от, %">
+                <UInput
+                  v-model="form.minDownPaymentPercent"
+                  placeholder="0"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Макс. сумма, ₽">
+                <UInput
+                  v-model="form.maxLoanAmount"
+                  placeholder="12000000"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Срок, мес.">
+                <UInput
+                  v-model.number="form.termMonths"
+                  type="number"
+                  placeholder="360"
+                  size="sm"
+                />
+              </UFormField>
+            </div>
           </div>
-        </div>
+        </AppDataCard>
 
-        <div
-          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-        >
-          <h3 class="text-sm font-semibold">Доступна для проектов</h3>
-          <p class="text-xs text-(--ui-text-muted)">
+        <AppDataCard title="Доступна для проектов">
+          <p class="text-xs text-(--ui-text-dimmed) mb-2">
             Если не выбран ни один — программа действует для всех проектов.
           </p>
           <USelectMenu
@@ -118,22 +129,27 @@ const createMutation = useMutation({
             value-key="value"
             multiple
             placeholder="Выберите проекты"
+            size="sm"
+            class="w-full"
           />
-        </div>
+        </AppDataCard>
       </div>
 
       <div class="space-y-3">
-        <div
-          class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-        >
-          <UFormField label="Статус">
-            <USelect v-model="form.status" :items="mortgageProgramStatusOptions" />
-          </UFormField>
-
-          <UFormField label="Банк">
-            <USelect v-model="form.bankId" :items="bankOptions" />
-          </UFormField>
-        </div>
+        <AppDataCard title="Настройки">
+          <div class="space-y-3">
+            <UFormField label="Статус">
+              <USelect
+                v-model="form.status"
+                :items="mortgageProgramStatusOptions"
+                size="sm"
+              />
+            </UFormField>
+            <UFormField label="Банк">
+              <USelect v-model="form.bankId" :items="bankOptions" size="sm" />
+            </UFormField>
+          </div>
+        </AppDataCard>
       </div>
     </div>
   </PageContainer>
