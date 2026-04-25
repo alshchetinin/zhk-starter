@@ -8,18 +8,26 @@ const queryClient = useQueryClient();
 const id = computed(() => route.params.id as string);
 
 const { data: layout, isPending } = useQuery(
-  computed(() => $orpc.apartmentLayouts.getById.queryOptions({ input: { id: id.value } })),
+  computed(() =>
+    $orpc.apartmentLayouts.getById.queryOptions({ input: { id: id.value } }),
+  ),
 );
 
 const { data: apartmentsData, isPending: isApartmentsPending } = useQuery(
-  computed(() => $orpc.apartments.listByLayout.queryOptions({ input: { layoutId: id.value } })),
+  computed(() =>
+    $orpc.apartments.listByLayout.queryOptions({ input: { layoutId: id.value } }),
+  ),
 );
 
 const sunPosition = ref<number>(0);
 
-watch(() => layout.value?.sunPosition, (val) => {
-  sunPosition.value = val ?? 0;
-}, { immediate: true });
+watch(
+  () => layout.value?.sunPosition,
+  (val) => {
+    sunPosition.value = val ?? 0;
+  },
+  { immediate: true },
+);
 
 const sunMutation = useMutation({
   mutationFn: () =>
@@ -32,159 +40,174 @@ const sunMutation = useMutation({
     queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
   },
 });
+
+const statusTone: Record<string, "success" | "warning" | "info" | "muted"> = {
+  free: "success",
+  paid_reservation: "warning",
+  corporate_reservation: "info",
+  sold: "muted",
+};
+const statusLabel: Record<string, string> = {
+  free: "Свободно",
+  paid_reservation: "Бронь",
+  corporate_reservation: "Корп.",
+  sold: "Продано",
+};
+
+function fmtRooms(n: number) {
+  return n === 0 ? "Студия" : `${n}к`;
+}
+function fmtPrice(price: string | number) {
+  return Number(price).toLocaleString("ru-RU");
+}
 </script>
 
 <template>
   <PageContainer>
-    <!-- Breadcrumb -->
-    <UBreadcrumb
-      :items="[
-        { label: 'Layouts', to: '/layouts', icon: 'i-tabler-layout' },
-        { label: layout?.name ?? '...' },
-      ]"
-      class="mb-6"
-    />
-
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Loading...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="layout">
-      <!-- Header -->
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold">{{ layout.name }}</h1>
+      <AppPageHeader
+        :title="layout.name"
+        back="/layouts"
+        :crumbs="[
+          { label: 'Планировки', to: '/layouts' },
+          { label: layout.name },
+        ]"
+      />
+
+      <!-- Hero stats -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+        <AppStatHero label="Комнаты" accent="violet">
+          <template #value>{{ fmtRooms(layout.roomsCount) }}</template>
+        </AppStatHero>
+        <AppStatHero label="Площадь" accent="sky">
+          <template #value>{{ layout.area }}</template>
+          <template #sub>
+            <span class="text-xs text-(--ui-text-dimmed)">м²</span>
+          </template>
+        </AppStatHero>
+        <AppStatHero label="Квартир с планировкой" accent="emerald">
+          <template #value>{{ apartmentsData?.length ?? 0 }}</template>
+        </AppStatHero>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <!-- Left: Images -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Info -->
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div class="flex items-start gap-3">
-                <UIcon name="i-tabler-home" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Rooms</p>
-                  <p class="text-sm font-medium">{{ layout.roomsCount === 0 ? 'Studio' : layout.roomsCount }}</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-3">
-                <UIcon name="i-tabler-ruler-2" class="mt-0.5 size-4 text-(--ui-text-muted)" />
-                <div>
-                  <p class="text-xs text-(--ui-text-muted)">Area</p>
-                  <p class="text-sm font-medium">{{ layout.area }} m²</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Default Layout Image -->
-          <div v-if="layout.defaultLayoutImage" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Layout Image</h3>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <!-- Left: layout image -->
+        <div class="lg:col-span-2 space-y-3">
+          <AppDataCard v-if="layout.defaultLayoutImage" title="Планировка">
             <img
               :src="layout.defaultLayoutImage"
               :alt="layout.name"
               class="w-full rounded-lg bg-(--ui-bg-elevated)"
             />
-          </div>
-
-          <div v-if="!layout.defaultLayoutImage" class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
-            <UIcon name="i-tabler-photo-off" class="mx-auto size-12 text-(--ui-text-muted)" />
-            <p class="mt-2 text-(--ui-text-muted)">No images available</p>
-          </div>
+          </AppDataCard>
+          <AppDataCard v-else>
+            <AppEmptyState
+              compact
+              icon="i-tabler-photo-off"
+              title="Изображения нет"
+              description="Загрузите картинку планировки на странице ЖК."
+            />
+          </AppDataCard>
         </div>
 
-        <!-- Right: Tags + Sun Position -->
-        <div class="space-y-6">
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-            <h3 class="mb-3 font-semibold">Tags</h3>
-            <div v-if="layout.tags?.length" class="flex flex-wrap gap-2">
-              <UBadge
+        <!-- Right: meta + sun -->
+        <div class="space-y-3">
+          <AppDataCard title="Теги">
+            <div v-if="layout.tags?.length" class="flex flex-wrap gap-1.5">
+              <AppStatusPill
                 v-for="tagPivot in layout.tags"
                 :key="tagPivot.tagId"
-                variant="subtle"
-                color="neutral"
-              >
-                {{ tagPivot.tag.name }}
-              </UBadge>
+                tone="muted"
+                :label="tagPivot.tag.name"
+              />
             </div>
-            <p v-else class="text-sm text-(--ui-text-muted)">No tags</p>
-          </div>
+            <p v-else class="text-xs text-(--ui-text-dimmed)">Нет тегов</p>
+          </AppDataCard>
 
-          <!-- Sun Position -->
-          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
+          <AppDataCard title="Положение солнца">
             <SunPositionSelector v-model="sunPosition" />
-            <div class="mt-6">
-              <UButton
-                :loading="sunMutation.isPending.value"
+            <div class="mt-4 flex">
+              <AppToolbarButton
+                variant="primary"
                 icon="i-tabler-device-floppy"
-                class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
+                :loading="sunMutation.isPending.value"
                 @click="sunMutation.mutate()"
               >
                 Сохранить
-              </UButton>
+              </AppToolbarButton>
             </div>
-          </div>
+          </AppDataCard>
         </div>
       </div>
-      <!-- Apartments Table -->
-      <div class="mt-6">
-        <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">
-          <h3 class="mb-4 font-semibold">Квартиры с этой планировкой</h3>
 
-          <UTable
-            :data="apartmentsData ?? []"
-            :columns="[
-              { accessorKey: 'apartmentNumber', header: '№' },
-              { accessorKey: 'floorNumber', header: 'Этаж' },
-              { accessorKey: 'area', header: 'Площадь' },
-              { id: 'price', header: 'Цена' },
-              { id: 'status', header: 'Статус' },
-              { id: 'building', header: 'Корпус' },
-              { id: 'actions', header: '' },
-            ]"
-            :loading="isApartmentsPending"
-          >
-            <template #price-cell="{ row }">
-              {{ Number(row.original.price).toLocaleString('ru-RU') }} ₽
-            </template>
+      <!-- Apartments with this layout -->
+      <AppDataCard
+        flush
+        :title="`Квартиры с этой планировкой · ${apartmentsData?.length ?? 0}`"
+        class="mt-3"
+      >
+        <UTable
+          v-if="apartmentsData?.length"
+          :data="apartmentsData"
+          :columns="[
+            { accessorKey: 'apartmentNumber', header: '№' },
+            { accessorKey: 'floorNumber', header: 'Этаж' },
+            { accessorKey: 'area', header: 'Площадь' },
+            { id: 'price', header: 'Цена' },
+            { id: 'status', header: 'Статус' },
+            { id: 'building', header: 'Корпус' },
+            { id: 'actions', header: '' },
+          ]"
+          :loading="isApartmentsPending"
+        >
+          <template #price-cell="{ row }">
+            <span class="tabular-nums">{{ fmtPrice(row.original.price) }} ₽</span>
+          </template>
 
-            <template #status-cell="{ row }">
-              <UBadge
-                :color="{ free: 'success', paid_reservation: 'warning', corporate_reservation: 'warning', sold: 'error' }[row.original.status] as any ?? 'neutral'"
-                variant="subtle"
-              >
-                {{ row.original.status.replace(/_/g, ' ') }}
-              </UBadge>
-            </template>
+          <template #status-cell="{ row }">
+            <AppStatusPill
+              :tone="statusTone[row.original.status] ?? 'muted'"
+              :label="statusLabel[row.original.status] ?? row.original.status"
+              dot
+            />
+          </template>
 
-            <template #building-cell="{ row }">
-              <NuxtLink
-                v-if="row.original.building"
-                :to="`/buildings/${row.original.building.id}`"
-                class="text-primary hover:underline"
-              >
-                {{ row.original.building.name }}
-              </NuxtLink>
-              <span v-else class="text-(--ui-text-muted)">—</span>
-            </template>
+          <template #building-cell="{ row }">
+            <NuxtLink
+              v-if="row.original.building"
+              :to="`/buildings/${row.original.building.id}`"
+              class="text-(--ui-text-muted) hover:text-(--ui-text) hover:underline transition"
+            >
+              {{ row.original.building.name }}
+            </NuxtLink>
+            <span v-else class="text-(--ui-text-dimmed)">—</span>
+          </template>
 
-            <template #actions-cell="{ row }">
-              <UButton
-                :to="`/apartments/${row.original.id}`"
-                variant="ghost"
-                icon="i-tabler-eye"
-                size="sm"
-              />
-            </template>
-          </UTable>
-
-          <p v-if="!isApartmentsPending && !apartmentsData?.length" class="text-sm text-(--ui-text-muted)">
-            Нет квартир с этой планировкой
-          </p>
-        </div>
-      </div>
+          <template #actions-cell="{ row }">
+            <AppToolbarButton
+              :to="`/apartments/${row.original.id}`"
+              variant="subtle"
+              icon="i-tabler-eye"
+              title="Открыть"
+            />
+          </template>
+        </UTable>
+        <AppEmptyState
+          v-else
+          compact
+          icon="i-tabler-home-off"
+          title="Нет квартир"
+          description="Эта планировка ещё не привязана к квартирам."
+        />
+      </AppDataCard>
     </template>
   </PageContainer>
 </template>
