@@ -88,77 +88,76 @@ const deleteMutation = useMutation({
 
 <template>
   <PageContainer>
-    <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
-      <span>Загрузка...</span>
+    <div
+      v-if="isPending"
+      class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
+    >
+      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      Загрузка…
     </div>
 
     <template v-else-if="method">
-      <div class="mb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <NuxtLink to="/purchase-methods">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
-          </NuxtLink>
-          <h1 class="text-2xl font-bold">{{ form.title || "Редактирование" }}</h1>
-        </div>
-        <div class="flex items-center gap-2">
-          <UButton
-            variant="outline"
-            color="error"
-            icon="i-tabler-trash"
-            class="rounded-md"
-            :loading="deleteMutation.isPending.value"
+      <AppPageHeader
+        :title="form.title || 'Редактирование'"
+        back="/purchase-methods"
+        :crumbs="[
+          { label: 'Способы покупки', to: '/purchase-methods' },
+          { label: form.title || '…' },
+        ]"
+      >
+        <template #actions>
+          <button
+            class="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-medium hover:bg-red-500/10 transition disabled:opacity-40"
+            :disabled="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >
+            <UIcon
+              v-if="deleteMutation.isPending.value"
+              name="i-tabler-loader-2"
+              class="size-3.5 animate-spin"
+            />
+            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
             Удалить
-          </UButton>
-          <UButton
+          </button>
+          <AppToolbarButton
+            variant="primary"
             icon="i-tabler-device-floppy"
-            class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
             Сохранить
-          </UButton>
-        </div>
-      </div>
+          </AppToolbarButton>
+        </template>
+      </AppPageHeader>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div class="lg:col-span-2 space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
+          <AppDataCard title="Основные">
+            <div class="space-y-3">
+              <UFormField label="Тип">
+                <USelect
+                  v-model="form.kind"
+                  :items="purchaseMethodKindOptions"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField label="Заголовок">
+                <UInput v-model="form.title" size="sm" />
+              </UFormField>
+              <UFormField label="Описание">
+                <UTextarea v-model="form.description" :rows="3" />
+              </UFormField>
+            </div>
+          </AppDataCard>
+
+          <AppDataCard
+            :title="`Параметры · ${purchaseMethodKindLabels[form.kind]}`"
           >
-            <UFormField label="Тип">
-              <USelect
-                v-model="form.kind"
-                :items="purchaseMethodKindOptions"
-                size="lg"
-              />
-            </UFormField>
-
-            <UFormField label="Заголовок">
-              <UInput v-model="form.title" size="lg" />
-            </UFormField>
-
-            <UFormField label="Описание">
-              <UTextarea v-model="form.description" :rows="3" />
-            </UFormField>
-          </div>
-
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <h3 class="text-sm font-semibold">
-              Параметры типа «{{ purchaseMethodKindLabels[form.kind] }}»
-            </h3>
             <PurchaseMethodDataFields v-model="form.data" :kind="form.kind" />
-          </div>
+          </AppDataCard>
 
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <h3 class="text-sm font-semibold">Доступен для проектов</h3>
-            <p class="text-xs text-(--ui-text-muted)">
+          <AppDataCard title="Доступен для проектов">
+            <p class="text-xs text-(--ui-text-dimmed) mb-2">
               Если не выбран ни один — способ действует для всех проектов.
             </p>
             <USelectMenu
@@ -167,26 +166,37 @@ const deleteMutation = useMutation({
               value-key="value"
               multiple
               placeholder="Выберите проекты"
+              size="sm"
+              class="w-full"
             />
-          </div>
+          </AppDataCard>
         </div>
 
         <div class="space-y-3">
-          <div
-            class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
-          >
-            <UFormField label="Активен">
-              <USwitch v-model="form.isActive" />
-            </UFormField>
-
-            <UFormField label="Порядок" hint="Меньше — выше в списке">
-              <UInput v-model.number="form.sortOrder" type="number" />
-            </UFormField>
-
-            <UFormField label="Иконка" :hint="`По умолчанию: ${defaultIconForKind}`">
-              <UInput v-model="form.icon" :placeholder="defaultIconForKind" />
-            </UFormField>
-          </div>
+          <AppDataCard title="Настройки">
+            <div class="space-y-3">
+              <UFormField label="Активен">
+                <USwitch v-model="form.isActive" />
+              </UFormField>
+              <UFormField label="Порядок" hint="Меньше — выше в списке">
+                <UInput
+                  v-model.number="form.sortOrder"
+                  type="number"
+                  size="sm"
+                />
+              </UFormField>
+              <UFormField
+                label="Иконка"
+                :hint="`По умолчанию: ${defaultIconForKind}`"
+              >
+                <UInput
+                  v-model="form.icon"
+                  :placeholder="defaultIconForKind"
+                  size="sm"
+                />
+              </UFormField>
+            </div>
+          </AppDataCard>
         </div>
       </div>
     </template>
