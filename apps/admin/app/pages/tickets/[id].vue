@@ -64,7 +64,7 @@ function formatDate(date: string) {
           variant="outline"
           color="error"
           icon="i-tabler-trash"
-          class="rounded-md"
+         
           :loading="deleteMutation.isPending.value"
           @click="deleteMutation.mutate()"
         >

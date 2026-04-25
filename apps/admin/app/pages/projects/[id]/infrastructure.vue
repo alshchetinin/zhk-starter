@@ -122,7 +122,7 @@ const saveMutation = useMutation({
         <UButton
           variant="outline"
           :icon="showCategories ? 'i-tabler-category' : 'i-tabler-category'"
-          class="rounded-md"
+         
           @click="showCategories = !showCategories"
         >
           Категории ({{ categories.length }})

@@ -156,7 +156,7 @@ function apply() {
           <div class="flex justify-end gap-2">
             <UButton
               variant="outline"
-              class="rounded-md"
+             
               @click="showConfirm = false"
             >
               Отмена
@@ -164,7 +164,7 @@ function apply() {
             <UButton
               color="error"
               :loading="setMutation.isPending.value"
-              class="rounded-md"
+             
               @click="setMutation.mutate(true)"
             >
               Удалить и сменить

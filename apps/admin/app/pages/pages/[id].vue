@@ -129,7 +129,7 @@ const deleteMutation = useMutation({
             variant="outline"
             color="error"
             icon="i-tabler-trash"
-            class="rounded-md"
+           
             :loading="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
           >

@@ -35,7 +35,7 @@ const deleteMutation = useMutation({
     <div class="mb-4 flex items-center justify-between">
       <h3 class="text-lg font-semibold">Страницы проекта</h3>
       <NuxtLink :to="`/pages/create?projectId=${project.id}`">
-        <UButton icon="i-tabler-plus" size="sm" class="rounded-md">
+        <UButton icon="i-tabler-plus" size="sm">
           Создать страницу
         </UButton>
       </NuxtLink>
