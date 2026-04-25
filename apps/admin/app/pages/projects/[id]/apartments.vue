@@ -78,7 +78,7 @@ const { data, isPending } = useQuery(
 const { data: layoutsData } = useQuery(
   computed(() =>
     $orpc.apartmentLayouts.list.queryOptions({
-      input: { page: 1, pageSize: 200, projectId: projectId.value },
+      input: { page: 1, pageSize: 100, projectId: projectId.value },
     }),
   ),
 );
