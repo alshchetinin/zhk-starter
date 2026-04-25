@@ -9,6 +9,21 @@ Turborepo монорепо:
 - `packages/api` — oRPC роутер + Zod схемы
 - `packages/db` — Drizzle ORM + PostgreSQL
 
+## UI в admin: только @nuxt/ui
+
+В `apps/admin` всегда используем готовые компоненты из `@nuxt/ui` v4
+(`UButton`, `UInput`, `USelect`, `UModal`, `UTable`, `UFormField` и т.д.).
+**Не создавать собственные обёртки/копии** того, что уже есть в @nuxt/ui.
+
+- Внешний вид настраивается централизованно в `apps/admin/app/app.config.ts`
+  через `ui.<component>.defaultVariants` и `ui.<component>.slots`.
+- Если нужно что-то непохожее на стандартный @nuxt/ui — сначала пробуем
+  настроить через `app.config.ts` или `:ui` prop, и только если совсем
+  не получается — обёртка с осознанным обоснованием.
+- Линейные тонкие компоненты-композиции (например, `AppPageHeader`,
+  `AppDataCard`, `AppStatusPill`, `AppEmptyState`, `AppStatHero`) — это
+  layout-примитивы, а не замена стандартных интерактивных компонентов.
+
 ## Блочная система
 
 Блоки — типизированные секции контента. Хранятся как JSONB в БД, редактируются в админке, рендерятся на сайте.
