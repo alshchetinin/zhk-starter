@@ -7,7 +7,7 @@ import {
   apartmentLayouts,
   apartments,
 } from "@zhk/db/schema";
-import { and, count, eq, ilike, inArray, isNull } from "drizzle-orm";
+import { and, count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
@@ -136,33 +136,31 @@ export const tagsRouter = {
       }
 
       await db.transaction(async (tx) => {
-        const manual = await tx
-          .select({ id: tags.id })
-          .from(tags)
-          .where(isNull(tags.integrationId));
-        const manualIds = new Set(manual.map((t) => t.id));
-        const targetManualIds = input.tagIds.filter((id) => manualIds.has(id));
-
-        if (manualIds.size > 0) {
-          await tx
-            .delete(apartmentLayoutTags)
-            .where(
-              and(
-                eq(apartmentLayoutTags.layoutId, input.layoutId),
-                inArray(apartmentLayoutTags.tagId, [...manualIds]),
-              ),
-            );
-        }
-        if (targetManualIds.length > 0) {
+        await tx
+          .delete(apartmentLayoutTags)
+          .where(
+            and(
+              eq(apartmentLayoutTags.layoutId, input.layoutId),
+              eq(apartmentLayoutTags.isManual, true),
+            ),
+          );
+        if (input.tagIds.length > 0) {
           await tx
             .insert(apartmentLayoutTags)
             .values(
-              targetManualIds.map((tagId) => ({
+              input.tagIds.map((tagId) => ({
                 layoutId: input.layoutId,
                 tagId,
+                isManual: true,
               })),
             )
-            .onConflictDoNothing();
+            .onConflictDoUpdate({
+              target: [
+                apartmentLayoutTags.layoutId,
+                apartmentLayoutTags.tagId,
+              ],
+              set: { isManual: true },
+            });
         }
       });
 

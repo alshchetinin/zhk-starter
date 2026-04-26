@@ -139,10 +139,10 @@ async function clearJoinTable(
   integrationId: string,
 ): Promise<void> {
   if (tableName === "apartment_layout_tags") {
-    // Delete only IMPORTED tag associations on layouts of this integration.
-    // Manual tags (tag.integration_id IS NULL) survive sync — admins can
-    // attach them to imported layouts and rely on them not being wiped.
-    const { apartmentLayouts, apartmentLayoutTags, tags } = await import(
+    // Wipe only sync-owned (is_manual=false) links on layouts of this
+    // integration. Manual links — including those attaching imported tags
+    // to other layouts — are tracked by is_manual=true and survive sync.
+    const { apartmentLayouts, apartmentLayoutTags } = await import(
       "@zhk/db/schema"
     );
     const layouts = await tx
@@ -151,27 +151,18 @@ async function clearJoinTable(
       .where(eq(apartmentLayouts.integrationId, integrationId));
 
     if (layouts.length) {
-      const { and, inArray, isNotNull } = await import("drizzle-orm");
-      const importedTags = await tx
-        .select({ id: tags.id })
-        .from(tags)
-        .where(isNotNull(tags.integrationId));
-      if (importedTags.length) {
-        await tx
-          .delete(apartmentLayoutTags)
-          .where(
-            and(
-              inArray(
-                apartmentLayoutTags.layoutId,
-                layouts.map((l) => l.id),
-              ),
-              inArray(
-                apartmentLayoutTags.tagId,
-                importedTags.map((t) => t.id),
-              ),
+      const { and, eq: dEq, inArray } = await import("drizzle-orm");
+      await tx
+        .delete(apartmentLayoutTags)
+        .where(
+          and(
+            inArray(
+              apartmentLayoutTags.layoutId,
+              layouts.map((l) => l.id),
             ),
-          );
-      }
+            dEq(apartmentLayoutTags.isManual, false),
+          ),
+        );
     }
   } else if (tableName === "apartment_promotions") {
     // Delete apartment promotions where apartment belongs to this integration

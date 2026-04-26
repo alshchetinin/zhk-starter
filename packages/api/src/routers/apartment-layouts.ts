@@ -4,9 +4,8 @@ import {
   apartmentLayouts,
   apartmentLayoutTags,
   apartments,
-  tags,
 } from "@zhk/db/schema";
-import { and, count, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNotNull } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
@@ -183,32 +182,31 @@ export const apartmentLayoutsRouter = {
 
       if (tagIds !== undefined) {
         await db.transaction(async (tx) => {
-          const manual = await tx
-            .select({ id: tags.id })
-            .from(tags)
-            .where(isNull(tags.integrationId));
-          const manualIds = new Set(manual.map((t) => t.id));
-          const targetManualIds = tagIds.filter((tid) => manualIds.has(tid));
-          if (manualIds.size > 0) {
-            await tx
-              .delete(apartmentLayoutTags)
-              .where(
-                and(
-                  eq(apartmentLayoutTags.layoutId, input.id),
-                  inArray(apartmentLayoutTags.tagId, [...manualIds]),
-                ),
-              );
-          }
-          if (targetManualIds.length > 0) {
+          await tx
+            .delete(apartmentLayoutTags)
+            .where(
+              and(
+                eq(apartmentLayoutTags.layoutId, input.id),
+                eq(apartmentLayoutTags.isManual, true),
+              ),
+            );
+          if (tagIds.length > 0) {
             await tx
               .insert(apartmentLayoutTags)
               .values(
-                targetManualIds.map((tagId) => ({
+                tagIds.map((tagId) => ({
                   layoutId: input.id,
                   tagId,
+                  isManual: true,
                 })),
               )
-              .onConflictDoNothing();
+              .onConflictDoUpdate({
+                target: [
+                  apartmentLayoutTags.layoutId,
+                  apartmentLayoutTags.tagId,
+                ],
+                set: { isManual: true },
+              });
           }
         });
       }

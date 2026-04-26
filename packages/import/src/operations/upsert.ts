@@ -183,7 +183,9 @@ async function upsertJoinTable(
   });
 
   for (const chunk of chunkArray(validData, BATCH_SIZE)) {
-    await tx.insert(table).values(chunk);
+    // onConflictDoNothing: a manually-attached link (is_manual=true) for
+    // the same (layoutId, tagId) must survive a re-import.
+    await tx.insert(table).values(chunk).onConflictDoNothing();
   }
 
   return { inserted: validData.length, updated: 0 };
