@@ -8,7 +8,7 @@ const toast = useToast();
 const queryClient = useQueryClient();
 
 const { data: tagsData } = useQuery(
-  $orpc.tags.list.queryOptions({ input: { page: 1, pageSize: 500 } }),
+  $orpc.tags.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );
 
 const newTagName = ref("");
