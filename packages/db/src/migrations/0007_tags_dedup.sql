@@ -1,6 +1,5 @@
--- Tags accumulated duplicates because import upserts by external_id, but the
--- same name can arrive with different external_ids. Pick canonical (MIN id)
--- per (site_id, name), rewire join rows, drop dupes, lock with UNIQUE.
+-- Collapse duplicate tags to canonical (MIN id) per (site_id, name) and
+-- enforce UNIQUE so future syncs cannot recreate dupes.
 
 INSERT INTO apartment_layout_tags (layout_id, tag_id)
 SELECT DISTINCT alt.layout_id, c.canonical_id

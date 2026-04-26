@@ -1,14 +1,11 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import {
-  apartmentLayouts,
-  apartmentLayoutTags,
-  apartments,
-} from "@zhk/db/schema";
+import { apartmentLayouts, apartments } from "@zhk/db/schema";
 import { and, count, eq, inArray, isNotNull } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
+import { replaceManualLayoutTags } from "../shared/manual-layout-tags";
 
 const galleryItemSchema = z.object({
   url: z.string().min(1),
@@ -181,34 +178,9 @@ export const apartmentLayoutsRouter = {
       }
 
       if (tagIds !== undefined) {
-        await db.transaction(async (tx) => {
-          await tx
-            .delete(apartmentLayoutTags)
-            .where(
-              and(
-                eq(apartmentLayoutTags.layoutId, input.id),
-                eq(apartmentLayoutTags.isManual, true),
-              ),
-            );
-          if (tagIds.length > 0) {
-            await tx
-              .insert(apartmentLayoutTags)
-              .values(
-                tagIds.map((tagId) => ({
-                  layoutId: input.id,
-                  tagId,
-                  isManual: true,
-                })),
-              )
-              .onConflictDoUpdate({
-                target: [
-                  apartmentLayoutTags.layoutId,
-                  apartmentLayoutTags.tagId,
-                ],
-                set: { isManual: true },
-              });
-          }
-        });
+        await db.transaction((tx) =>
+          replaceManualLayoutTags(tx, input.id, tagIds),
+        );
       }
 
       if (Object.keys(updates).length === 0) return existing;

@@ -126,7 +126,6 @@ const updateMutation = useMutation({
     if (editable("ceilingHeight"))
       payload.ceilingHeight = form.ceilingHeight ?? null;
     payload.gallery = form.gallery;
-    payload.tagIds = form.tagIds;
 
     return $orpcClient.apartmentLayouts.update(payload as any);
   },

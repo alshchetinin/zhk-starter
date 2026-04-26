@@ -2,15 +2,15 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import {
   tags,
-  apartmentLayoutTags,
   apartmentTags,
   apartmentLayouts,
   apartments,
 } from "@zhk/db/schema";
-import { and, count, eq, ilike } from "drizzle-orm";
+import { count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
+import { replaceManualLayoutTags } from "../shared/manual-layout-tags";
 
 export const tagsRouter = {
   list: protectedProcedure
@@ -135,34 +135,9 @@ export const tagsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Планировка не найдена" });
       }
 
-      await db.transaction(async (tx) => {
-        await tx
-          .delete(apartmentLayoutTags)
-          .where(
-            and(
-              eq(apartmentLayoutTags.layoutId, input.layoutId),
-              eq(apartmentLayoutTags.isManual, true),
-            ),
-          );
-        if (input.tagIds.length > 0) {
-          await tx
-            .insert(apartmentLayoutTags)
-            .values(
-              input.tagIds.map((tagId) => ({
-                layoutId: input.layoutId,
-                tagId,
-                isManual: true,
-              })),
-            )
-            .onConflictDoUpdate({
-              target: [
-                apartmentLayoutTags.layoutId,
-                apartmentLayoutTags.tagId,
-              ],
-              set: { isManual: true },
-            });
-        }
-      });
+      await db.transaction((tx) =>
+        replaceManualLayoutTags(tx, input.layoutId, input.tagIds),
+      );
 
       return { success: true };
     }),
