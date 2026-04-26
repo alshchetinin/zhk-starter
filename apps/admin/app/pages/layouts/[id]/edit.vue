@@ -13,7 +13,6 @@ const FALLBACK_LOCKED = [
   "defaultLayoutImage",
   "threeDLayoutImage",
   "ceilingHeight",
-  "tags",
 ];
 
 const FIELD_LABELS: Record<string, string> = {
@@ -69,6 +68,7 @@ type Form = {
   threeDTourUrl: string | null;
   ceilingHeight: number | null;
   gallery: GalleryItem[];
+  tagIds: string[];
 };
 
 const form = reactive<Form>({
@@ -83,6 +83,7 @@ const form = reactive<Form>({
   threeDTourUrl: null,
   ceilingHeight: null,
   gallery: [],
+  tagIds: [],
 });
 
 watch(
@@ -100,6 +101,7 @@ watch(
     form.threeDTourUrl = (l as { threeDTourUrl?: string | null }).threeDTourUrl ?? null;
     form.ceilingHeight = l.ceilingHeight != null ? Number(l.ceilingHeight) : null;
     form.gallery = (l.gallery as GalleryItem[] | null) ?? [];
+    form.tagIds = (l.tags ?? []).map((t: { tagId: string }) => t.tagId);
   },
   { immediate: true },
 );
@@ -124,6 +126,7 @@ const updateMutation = useMutation({
     if (editable("ceilingHeight"))
       payload.ceilingHeight = form.ceilingHeight ?? null;
     payload.gallery = form.gallery;
+    payload.tagIds = form.tagIds;
 
     return $orpcClient.apartmentLayouts.update(payload as any);
   },
@@ -288,6 +291,14 @@ const updateMutation = useMutation({
               with-captions
               folder="uploads/layouts"
             />
+          </AppDataCard>
+
+          <AppDataCard title="Теги">
+            <p class="text-xs text-(--ui-text-dimmed) mb-2">
+              Импортные теги управляются синхронизацией. Здесь можно
+              привязать или отвязать ручные теги.
+            </p>
+            <TagsPicker v-model="form.tagIds" />
           </AppDataCard>
         </div>
 

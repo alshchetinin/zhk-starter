@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { apartments, tickets } from "@zhk/db/schema";
+import { apartments, apartmentTags, tickets } from "@zhk/db/schema";
 import { and, asc, count, eq, gte, lte } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
@@ -46,7 +46,12 @@ export const apartmentsRouter = {
           where,
           limit: pageSize,
           offset: calcOffset(page, pageSize),
-          with: { project: true, building: true, apartmentLayout: true },
+          with: {
+            project: true,
+            building: true,
+            apartmentLayout: true,
+            apartmentTags: { with: { tag: true } },
+          },
           orderBy: (a, { desc }) => [desc(a.createdAt)],
         }),
         db.select({ total: count() }).from(apartments).where(where),
@@ -96,6 +101,7 @@ export const apartmentsRouter = {
           decoration: true,
           floor: true,
           promotions: { with: { promotion: true } },
+          apartmentTags: { with: { tag: true } },
         },
       });
       if (!apartment) {
@@ -121,6 +127,7 @@ export const apartmentsRouter = {
         floorId: z.string().nullable().optional(),
         apartmentLayoutId: z.string().nullable().optional(),
         threeDTourUrl: z.string().url().nullable().optional(),
+        tagIds: z.array(z.string()).optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -143,6 +150,14 @@ export const apartmentsRouter = {
           threeDTourUrl: input.threeDTourUrl ?? null,
         })
         .returning();
+      if (input.tagIds && input.tagIds.length > 0 && created) {
+        await db
+          .insert(apartmentTags)
+          .values(
+            input.tagIds.map((tagId) => ({ apartmentId: created.id, tagId })),
+          )
+          .onConflictDoNothing();
+      }
       return created;
     }),
 
@@ -163,6 +178,7 @@ export const apartmentsRouter = {
         floorId: z.string().nullable().optional(),
         apartmentLayoutId: z.string().nullable().optional(),
         threeDTourUrl: z.string().url().nullable().optional(),
+        tagIds: z.array(z.string()).optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -173,7 +189,7 @@ export const apartmentsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Apartment not found" });
       }
 
-      const { id, ...fields } = input;
+      const { id, tagIds, ...fields } = input;
       const updates: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(fields)) {
         if (value === undefined) continue;
@@ -183,6 +199,21 @@ export const apartmentsRouter = {
           updates[key] = value;
         }
       }
+
+      if (tagIds !== undefined) {
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(apartmentTags)
+            .where(eq(apartmentTags.apartmentId, input.id));
+          if (tagIds.length > 0) {
+            await tx
+              .insert(apartmentTags)
+              .values(tagIds.map((tagId) => ({ apartmentId: input.id, tagId })))
+              .onConflictDoNothing();
+          }
+        });
+      }
+
       if (Object.keys(updates).length === 0) return existing;
 
       const [updated] = await db

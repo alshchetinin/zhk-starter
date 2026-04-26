@@ -13,6 +13,7 @@ export * from "./apartment-layouts";
 export * from "./apartments";
 export * from "./tags";
 export * from "./apartment-layout-tags";
+export * from "./apartment-tags";
 export * from "./decorations";
 export * from "./promotions";
 export * from "./banks";

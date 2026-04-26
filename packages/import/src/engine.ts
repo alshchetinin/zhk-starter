@@ -97,10 +97,6 @@ export async function importAllData(
           integrationId,
         );
 
-        if (tableName === "apartment_layout_tags" && dbData.length) {
-          await markLayoutsTagsSynced(tx, dbData);
-        }
-
         results.push({
           table: tableName,
           inserted,
@@ -124,39 +120,6 @@ export async function importAllData(
 }
 
 /**
- * After importing apartment_layout_tags, mark affected layouts as having
- * "tags" in their syncedFields snapshot — so the admin UI knows to lock
- * tag editing for layouts owned by integrations that ship tags.
- */
-async function markLayoutsTagsSynced(
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  dbData: Record<string, unknown>[],
-): Promise<void> {
-  const layoutIds = Array.from(
-    new Set(
-      dbData
-        .map((row) => row.layoutId as string | undefined)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  );
-  if (!layoutIds.length) return;
-
-  const { apartmentLayouts } = await import("@zhk/db/schema");
-  const { inArray, sql } = await import("drizzle-orm");
-  await tx
-    .update(apartmentLayouts)
-    .set({
-      syncedFields: sql`(
-        SELECT to_jsonb(array_agg(DISTINCT v))
-        FROM jsonb_array_elements_text(
-          COALESCE(${apartmentLayouts.syncedFields}, '[]'::jsonb) || '["tags"]'::jsonb
-        ) AS v
-      )`,
-    })
-    .where(inArray(apartmentLayouts.id, layoutIds));
-}
-
-/**
  * Get data array from ImportData by table name.
  */
 function getTableData(
@@ -176,8 +139,10 @@ async function clearJoinTable(
   integrationId: string,
 ): Promise<void> {
   if (tableName === "apartment_layout_tags") {
-    // Delete layout tags where the layout belongs to this integration
-    const { apartmentLayouts, apartmentLayoutTags } = await import(
+    // Delete only IMPORTED tag associations on layouts of this integration.
+    // Manual tags (tag.integration_id IS NULL) survive sync — admins can
+    // attach them to imported layouts and rely on them not being wiped.
+    const { apartmentLayouts, apartmentLayoutTags, tags } = await import(
       "@zhk/db/schema"
     );
     const layouts = await tx
@@ -186,15 +151,27 @@ async function clearJoinTable(
       .where(eq(apartmentLayouts.integrationId, integrationId));
 
     if (layouts.length) {
-      const { inArray } = await import("drizzle-orm");
-      await tx
-        .delete(apartmentLayoutTags)
-        .where(
-          inArray(
-            apartmentLayoutTags.layoutId,
-            layouts.map((l) => l.id),
-          ),
-        );
+      const { and, inArray, isNotNull } = await import("drizzle-orm");
+      const importedTags = await tx
+        .select({ id: tags.id })
+        .from(tags)
+        .where(isNotNull(tags.integrationId));
+      if (importedTags.length) {
+        await tx
+          .delete(apartmentLayoutTags)
+          .where(
+            and(
+              inArray(
+                apartmentLayoutTags.layoutId,
+                layouts.map((l) => l.id),
+              ),
+              inArray(
+                apartmentLayoutTags.tagId,
+                importedTags.map((t) => t.id),
+              ),
+            ),
+          );
+      }
     }
   } else if (tableName === "apartment_promotions") {
     // Delete apartment promotions where apartment belongs to this integration

@@ -185,9 +185,22 @@ function fmtRooms(n: number) {
             :label="statusLabel[apt.status] ?? apt.status"
             dot
           />
-          <span class="truncate text-(--ui-text-muted)">
-            {{ apt.project?.name ?? "—" }}
-          </span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="truncate text-(--ui-text-muted)">
+              {{ apt.project?.name ?? "—" }}
+            </span>
+            <div
+              v-if="apt.apartmentTags?.length"
+              class="flex flex-wrap gap-1 shrink-0"
+            >
+              <AppStatusPill
+                v-for="t in apt.apartmentTags"
+                :key="t.tagId"
+                tone="muted"
+                :label="t.tag.name"
+              />
+            </div>
+          </div>
           <UIcon
             name="i-tabler-chevron-right"
             class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition justify-self-end"

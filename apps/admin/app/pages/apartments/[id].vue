@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { useQuery } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 
-const { $orpc } = useNuxtApp();
+const { $orpc, $orpcClient } = useNuxtApp();
 const router = useRouter();
 const route = useRoute();
+const toast = useToast();
+const queryClient = useQueryClient();
 const id = computed(() => route.params.id as string);
 
 const { data: apartment, isPending } = useQuery(
@@ -11,6 +13,30 @@ const { data: apartment, isPending } = useQuery(
     $orpc.apartments.getById.queryOptions({ input: { id: id.value } }),
   ),
 );
+
+const tagIds = ref<string[]>([]);
+watch(
+  apartment,
+  (a) => {
+    if (!a) return;
+    tagIds.value = (a.apartmentTags ?? []).map(
+      (t: { tagId: string }) => t.tagId,
+    );
+  },
+  { immediate: true },
+);
+
+const saveTagsMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.tags.setApartmentTags({
+      apartmentId: id.value,
+      tagIds: tagIds.value,
+    }),
+  onSuccess: () => {
+    toast.add({ title: "Теги обновлены", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.apartments.key() });
+  },
+});
 
 const floorId = computed(() => apartment.value?.floor?.id);
 
@@ -281,6 +307,21 @@ function onFloorPlanClick(event: MouseEvent) {
 
         <!-- Right column -->
         <div class="space-y-3">
+          <AppDataCard title="Теги">
+            <TagsPicker v-model="tagIds" />
+            <div class="mt-3 flex justify-end">
+              <UButton
+                size="sm"
+                color="primary"
+                icon="i-tabler-device-floppy"
+                :loading="saveTagsMutation.isPending.value"
+                @click="saveTagsMutation.mutate()"
+              >
+                Сохранить теги
+              </UButton>
+            </div>
+          </AppDataCard>
+
           <AppDataCard v-if="apartment.apartmentLayout" title="Планировка">
             <img
               v-if="apartment.apartmentLayout.defaultLayoutImage"
