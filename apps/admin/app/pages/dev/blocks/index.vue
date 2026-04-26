@@ -5,7 +5,10 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
-const { data, isPending } = useQuery($orpc.dev.blocks.list.queryOptions());
+const { data, isPending } = useQuery({
+  ...$orpc.dev.blocks.list.queryOptions(),
+  staleTime: 0,
+});
 
 const deleteMutation = useMutation({
   mutationFn: (type: string) => $orpcClient.dev.blocks.delete({ type }),

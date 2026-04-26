@@ -47,6 +47,12 @@ export default defineNuxtPlugin({
         persister,
         maxAge: 7 * DAY,
         buster: "v1",
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) => {
+            if (query.state.status !== "success") return false;
+            return query.queryKey[0] !== "dev";
+          },
+        },
       });
     }
 
