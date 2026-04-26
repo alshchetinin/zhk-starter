@@ -173,6 +173,25 @@ const updateMutation = useMutation({
     queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
   },
 });
+
+const saveTagsMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.tags.setLayoutTags({
+      layoutId: id.value,
+      tagIds: form.tagIds,
+    }),
+  onSuccess: () => {
+    toast.add({ title: "Теги сохранены", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
+  },
+  onError: (err: Error) => {
+    toast.add({
+      title: "Не удалось сохранить теги",
+      description: err.message,
+      color: "error",
+    });
+  },
+});
 </script>
 
 <template>
@@ -299,6 +318,17 @@ const updateMutation = useMutation({
               привязать или отвязать ручные теги.
             </p>
             <TagsPicker v-model="form.tagIds" lock-imported />
+            <div class="mt-3 flex justify-end">
+              <UButton
+                size="sm"
+                variant="soft"
+                icon="i-tabler-device-floppy"
+                :loading="saveTagsMutation.isPending.value"
+                @click="saveTagsMutation.mutate()"
+              >
+                Сохранить теги
+              </UButton>
+            </div>
           </AppDataCard>
         </div>
 

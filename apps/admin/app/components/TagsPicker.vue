@@ -45,6 +45,33 @@ const selectedTags = computed<Tag[]>(() =>
 const search = ref("");
 const isOpen = ref(false);
 const containerRef = ref<HTMLElement | null>(null);
+const dropdownStyle = ref({ top: "0px", left: "0px", width: "0px" });
+
+function updateDropdownPosition() {
+  if (!containerRef.value) return;
+  const r = containerRef.value.getBoundingClientRect();
+  dropdownStyle.value = {
+    top: `${r.bottom + 4}px`,
+    left: `${r.left}px`,
+    width: `${r.width}px`,
+  };
+}
+
+watch(isOpen, (v) => {
+  if (v) {
+    updateDropdownPosition();
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    window.addEventListener("resize", updateDropdownPosition);
+  } else {
+    window.removeEventListener("scroll", updateDropdownPosition, true);
+    window.removeEventListener("resize", updateDropdownPosition);
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", updateDropdownPosition, true);
+  window.removeEventListener("resize", updateDropdownPosition);
+});
 
 const suggestions = computed<Tag[]>(() => {
   const q = search.value.trim().toLowerCase();
@@ -175,9 +202,11 @@ onClickOutside(containerRef, () => {
       />
     </div>
 
+    <Teleport to="body">
     <div
       v-if="isOpen && (suggestions.length || canCreate)"
-      class="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded-md border border-(--ui-border) bg-(--ui-bg) shadow-lg"
+      class="fixed z-50 max-h-64 overflow-auto rounded-md border border-(--ui-border) bg-(--ui-bg) shadow-lg"
+      :style="dropdownStyle"
     >
       <button
         v-for="tag in suggestions"
@@ -216,5 +245,6 @@ onClickOutside(containerRef, () => {
         </span>
       </button>
     </div>
+    </Teleport>
   </div>
 </template>
