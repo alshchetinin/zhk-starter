@@ -92,6 +92,10 @@ export async function upsertRecords(
     return upsertJoinTable(tx, table, data);
   }
 
+  if (tableName === "tags") {
+    return upsertTags(tx, table, data, integrationId);
+  }
+
   // For regular tables, find existing by externalId + integrationId
   const externalIds = data
     .map((item) => item.externalId as string)
@@ -183,6 +187,86 @@ async function upsertJoinTable(
   }
 
   return { inserted: validData.length, updated: 0 };
+}
+
+/**
+ * Upsert tags by (site_id, name) — multiple sources can ship the same tag
+ * name with different external_ids; we collapse them into one canonical row.
+ */
+async function upsertTags(
+  tx: Parameters<Parameters<typeof import("@zhk/db").db.transaction>[0]>[0],
+  table: PgTable & Record<string, any>,
+  data: Record<string, unknown>[],
+  integrationId: string,
+): Promise<{ inserted: number; updated: number }> {
+  // Dedupe input by (siteId, name) — keep first occurrence
+  const byKey = new Map<string, Record<string, unknown>>();
+  for (const item of data) {
+    const name = item.name as string | undefined;
+    if (!name) continue;
+    const siteId = (item.siteId as string | undefined) ?? "default";
+    const key = `${siteId}::${name}`;
+    if (!byKey.has(key)) byKey.set(key, { ...item, siteId });
+  }
+  const unique = [...byKey.values()];
+
+  if (!unique.length) return { inserted: 0, updated: 0 };
+
+  // Find existing by (site_id, name)
+  const names = unique.map((u) => u.name as string);
+  const existingMap = new Map<
+    string,
+    { id: string; integrationId: string | null }
+  >();
+  for (const chunk of chunkArray(names, BATCH_SIZE)) {
+    const rows = await tx
+      .select({
+        id: table.id,
+        siteId: table.siteId,
+        name: table.name,
+        integrationId: table.integrationId,
+      })
+      .from(table)
+      .where(inArray(table.name, chunk));
+    for (const row of rows) {
+      existingMap.set(`${row.siteId}::${row.name}`, {
+        id: row.id,
+        integrationId: row.integrationId,
+      });
+    }
+  }
+
+  const toInsert: Record<string, unknown>[] = [];
+  const toUpdate: { id: string; values: Record<string, unknown> }[] = [];
+
+  for (const item of unique) {
+    const key = `${item.siteId}::${item.name}`;
+    const existing = existingMap.get(key);
+    if (existing) {
+      // Don't override a manual tag's name or claim it as imported.
+      // Just refresh externalId so future syncs see the link.
+      const values: Record<string, unknown> = {
+        externalId: item.externalId,
+      };
+      if (existing.integrationId) {
+        values.integrationId = integrationId;
+        values.name = item.name;
+      }
+      toUpdate.push({ id: existing.id, values });
+    } else {
+      item.integrationId = integrationId;
+      toInsert.push(item);
+    }
+  }
+
+  for (const chunk of chunkArray(toInsert, BATCH_SIZE)) {
+    await tx.insert(table).values(chunk);
+  }
+  for (const { id, values } of toUpdate) {
+    await tx.update(table).set(values).where(eq(table.id, id));
+  }
+
+  return { inserted: toInsert.length, updated: toUpdate.length };
 }
 
 export { toDbValues };
