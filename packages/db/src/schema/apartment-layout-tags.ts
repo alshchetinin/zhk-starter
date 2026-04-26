@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, primaryKey, text } from "drizzle-orm/pg-core";
+import { boolean, pgTable, primaryKey, text } from "drizzle-orm/pg-core";
 import { apartmentLayouts } from "./apartment-layouts";
 import { tags } from "./tags";
 
@@ -12,6 +12,7 @@ export const apartmentLayoutTags = pgTable(
     tagId: text("tag_id")
       .notNull()
       .references(() => tags.id, { onDelete: "cascade" }),
+    isManual: boolean("is_manual").default(false).notNull(),
   },
   (t) => [primaryKey({ columns: [t.layoutId, t.tagId] })],
 );

@@ -97,10 +97,6 @@ export async function importAllData(
           integrationId,
         );
 
-        if (tableName === "apartment_layout_tags" && dbData.length) {
-          await markLayoutsTagsSynced(tx, dbData);
-        }
-
         results.push({
           table: tableName,
           inserted,
@@ -124,39 +120,6 @@ export async function importAllData(
 }
 
 /**
- * After importing apartment_layout_tags, mark affected layouts as having
- * "tags" in their syncedFields snapshot — so the admin UI knows to lock
- * tag editing for layouts owned by integrations that ship tags.
- */
-async function markLayoutsTagsSynced(
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  dbData: Record<string, unknown>[],
-): Promise<void> {
-  const layoutIds = Array.from(
-    new Set(
-      dbData
-        .map((row) => row.layoutId as string | undefined)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  );
-  if (!layoutIds.length) return;
-
-  const { apartmentLayouts } = await import("@zhk/db/schema");
-  const { inArray, sql } = await import("drizzle-orm");
-  await tx
-    .update(apartmentLayouts)
-    .set({
-      syncedFields: sql`(
-        SELECT to_jsonb(array_agg(DISTINCT v))
-        FROM jsonb_array_elements_text(
-          COALESCE(${apartmentLayouts.syncedFields}, '[]'::jsonb) || '["tags"]'::jsonb
-        ) AS v
-      )`,
-    })
-    .where(inArray(apartmentLayouts.id, layoutIds));
-}
-
-/**
  * Get data array from ImportData by table name.
  */
 function getTableData(
@@ -176,7 +139,9 @@ async function clearJoinTable(
   integrationId: string,
 ): Promise<void> {
   if (tableName === "apartment_layout_tags") {
-    // Delete layout tags where the layout belongs to this integration
+    // Wipe only sync-owned (is_manual=false) links on layouts of this
+    // integration. Manual links — including those attaching imported tags
+    // to other layouts — are tracked by is_manual=true and survive sync.
     const { apartmentLayouts, apartmentLayoutTags } = await import(
       "@zhk/db/schema"
     );
@@ -186,13 +151,16 @@ async function clearJoinTable(
       .where(eq(apartmentLayouts.integrationId, integrationId));
 
     if (layouts.length) {
-      const { inArray } = await import("drizzle-orm");
+      const { and, eq: dEq, inArray } = await import("drizzle-orm");
       await tx
         .delete(apartmentLayoutTags)
         .where(
-          inArray(
-            apartmentLayoutTags.layoutId,
-            layouts.map((l) => l.id),
+          and(
+            inArray(
+              apartmentLayoutTags.layoutId,
+              layouts.map((l) => l.id),
+            ),
+            dEq(apartmentLayoutTags.isManual, false),
           ),
         );
     }

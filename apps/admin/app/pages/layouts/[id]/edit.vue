@@ -13,7 +13,6 @@ const FALLBACK_LOCKED = [
   "defaultLayoutImage",
   "threeDLayoutImage",
   "ceilingHeight",
-  "tags",
 ];
 
 const FIELD_LABELS: Record<string, string> = {
@@ -69,6 +68,7 @@ type Form = {
   threeDTourUrl: string | null;
   ceilingHeight: number | null;
   gallery: GalleryItem[];
+  tagIds: string[];
 };
 
 const form = reactive<Form>({
@@ -83,6 +83,7 @@ const form = reactive<Form>({
   threeDTourUrl: null,
   ceilingHeight: null,
   gallery: [],
+  tagIds: [],
 });
 
 watch(
@@ -100,6 +101,7 @@ watch(
     form.threeDTourUrl = (l as { threeDTourUrl?: string | null }).threeDTourUrl ?? null;
     form.ceilingHeight = l.ceilingHeight != null ? Number(l.ceilingHeight) : null;
     form.gallery = (l.gallery as GalleryItem[] | null) ?? [];
+    form.tagIds = (l.tags ?? []).map((t: { tagId: string }) => t.tagId);
   },
   { immediate: true },
 );
@@ -168,6 +170,25 @@ const updateMutation = useMutation({
   },
   onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
+  },
+});
+
+const saveTagsMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.tags.setLayoutTags({
+      layoutId: id.value,
+      tagIds: form.tagIds,
+    }),
+  onSuccess: () => {
+    toast.add({ title: "Теги сохранены", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
+  },
+  onError: (err: Error) => {
+    toast.add({
+      title: "Не удалось сохранить теги",
+      description: err.message,
+      color: "error",
+    });
   },
 });
 </script>
@@ -288,6 +309,25 @@ const updateMutation = useMutation({
               with-captions
               folder="uploads/layouts"
             />
+          </AppDataCard>
+
+          <AppDataCard title="Теги">
+            <p class="text-xs text-(--ui-text-dimmed) mb-2">
+              Импортные теги управляются синхронизацией. Здесь можно
+              привязать или отвязать ручные теги.
+            </p>
+            <TagsPicker v-model="form.tagIds" lock-imported />
+            <div class="mt-3 flex justify-end">
+              <UButton
+                size="sm"
+                variant="soft"
+                icon="i-tabler-device-floppy"
+                :loading="saveTagsMutation.isPending.value"
+                @click="saveTagsMutation.mutate()"
+              >
+                Сохранить теги
+              </UButton>
+            </div>
           </AppDataCard>
         </div>
 

@@ -19,6 +19,7 @@ import { floors } from "./floors";
 import { apartmentLayouts } from "./apartment-layouts";
 import { decorations } from "./decorations";
 import { apartmentPromotions } from "./promotions";
+import { apartmentTags } from "./apartment-tags";
 
 export const apartments = pgTable("apartments", {
   id: text("id")
@@ -107,4 +108,5 @@ export const apartmentsRelations = relations(apartments, ({ one, many }) => ({
     references: [integrations.id],
   }),
   promotions: many(apartmentPromotions),
+  apartmentTags: many(apartmentTags),
 }));

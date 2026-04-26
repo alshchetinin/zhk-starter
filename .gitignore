@@ -46,3 +46,4 @@ coverage
 tmp
 temp
 .claude/worktrees/
+.claude/scheduled_tasks.lock

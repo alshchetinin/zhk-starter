@@ -5,6 +5,7 @@ import { and, count, eq, inArray, isNotNull } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
+import { replaceManualLayoutTags } from "../shared/manual-layout-tags";
 
 const galleryItemSchema = z.object({
   url: z.string().min(1),
@@ -139,6 +140,7 @@ export const apartmentLayoutsRouter = {
         sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         ceilingHeight: z.number().positive().nullable().optional(),
         gallery: z.array(galleryItemSchema).max(50).nullable().optional(),
+        tagIds: z.array(z.string()).optional(),
       }),
     )
     .handler(async ({ input }) => {
@@ -154,7 +156,7 @@ export const apartmentLayoutsRouter = {
           ? new Set(existing.syncedFields)
           : null;
 
-      const { id, ...fields } = input;
+      const { id, tagIds, ...fields } = input;
       const updates: Record<string, unknown> = {};
       const ignored: string[] = [];
       for (const [key, value] of Object.entries(fields)) {
@@ -174,6 +176,13 @@ export const apartmentLayoutsRouter = {
           `[apartmentLayouts.update] ignored locked fields for layout ${input.id}: ${ignored.join(", ")}`,
         );
       }
+
+      if (tagIds !== undefined) {
+        await db.transaction((tx) =>
+          replaceManualLayoutTags(tx, input.id, tagIds),
+        );
+      }
+
       if (Object.keys(updates).length === 0) return existing;
 
       const [updated] = await db
