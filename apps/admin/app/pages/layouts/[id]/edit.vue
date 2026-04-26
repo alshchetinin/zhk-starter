@@ -298,7 +298,7 @@ const updateMutation = useMutation({
               Импортные теги управляются синхронизацией. Здесь можно
               привязать или отвязать ручные теги.
             </p>
-            <TagsPicker v-model="form.tagIds" />
+            <TagsPicker v-model="form.tagIds" lock-imported />
           </AppDataCard>
         </div>
 
