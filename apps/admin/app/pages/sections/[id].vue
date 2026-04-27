@@ -60,6 +60,8 @@ const sunMutation = useMutation({
   },
   onSettled: () => {
     queryClient.invalidateQueries({ queryKey: $orpc.sections.key() });
+    // Квартиры этой секции включают section в getById — освежим кеш.
+    queryClient.invalidateQueries({ queryKey: $orpc.apartments.key() });
   },
 });
 
