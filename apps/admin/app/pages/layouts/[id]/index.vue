@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import type { GalleryItem } from "~/types/gallery";
 
-const { $orpc, $orpcClient } = useNuxtApp();
+const { $orpc } = useNuxtApp();
 const route = useRoute();
-const toast = useToast();
-const queryClient = useQueryClient();
 const id = computed(() => route.params.id as string);
 
 const { data: layout, isPending } = useQuery(
@@ -19,28 +17,6 @@ const { data: apartmentsData, isPending: isApartmentsPending } = useQuery(
     $orpc.apartments.listByLayout.queryOptions({ input: { layoutId: id.value } }),
   ),
 );
-
-const sunPosition = ref<number>(0);
-
-watch(
-  () => layout.value?.sunPosition,
-  (val) => {
-    sunPosition.value = val ?? 0;
-  },
-  { immediate: true },
-);
-
-const sunMutation = useMutation({
-  mutationFn: () =>
-    $orpcClient.apartmentLayouts.updateSunPosition({
-      id: id.value,
-      sunPosition: sunPosition.value,
-    }),
-  onSuccess: () => {
-    toast.add({ title: "Положение солнца сохранено", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.apartmentLayouts.key() });
-  },
-});
 
 const statusTone: Record<string, "success" | "warning" | "info" | "muted"> = {
   free: "success",
@@ -324,12 +300,6 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
                   {{ layout.ceilingHeight ? `${layout.ceilingHeight} м` : "—" }}
                 </dd>
               </div>
-              <div class="flex justify-between py-2">
-                <dt class="text-(--ui-text-dimmed)">Положение солнца</dt>
-                <dd class="font-medium tabular-nums">
-                  {{ layout.sunPosition != null ? `${layout.sunPosition}°` : "—" }}
-                </dd>
-              </div>
               <div class="flex justify-between py-2 gap-3">
                 <dt class="text-(--ui-text-dimmed) shrink-0">3D-тур</dt>
                 <dd class="font-medium text-right truncate min-w-0">
@@ -375,19 +345,6 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
             <p v-else class="text-xs text-(--ui-text-dimmed)">Нет тегов</p>
           </AppDataCard>
 
-          <AppDataCard title="Положение солнца">
-            <SunPositionSelector v-model="sunPosition" />
-            <div class="mt-4 flex">
-              <UButton
-                color="primary"
-                icon="i-tabler-device-floppy"
-                :loading="sunMutation.isPending.value"
-                @click="sunMutation.mutate()"
-              >
-                Сохранить
-              </UButton>
-            </div>
-          </AppDataCard>
         </div>
       </div>
     </template>

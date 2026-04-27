@@ -38,6 +38,58 @@ const saveTagsMutation = useMutation({
   },
 });
 
+// Sun position (с наследованием из секции)
+const sectionSunPosition = computed(() => apartment.value?.section?.sunPosition ?? null);
+const ownSunPosition = computed(() => apartment.value?.sunPosition ?? null);
+const isSunInherited = computed(() => ownSunPosition.value == null);
+const effectiveSunPosition = computed(
+  () => ownSunPosition.value ?? sectionSunPosition.value,
+);
+const sunPosition = ref<number>(0);
+watch(
+  effectiveSunPosition,
+  (val) => {
+    sunPosition.value = val ?? 0;
+  },
+  { immediate: true },
+);
+
+const sunMutation = useMutation({
+  mutationFn: (value: number | null) =>
+    $orpcClient.apartments.update({ id: id.value, sunPosition: value }),
+  onMutate: async (value) => {
+    const queryKey = $orpc.apartments.getById.queryKey({ input: { id: id.value } });
+    await queryClient.cancelQueries({ queryKey });
+    const prev = queryClient.getQueryData(queryKey);
+    queryClient.setQueryData(queryKey, (old: any) =>
+      old ? { ...old, sunPosition: value } : old,
+    );
+    return { prev };
+  },
+  onError: (_err, _value, ctx) => {
+    if (ctx?.prev) {
+      queryClient.setQueryData(
+        $orpc.apartments.getById.queryKey({ input: { id: id.value } }),
+        ctx.prev,
+      );
+    }
+    toast.add({ title: "Не удалось сохранить", color: "error" });
+  },
+  onSuccess: () => {
+    toast.add({ title: "Положение солнца сохранено", color: "success" });
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: $orpc.apartments.key() });
+  },
+});
+
+function saveSun() {
+  sunMutation.mutate(sunPosition.value);
+}
+function resetSun() {
+  sunMutation.mutate(null);
+}
+
 const floorId = computed(() => apartment.value?.floor?.id);
 
 const { data: floorApartments } = useQuery(
@@ -318,6 +370,52 @@ function onFloorPlanClick(event: MouseEvent) {
                 @click="saveTagsMutation.mutate()"
               >
                 Сохранить теги
+              </UButton>
+            </div>
+          </AppDataCard>
+
+          <AppDataCard title="Положение солнца">
+            <div
+              v-if="isSunInherited"
+              class="mb-3 flex items-start gap-2 text-xs text-(--ui-text-muted) bg-(--ui-bg-elevated) rounded-md px-3 py-2"
+            >
+              <UIcon
+                name="i-tabler-arrow-down-left"
+                class="size-3.5 mt-0.5 shrink-0"
+              />
+              <div>
+                <span v-if="apartment.section">
+                  Унаследовано из секции
+                  <NuxtLink
+                    :to="`/sections/${apartment.section.id}`"
+                    class="text-(--ui-text) hover:underline font-medium"
+                  >«{{ apartment.section.name }}»</NuxtLink>
+                </span>
+                <span v-else>Значение секции не задано</span>
+                <span v-if="sectionSunPosition != null" class="text-(--ui-text-dimmed)">
+                  · {{ sectionSunPosition }}°
+                </span>
+              </div>
+            </div>
+            <SunPositionSelector v-model="sunPosition" />
+            <div class="mt-4 flex items-center gap-2">
+              <UButton
+                color="primary"
+                icon="i-tabler-device-floppy"
+                :loading="sunMutation.isPending.value"
+                @click="saveSun"
+              >
+                {{ isSunInherited ? "Переопределить" : "Сохранить" }}
+              </UButton>
+              <UButton
+                v-if="!isSunInherited"
+                color="neutral"
+                variant="ghost"
+                icon="i-tabler-x"
+                :loading="sunMutation.isPending.value"
+                @click="resetSun"
+              >
+                Сбросить (наследовать)
               </UButton>
             </div>
           </AppDataCard>

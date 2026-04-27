@@ -25,7 +25,6 @@ const buildingFields = {
   cameraUrl: z.string().url().nullable().optional(),
   masterplanImage: z.string().nullable().optional(),
   masterplanScheme: z.string().nullable().optional(),
-  sunPosition: z.number().int().nullable().optional(),
   renovationCost: z.number().int().nullable().optional(),
 };
 
@@ -81,7 +80,6 @@ export const buildingsRouter = {
           cameraUrl: input.cameraUrl ?? null,
           masterplanImage: input.masterplanImage ?? null,
           masterplanScheme: input.masterplanScheme ?? null,
-          sunPosition: input.sunPosition ?? null,
           renovationCost: input.renovationCost ?? null,
         })
         .returning();
@@ -97,7 +95,6 @@ export const buildingsRouter = {
         cameraUrl: z.string().url().nullable().optional(),
         masterplanImage: z.string().nullable().optional(),
         masterplanScheme: z.string().nullable().optional(),
-        sunPosition: z.number().int().nullable().optional(),
         renovationCost: z.number().int().nullable().optional(),
       }),
     )

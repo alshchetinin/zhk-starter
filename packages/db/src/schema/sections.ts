@@ -19,6 +19,7 @@ export const sections = pgTable("sections", {
   }),
   name: text("name").notNull(),
   floorsCount: integer("floors_count"),
+  sunPosition: integer("sun_position"),
   masterplanImage: text("masterplan_image"),
   masterplanScheme: text("masterplan_scheme"),
   externalId: text("external_id"),

@@ -64,6 +64,13 @@
       "when": 1777188000000,
       "tag": "0008_join_is_manual",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1777189000000,
+      "tag": "0009_sun_position_on_section",
+      "breakpoints": true
     }
   ]
 }

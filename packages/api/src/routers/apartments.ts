@@ -100,6 +100,7 @@ export const apartmentsRouter = {
           apartmentLayout: true,
           decoration: true,
           floor: true,
+          section: { columns: { id: true, name: true, sunPosition: true } },
           promotions: { with: { promotion: true } },
           apartmentTags: { with: { tag: true } },
         },
@@ -178,6 +179,7 @@ export const apartmentsRouter = {
         floorId: z.string().nullable().optional(),
         apartmentLayoutId: z.string().nullable().optional(),
         threeDTourUrl: z.string().url().nullable().optional(),
+        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         tagIds: z.array(z.string()).optional(),
       }),
     )

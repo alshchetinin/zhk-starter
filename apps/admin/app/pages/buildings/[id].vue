@@ -318,9 +318,10 @@ const isSectionSubmitting = computed(
           v-if="building.sections?.length"
           class="divide-y divide-(--ui-border)"
         >
-          <div
+          <NuxtLink
             v-for="section in building.sections"
             :key="section.id"
+            :to="`/sections/${section.id}`"
             class="group flex items-center gap-3 px-4 py-2.5 hover:bg-(--ui-bg-elevated) transition"
           >
             <UIcon
@@ -341,16 +342,16 @@ const isSectionSubmitting = computed(
                 icon="i-tabler-edit"
                 variant="ghost"
                 title="Редактировать"
-                @click="openEditSection(section as Section)"
+                @click.prevent.stop="openEditSection(section as Section)"
               />
               <UButton
                 icon="i-tabler-trash"
                 variant="ghost"
                 title="Удалить"
-                @click="sectionToDelete = section as Section"
+                @click.prevent.stop="sectionToDelete = section as Section"
               />
             </div>
-          </div>
+          </NuxtLink>
         </div>
         <AppEmptyState
           v-else
