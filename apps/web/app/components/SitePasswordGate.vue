@@ -1,7 +1,6 @@
 <script setup lang="ts">
 defineProps<{ siteName: string }>();
 
-const { $orpcClient } = useNuxtApp();
 const password = ref("");
 const error = ref<string | null>(null);
 const loading = ref(false);
@@ -11,10 +10,17 @@ async function submit() {
   loading.value = true;
   error.value = null;
   try {
-    await $orpcClient.public.site.unlock({ password: password.value });
+    await $fetch("/api/site/unlock", {
+      method: "POST",
+      body: { password: password.value },
+    });
     if (import.meta.client) window.location.reload();
   } catch (e) {
-    const message = (e as { message?: string })?.message ?? "";
+    const message =
+      (e as { data?: { message?: string }; statusMessage?: string })?.data
+        ?.message ??
+      (e as { statusMessage?: string })?.statusMessage ??
+      "";
     error.value =
       message === "WRONG_PASSWORD"
         ? "Неверный пароль"
