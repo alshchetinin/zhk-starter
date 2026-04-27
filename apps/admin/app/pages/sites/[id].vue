@@ -24,6 +24,8 @@ const form = ref({
   slug: "",
   name: "",
   customDomain: "",
+  isActive: true,
+  accessPassword: "",
   contactsHeaderIds: [] as string[],
   contactsFooterIds: [] as string[],
 });
@@ -34,11 +36,22 @@ watchEffect(() => {
       slug: data.value.slug,
       name: data.value.name,
       customDomain: data.value.customDomain ?? "",
+      isActive: data.value.isActive,
+      accessPassword: data.value.accessPassword ?? "",
       contactsHeaderIds: data.value.settings?.contactsHeaderIds ?? [],
       contactsFooterIds: data.value.settings?.contactsFooterIds ?? [],
     };
   }
 });
+
+function generatePassword() {
+  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  form.value.accessPassword = result;
+}
 
 const contactItems = computed(() =>
   (siteContacts.value ?? []).map((c) => ({ label: c.label, value: c.id })),
@@ -51,6 +64,8 @@ const updateMutation = useMutation({
       slug: form.value.slug.trim(),
       name: form.value.name.trim(),
       customDomain: form.value.customDomain.trim() || null,
+      isActive: form.value.isActive,
+      accessPassword: form.value.accessPassword.trim() || null,
       settings: {
         contactsHeaderIds: form.value.contactsHeaderIds,
         contactsFooterIds: form.value.contactsFooterIds,
@@ -112,6 +127,45 @@ const updateMutation = useMutation({
                 placeholder="msk-example.ru"
                 size="sm"
               />
+            </UFormField>
+          </div>
+        </AppDataCard>
+
+        <AppDataCard title="Доступ">
+          <div class="space-y-3">
+            <UFormField
+              label="Сайт активен"
+              description="Если выключен, посетители видят страницу «Скоро открытие»"
+            >
+              <USwitch v-model="form.isActive" />
+            </UFormField>
+            <UFormField
+              label="Пароль доступа"
+              description="Если задан, посетители увидят форму ввода пароля. Оставьте пустым для открытого доступа"
+            >
+              <div class="flex gap-2">
+                <UInput
+                  v-model="form.accessPassword"
+                  placeholder="не задан"
+                  size="sm"
+                  class="flex-1"
+                />
+                <UButton
+                  variant="outline"
+                  icon="i-tabler-dice"
+                  size="sm"
+                  title="Сгенерировать"
+                  @click="generatePassword"
+                />
+                <UButton
+                  v-if="form.accessPassword"
+                  variant="outline"
+                  icon="i-tabler-x"
+                  size="sm"
+                  title="Очистить"
+                  @click="form.accessPassword = ''"
+                />
+              </div>
             </UFormField>
           </div>
         </AppDataCard>

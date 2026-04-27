@@ -3,13 +3,13 @@ import { db } from "@zhk/db";
 import { constructionProgress } from "@zhk/db/schema";
 import { and, count, eq } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicSiteProcedure } from "../../index";
+import { publicActiveSiteProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 import type { ContentBlock } from "../../shared/blocks";
 
 export const publicConstructionProgressRouter = {
-  list: publicSiteProcedure
+  list: publicActiveSiteProcedure
     .input(
       paginationInput.extend({
         projectId: z.string(),
@@ -45,7 +45,7 @@ export const publicConstructionProgressRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getById: publicSiteProcedure
+  getById: publicActiveSiteProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input, context }) => {
       const item = await db.query.constructionProgress.findFirst({

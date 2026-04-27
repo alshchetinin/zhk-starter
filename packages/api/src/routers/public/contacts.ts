@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import { contacts, sites, socialLinks } from "@zhk/db/schema";
 import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
-import { publicSiteProcedure } from "../../index";
+import { publicActiveSiteProcedure } from "../../index";
 
 async function resolveSiteSocials(siteId: string) {
   const rows = await db.query.socialLinks.findMany({
@@ -14,14 +14,14 @@ async function resolveSiteSocials(siteId: string) {
 }
 
 export const publicContactsRouter = {
-  list: publicSiteProcedure.handler(async ({ context }) => {
+  list: publicActiveSiteProcedure.handler(async ({ context }) => {
     return db.query.contacts.findMany({
       where: eq(contacts.siteId, context.siteId),
       orderBy: [asc(contacts.sortOrder), asc(contacts.label)],
     });
   }),
 
-  layout: publicSiteProcedure.handler(async ({ context }) => {
+  layout: publicActiveSiteProcedure.handler(async ({ context }) => {
     const [site, siteSocials] = await Promise.all([
       db.query.sites.findFirst({
         where: eq(sites.id, context.siteId),
@@ -53,11 +53,11 @@ export const publicContactsRouter = {
     };
   }),
 
-  siteSocials: publicSiteProcedure.handler(async ({ context }) => {
+  siteSocials: publicActiveSiteProcedure.handler(async ({ context }) => {
     return resolveSiteSocials(context.siteId);
   }),
 
-  getByIds: publicSiteProcedure
+  getByIds: publicActiveSiteProcedure
     .input(z.object({ ids: z.array(z.string()) }))
     .handler(async ({ input, context }) => {
       if (input.ids.length === 0) return [];

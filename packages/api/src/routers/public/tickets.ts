@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { tickets, ticketTypeEnum } from "@zhk/db/schema";
-import { publicProcedure } from "../../index";
+import { publicActiveSiteProcedure } from "../../index";
 
 async function sendTelegramNotification(
   botToken: string,
@@ -54,7 +54,7 @@ async function sendTelegramNotification(
 }
 
 export const publicTicketsRouter = {
-  create: publicProcedure
+  create: publicActiveSiteProcedure
     .input(
       z.object({
         name: z.string().optional(),

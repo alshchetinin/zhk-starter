@@ -62,6 +62,7 @@ export const sitesRouter = {
           cityId: input.cityId ?? null,
           customDomain: input.customDomain ?? null,
           isPrimary: false,
+          isActive: false,
         })
         .returning();
       return created;
@@ -75,6 +76,8 @@ export const sitesRouter = {
         name: z.string().min(1).optional(),
         cityId: z.string().nullable().optional(),
         customDomain: z.string().nullable().optional(),
+        isActive: z.boolean().optional(),
+        accessPassword: z.string().nullable().optional(),
         settings: settingsSchema.optional(),
       }),
     )

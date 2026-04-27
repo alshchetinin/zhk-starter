@@ -34,8 +34,10 @@ export async function createContext({ context }: CreateContextOptions) {
   });
 
   const siteId = await resolveSiteId(context);
+  const cookieHeader = context.req.header("cookie") ?? "";
+  const responseHeaders = new Headers();
 
-  return { session, siteId };
+  return { session, siteId, cookieHeader, responseHeaders };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

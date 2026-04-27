@@ -4,6 +4,7 @@ import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 export default defineNuxtPlugin({
+  name: "orpc",
   dependsOn: ["vue-query"],
   setup() {
     const config = useRuntimeConfig();

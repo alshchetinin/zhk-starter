@@ -10,8 +10,10 @@ import { publicHomepageRouter } from "./homepage";
 import { publicConstructionProgressRouter } from "./construction-progress";
 import { publicTicketsRouter } from "./tickets";
 import { publicModalsRouter } from "./modals";
+import { publicSiteRouter } from "./site";
 
 export const publicRouter = {
+  site: publicSiteRouter,
   projects: publicProjectsRouter,
   news: publicNewsRouter,
   pages: publicPagesRouter,
