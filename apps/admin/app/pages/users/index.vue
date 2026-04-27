@@ -24,12 +24,7 @@ function resetForm() {
 }
 
 function generatePassword() {
-  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  const arr = new Uint32Array(16);
-  crypto.getRandomValues(arr);
-  for (let i = 0; i < 16; i++) out += chars[arr[i]! % chars.length];
-  form.password = out;
+  form.password = randomPassword(16);
 }
 
 const createMutation = useMutation({

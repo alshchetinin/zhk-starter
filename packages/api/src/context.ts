@@ -9,23 +9,26 @@ export type CreateContextOptions = {
   context: HonoContext;
 };
 
-async function resolveSiteId(context: HonoContext): Promise<string | null> {
+type ResolvedSite = typeof sites.$inferSelect;
+
+async function resolveSite(context: HonoContext): Promise<ResolvedSite | null> {
   const headerSiteId = context.req.header("x-site-id");
-  if (headerSiteId) return headerSiteId;
+  if (headerSiteId) {
+    return (
+      (await db.query.sites.findFirst({ where: eq(sites.id, headerSiteId) })) ?? null
+    );
+  }
 
   const headerSlug = context.req.header("x-site-slug");
   if (headerSlug) {
-    const row = await db
-      .select({ id: sites.id })
-      .from(sites)
-      .where(eq(sites.slug, headerSlug))
-      .limit(1);
-    if (row[0]) return row[0].id;
+    const match = await db.query.sites.findFirst({
+      where: eq(sites.slug, headerSlug),
+    });
+    if (match) return match;
   }
 
   const host = context.req.header("x-forwarded-host") ?? context.req.header("host") ?? "";
-  const site = await resolveSiteFromHost(host);
-  return site?.id ?? null;
+  return (await resolveSiteFromHost(host)) ?? null;
 }
 
 export async function createContext({ context }: CreateContextOptions) {
@@ -33,9 +36,17 @@ export async function createContext({ context }: CreateContextOptions) {
     headers: context.req.raw.headers,
   });
 
-  const siteId = await resolveSiteId(context);
+  const site = await resolveSite(context);
+  const cookieHeader = context.req.header("cookie") ?? "";
+  const responseHeaders = new Headers();
 
-  return { session, siteId };
+  return {
+    session,
+    siteId: site?.id ?? null,
+    site,
+    cookieHeader,
+    responseHeaders,
+  };
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

@@ -4,10 +4,13 @@ import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
 export default defineNuxtPlugin({
+  name: "orpc",
   dependsOn: ["vue-query"],
   setup() {
     const config = useRuntimeConfig();
-    const requestHeaders = import.meta.server ? useRequestHeaders(["host"]) : {};
+    const requestHeaders = import.meta.server
+      ? useRequestHeaders(["host", "cookie"])
+      : ({} as Record<string, string | undefined>);
 
     const rpcLink = new RPCLink({
       url: `${config.public.serverUrl}/rpc`,
@@ -19,7 +22,14 @@ export default defineNuxtPlugin({
           ? window.location.host
           : undefined;
         if (host) headers.set("x-forwarded-host", host);
-        return fetch(url, { ...fetchOpts, headers });
+        if (import.meta.server && requestHeaders.cookie) {
+          headers.set("cookie", requestHeaders.cookie);
+        }
+        return fetch(url, {
+          ...fetchOpts,
+          headers,
+          credentials: "include",
+        });
       },
     });
 

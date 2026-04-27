@@ -35,7 +35,12 @@ app.use("/*", async (c, next) => {
   });
 
   if (rpcResult.matched) {
-    return c.newResponse(rpcResult.response.body, rpcResult.response);
+    const merged = new Headers(rpcResult.response.headers);
+    context.responseHeaders.forEach((value, key) => merged.append(key, value));
+    return c.newResponse(rpcResult.response.body, {
+      status: rpcResult.response.status,
+      headers: merged,
+    });
   }
 
   await next();

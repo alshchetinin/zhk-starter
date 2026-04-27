@@ -22,7 +22,11 @@ const createMutation = useMutation({
       customDomain: form.value.customDomain.trim() || null,
     }),
   onSuccess: () => {
-    toast.add({ title: "Сайт создан", color: "success" });
+    toast.add({
+      title: "Сайт создан и скрыт",
+      description: "Включите его в настройках сайта, когда будет готов",
+      color: "success",
+    });
     queryClient.invalidateQueries({ queryKey: $orpc.sites.key() });
     resetForm();
     showCreate.value = false;
@@ -99,6 +103,18 @@ const primaryMutation = useMutation({
                 v-if="item.isPrimary"
                 tone="warning"
                 label="Главный"
+                dot
+              />
+              <AppStatusPill
+                v-if="!item.isActive"
+                tone="neutral"
+                label="Скрыт"
+                dot
+              />
+              <AppStatusPill
+                v-else-if="item.accessPassword"
+                tone="info"
+                label="Под паролем"
                 dot
               />
             </div>

@@ -3,10 +3,10 @@ import { db } from "@zhk/db";
 import { modals } from "@zhk/db/schema";
 import { and, eq } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicSiteProcedure } from "../../index";
+import { publicActiveSiteProcedure } from "../../index";
 
 export const publicModalsRouter = {
-  getBySlug: publicSiteProcedure
+  getBySlug: publicActiveSiteProcedure
     .input(z.object({ slug: z.string() }))
     .handler(async ({ input, context }) => {
       const item = await db.query.modals.findFirst({
