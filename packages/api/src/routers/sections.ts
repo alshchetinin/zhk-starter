@@ -60,6 +60,7 @@ export const sectionsRouter = {
         name: z.string().min(1),
         buildingId: z.string(),
         floorsCount: z.number().int().nullable().optional(),
+        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         masterplanImage: z.string().nullable().optional(),
         masterplanScheme: z.string().nullable().optional(),
       }),
@@ -71,11 +72,36 @@ export const sectionsRouter = {
           name: input.name,
           buildingId: input.buildingId,
           floorsCount: input.floorsCount ?? null,
+          sunPosition: input.sunPosition ?? null,
           masterplanImage: input.masterplanImage ?? null,
           masterplanScheme: input.masterplanScheme ?? null,
         })
         .returning();
       return created;
+    }),
+
+  updateSunPosition: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        sunPosition: z.number().int().min(0).max(360).nullable(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const existing = await db.query.sections.findFirst({
+        where: eq(sections.id, input.id),
+      });
+      if (!existing) {
+        throw new ORPCError("NOT_FOUND", { message: "Section not found" });
+      }
+
+      const [updated] = await db
+        .update(sections)
+        .set({ sunPosition: input.sunPosition })
+        .where(eq(sections.id, input.id))
+        .returning();
+
+      return updated;
     }),
 
   update: protectedProcedure
@@ -84,6 +110,7 @@ export const sectionsRouter = {
         id: z.string(),
         name: z.string().min(1).optional(),
         floorsCount: z.number().int().nullable().optional(),
+        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         masterplanImage: z.string().nullable().optional(),
         masterplanScheme: z.string().nullable().optional(),
       }),

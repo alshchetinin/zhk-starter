@@ -61,30 +61,6 @@ export const apartmentLayoutsRouter = {
       return layout;
     }),
 
-  updateSunPosition: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        sunPosition: z.number().int().min(0).max(360),
-      }),
-    )
-    .handler(async ({ input }) => {
-      const existing = await db.query.apartmentLayouts.findFirst({
-        where: eq(apartmentLayouts.id, input.id),
-      });
-      if (!existing) {
-        throw new ORPCError("NOT_FOUND", { message: "Apartment layout not found" });
-      }
-
-      const [updated] = await db
-        .update(apartmentLayouts)
-        .set({ sunPosition: input.sunPosition })
-        .where(eq(apartmentLayouts.id, input.id))
-        .returning();
-
-      return updated;
-    }),
-
   create: protectedProcedure
     .input(
       z.object({
@@ -97,7 +73,6 @@ export const apartmentLayoutsRouter = {
         furnishedLayoutImage: z.string().nullable().optional(),
         threeDLayoutImage: z.string().nullable().optional(),
         threeDTourUrl: z.string().nullable().optional(),
-        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         ceilingHeight: z.number().positive().nullable().optional(),
         gallery: z.array(galleryItemSchema).max(50).nullable().optional(),
       }),
@@ -115,7 +90,6 @@ export const apartmentLayoutsRouter = {
           furnishedLayoutImage: input.furnishedLayoutImage ?? null,
           threeDLayoutImage: input.threeDLayoutImage ?? null,
           threeDTourUrl: input.threeDTourUrl ?? null,
-          sunPosition: input.sunPosition ?? null,
           ceilingHeight:
             input.ceilingHeight != null ? String(input.ceilingHeight) : null,
           gallery: input.gallery ?? null,
@@ -137,7 +111,6 @@ export const apartmentLayoutsRouter = {
         furnishedLayoutImage: z.string().nullable().optional(),
         threeDLayoutImage: z.string().nullable().optional(),
         threeDTourUrl: z.string().nullable().optional(),
-        sunPosition: z.number().int().min(0).max(360).nullable().optional(),
         ceilingHeight: z.number().positive().nullable().optional(),
         gallery: z.array(galleryItemSchema).max(50).nullable().optional(),
         tagIds: z.array(z.string()).optional(),

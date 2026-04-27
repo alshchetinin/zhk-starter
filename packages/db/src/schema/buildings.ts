@@ -20,7 +20,6 @@ export const buildings = pgTable("buildings", {
   masterplanImage: text("masterplan_image"),
   masterplanScheme: text("masterplan_scheme"),
   completionDate: date("completion_date"),
-  sunPosition: integer("sun_position"),
   renovationCost: integer("renovation_cost"),
   cameraUrl: text("camera_url"),
   externalId: text("external_id"),

@@ -28,7 +28,6 @@ export const apartmentLayouts = pgTable("apartment_layouts", {
   furnishedLayoutImage: text("furnished_layout_image"),
   threeDLayoutImage: text("3d_layout_image"),
   threeDTourUrl: text("3d_tour_url"),
-  sunPosition: integer("sun_position"),
   ceilingHeight: numeric("ceiling_height", { precision: 4, scale: 2 }),
   additionalArea: jsonb("additional_area"),
   gallery: jsonb("gallery").$type<
