@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { contacts, sites, socialLinks } from "@zhk/db/schema";
+import { contacts, socialLinks } from "@zhk/db/schema";
 import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { publicActiveSiteProcedure } from "../../index";
 
@@ -22,15 +22,9 @@ export const publicContactsRouter = {
   }),
 
   layout: publicActiveSiteProcedure.handler(async ({ context }) => {
-    const [site, siteSocials] = await Promise.all([
-      db.query.sites.findFirst({
-        where: eq(sites.id, context.siteId),
-        columns: { settings: true },
-      }),
-      resolveSiteSocials(context.siteId),
-    ]);
-    const headerIds = site?.settings?.contactsHeaderIds ?? [];
-    const footerIds = site?.settings?.contactsFooterIds ?? [];
+    const siteSocials = await resolveSiteSocials(context.siteId);
+    const headerIds = context.site.settings?.contactsHeaderIds ?? [];
+    const footerIds = context.site.settings?.contactsFooterIds ?? [];
     const allIds = Array.from(new Set([...headerIds, ...footerIds]));
 
     const items = allIds.length

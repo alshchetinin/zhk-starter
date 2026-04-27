@@ -27,21 +27,24 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const setCookieHeader = response.headers.get("set-cookie");
-  if (setCookieHeader) {
-    const firstPair = setCookieHeader.split(";")[0] ?? "";
+  const setCookieHeaders =
+    typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : ([response.headers.get("set-cookie")].filter(Boolean) as string[]);
+
+  for (const header of setCookieHeaders) {
+    const firstPair = header.split(";")[0] ?? "";
     const eqIdx = firstPair.indexOf("=");
-    if (eqIdx > 0) {
-      const name = firstPair.slice(0, eqIdx).trim();
-      const value = decodeURIComponent(firstPair.slice(eqIdx + 1).trim());
-      setCookie(event, name, value, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 30,
-        secure: process.env.NODE_ENV === "production",
-      });
-    }
+    if (eqIdx <= 0) continue;
+    const name = firstPair.slice(0, eqIdx).trim();
+    const value = decodeURIComponent(firstPair.slice(eqIdx + 1).trim());
+    setCookie(event, name, value, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+      secure: process.env.NODE_ENV === "production",
+    });
   }
 
   return { ok: true };

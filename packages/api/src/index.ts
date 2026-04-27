@@ -1,8 +1,6 @@
 import { ORPCError, os } from "@orpc/server";
-import { db } from "@zhk/db";
-import { sites } from "@zhk/db/schema";
-import { eq } from "drizzle-orm";
 import type { Context } from "./context";
+import { SITE_GATE_ERROR } from "./utils/site-gate-errors";
 import { isSiteUnlockValid } from "./utils/site-unlock";
 
 export const o = os.$context<Context>();
@@ -24,23 +22,17 @@ const requireSite = o.middleware(async ({ context, next }) => {
 });
 
 const requireActiveSite = o.middleware(async ({ context, next }) => {
-  if (!context.siteId) {
+  const site = context.site;
+  if (!site) {
     throw new ORPCError("BAD_REQUEST", { message: "Site not resolved" });
   }
-  const site = await db.query.sites.findFirst({
-    where: eq(sites.id, context.siteId),
-    columns: { id: true, isActive: true, accessPassword: true },
-  });
-  if (!site) {
-    throw new ORPCError("NOT_FOUND", { message: "Site not found" });
-  }
   if (!site.isActive) {
-    throw new ORPCError("FORBIDDEN", { message: "SITE_INACTIVE" });
+    throw new ORPCError("FORBIDDEN", { message: SITE_GATE_ERROR.INACTIVE });
   }
   if (!isSiteUnlockValid(context.cookieHeader, site.id, site.accessPassword)) {
-    throw new ORPCError("FORBIDDEN", { message: "SITE_LOCKED" });
+    throw new ORPCError("FORBIDDEN", { message: SITE_GATE_ERROR.LOCKED });
   }
-  return next({ context: { siteId: site.id } });
+  return next({ context: { siteId: site.id, site } });
 });
 
 const requireAdmin = o.middleware(async ({ context, next }) => {

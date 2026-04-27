@@ -45,12 +45,7 @@ watchEffect(() => {
 });
 
 function generatePassword() {
-  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let result = "";
-  for (let i = 0; i < 8; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  form.value.accessPassword = result;
+  form.value.accessPassword = randomPassword(8);
 }
 
 const contactItems = computed(() =>

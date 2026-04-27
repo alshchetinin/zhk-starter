@@ -1,9 +1,7 @@
 import { z } from "zod";
-import { db } from "@zhk/db";
-import { sites } from "@zhk/db/schema";
-import { eq } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { publicSiteProcedure } from "../../index";
+import { SITE_GATE_ERROR } from "../../utils/site-gate-errors";
 import {
   buildUnlockSetCookie,
   computeUnlockToken,
@@ -12,16 +10,7 @@ import {
 
 export const publicSiteRouter = {
   status: publicSiteProcedure.handler(async ({ context }) => {
-    const site = await db.query.sites.findFirst({
-      where: eq(sites.id, context.siteId),
-      columns: {
-        id: true,
-        slug: true,
-        name: true,
-        isActive: true,
-        accessPassword: true,
-      },
-    });
+    const site = context.site;
     if (!site) throw new ORPCError("NOT_FOUND");
 
     const requiresPassword = !!site.accessPassword;
@@ -49,19 +38,18 @@ export const publicSiteRouter = {
   unlock: publicSiteProcedure
     .input(z.object({ password: z.string().min(1) }))
     .handler(async ({ context, input }) => {
-      const site = await db.query.sites.findFirst({
-        where: eq(sites.id, context.siteId),
-        columns: { id: true, accessPassword: true, isActive: true },
-      });
+      const site = context.site;
       if (!site) throw new ORPCError("NOT_FOUND");
       if (!site.isActive) {
-        throw new ORPCError("FORBIDDEN", { message: "SITE_INACTIVE" });
+        throw new ORPCError("FORBIDDEN", { message: SITE_GATE_ERROR.INACTIVE });
       }
       if (!site.accessPassword) {
         return { ok: true };
       }
       if (input.password !== site.accessPassword) {
-        throw new ORPCError("UNAUTHORIZED", { message: "WRONG_PASSWORD" });
+        throw new ORPCError("UNAUTHORIZED", {
+          message: SITE_GATE_ERROR.WRONG_PASSWORD,
+        });
       }
       const token = computeUnlockToken(site.id, site.accessPassword);
       context.responseHeaders.append(
