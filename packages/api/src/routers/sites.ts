@@ -5,6 +5,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { adminProcedure, protectedProcedure } from "../index";
 import { resolveSiteFromHost } from "../utils/resolve-site";
+import { METRIKA_COUNTER_ID_REGEX } from "../shared/tracking";
 
 const slugSchema = z
   .string()
@@ -12,10 +13,26 @@ const slugSchema = z
   .max(64)
   .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, "Invalid slug");
 
+const yandexMetrikaSchema = z.object({
+  counterId: z.string().regex(METRIKA_COUNTER_ID_REGEX, "ID счётчика — только цифры"),
+  webvisor: z.boolean().optional(),
+  clickmap: z.boolean().optional(),
+  trackLinks: z.boolean().optional(),
+  accurateTrackBounce: z.boolean().optional(),
+  ecommerce: z.boolean().optional(),
+});
+
+const analyticsSchema = z
+  .object({
+    yandexMetrika: yandexMetrikaSchema.nullish(),
+  })
+  .partial();
+
 const settingsSchema = z
   .object({
     contactsHeaderIds: z.array(z.string()).optional(),
     contactsFooterIds: z.array(z.string()).optional(),
+    analytics: analyticsSchema.optional(),
   })
   .partial();
 

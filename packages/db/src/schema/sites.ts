@@ -1,9 +1,23 @@
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
+export interface YandexMetrikaSettings {
+  counterId: string;
+  webvisor?: boolean;
+  clickmap?: boolean;
+  trackLinks?: boolean;
+  accurateTrackBounce?: boolean;
+  ecommerce?: boolean;
+}
+
+export interface SiteAnalyticsSettings {
+  yandexMetrika?: YandexMetrikaSettings;
+}
+
 export interface SiteSettings {
   contactsHeaderIds?: string[];
   contactsFooterIds?: string[];
+  analytics?: SiteAnalyticsSettings;
 }
 
 export const sites = pgTable("sites", {

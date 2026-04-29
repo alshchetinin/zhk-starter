@@ -25,3 +25,9 @@ export const SOCIAL_TYPE_ICONS: Record<SocialLinkType, string> = {
   youtube: "lucide:youtube",
   dzen: "lucide:flame",
 };
+
+export const MESSENGER_SOCIAL_TYPES: ReadonlySet<SocialLinkType> = new Set(["telegram", "whatsapp"]);
+
+export function isMessengerSocial(type: SocialLinkType): boolean {
+  return MESSENGER_SOCIAL_TYPES.has(type);
+}

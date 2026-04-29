@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { SOCIAL_TYPE_ICONS } from "@zhk/api/shared/socials";
+import {
+  SOCIAL_TYPE_ICONS,
+  isMessengerSocial,
+  type SocialLinkType,
+} from "@zhk/api/shared/socials";
 import type { NavItem } from "~/composables/useNavigation";
 import { telHref } from "~/utils/phone";
 
@@ -9,9 +13,14 @@ defineProps<{
 
 const { footer: footerContacts, socials: siteSocials } = useSiteContacts();
 const currentYear = new Date().getFullYear();
+const { trackPhoneClick, trackMessengerClick } = useTracking();
 
 function socialsFor(contact: (typeof footerContacts.value)[number]) {
   return contact.socials?.length ? contact.socials : siteSocials.value;
+}
+
+function onSocialClick(type: SocialLinkType) {
+  if (isMessengerSocial(type)) trackMessengerClick(type);
 }
 </script>
 
@@ -60,6 +69,7 @@ function socialsFor(contact: (typeof footerContacts.value)[number]) {
                 v-if="c.phone"
                 :href="telHref(c.phone)"
                 class="hover:text-[var(--web-text-primary)] transition-colors"
+                @click="trackPhoneClick(c.phone)"
               >
                 {{ c.phone }}
               </a>
@@ -82,6 +92,7 @@ function socialsFor(contact: (typeof footerContacts.value)[number]) {
                   target="_blank"
                   rel="noopener"
                   class="text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+                  @click="onSocialClick(s.type)"
                 >
                   <Icon :name="SOCIAL_TYPE_ICONS[s.type] ?? 'lucide:link'" class="size-5" />
                 </a>

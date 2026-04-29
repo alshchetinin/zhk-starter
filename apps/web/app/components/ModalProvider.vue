@@ -5,6 +5,7 @@ import type { ModalField } from "@zhk/api/shared/modal-fields";
 
 const { activeModalSlug, close } = useModalAction();
 const { $orpcClient } = useNuxtApp();
+const { trackFormSubmit } = useTracking();
 
 const dialogOpen = ref(false);
 const showErrors = ref(false);
@@ -149,6 +150,7 @@ async function handleSubmit() {
       source: `modal:${activeModalSlug.value ?? ""}`,
       url: typeof window !== "undefined" ? window.location.href : undefined,
     });
+    trackFormSubmit(activeModalSlug.value ?? undefined);
     submitTimers.push(setTimeout(() => {
       submitState.value = "submitted";
       submitTimers.push(setTimeout(() => {
