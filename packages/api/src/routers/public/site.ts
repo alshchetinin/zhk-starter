@@ -32,6 +32,7 @@ export const publicSiteRouter = {
       name: site.name,
       status,
       requiresPassword,
+      analytics: site.settings?.analytics ?? null,
     };
   }),
 

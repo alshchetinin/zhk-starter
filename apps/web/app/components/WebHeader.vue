@@ -30,6 +30,7 @@ watch(
 );
 
 const { open: openModal } = useModalAction();
+const { trackPhoneClick } = useTracking();
 </script>
 
 <template>
@@ -71,6 +72,7 @@ const { open: openModal } = useModalAction();
           v-if="primaryContact?.phone"
           :href="telHref(primaryContact.phone)"
           class="hidden md:inline-flex text-sm font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)] transition-colors"
+          @click="trackPhoneClick(primaryContact.phone)"
         >
           {{ primaryContact.phone }}
         </a>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { TRACKING_EVENT_LIST } from "@zhk/api/shared/tracking";
+
 const sections = [
   { id: "blocks", label: "Блоки", icon: "i-tabler-stack-2" },
   { id: "collections", label: "Коллекции", icon: "i-tabler-database" },
   { id: "modals", label: "Модальные окна", icon: "i-tabler-app-window" },
+  { id: "tracking", label: "Трекинг событий", icon: "i-tabler-chart-bar" },
 ];
 
 const activeSection = ref("blocks");
@@ -436,6 +439,210 @@ watch(activeModalSlug, (slug) =&gt; {
             <li><code>apps/web/app/composables/useModalAction.ts</code> — open/close/activeSlug</li>
             <li><code>apps/web/app/composables/useActionLink.ts</code> — helper для блоков</li>
             <li><code>apps/web/app/components/ModalProvider.vue</code> — рантайм модалки</li>
+          </ul>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'tracking'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Трекинг событий и аналитика</h2>
+          <p>
+            Per-site Яндекс.Метрика подключается в админке (<code>/sites/[id]</code> →
+            карточка «Яндекс.Метрика»). В коде есть универсальный bus
+            <code>useTracking()</code>, через который любой компонент сайта
+            стреляет бизнес-событиями. Bus прозрачно рассылает их во все
+            включённые провайдеры аналитики.
+          </p>
+          <p class="callout callout-info">
+            <strong>Source of truth — реестр событий</strong>
+            <code>packages/api/src/shared/tracking.ts</code>. Одна правка → новое
+            событие появляется в TS-типах <code>track()</code>, в админской
+            таблице целей (на странице сайта) и в dev-логах. Никаких других
+            мест править не нужно.
+          </p>
+        </section>
+
+        <section>
+          <h3>1. Использование в компоненте</h3>
+          <pre><code>const { track, trackFormSubmit, trackPhoneClick, trackMessengerClick } = useTracking();
+
+// шорткаты для частых событий
+trackFormSubmit("callback");
+trackPhoneClick("+7 999 ...");
+trackMessengerClick("whatsapp");
+
+// универсальный track — TS подскажет имя из реестра
+track("form_submit", { form: "callback" });</code></pre>
+          <p>
+            В dev все вызовы логируются в консоль:
+            <code>[tracking] form_submit — Отправка формы заявки</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>2. Текущий список событий</h3>
+          <p>Собирается из реестра автоматически — это та же таблица, что показывается на странице сайта:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Категория</th>
+                <th>Когда срабатывает</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="ev in TRACKING_EVENT_LIST" :key="ev.name">
+                <td><code>{{ ev.name }}</code></td>
+                <td>{{ ev.category }}</td>
+                <td>
+                  <div>{{ ev.title }}</div>
+                  <div class="text-(--ui-text-dimmed) text-xs">{{ ev.description }}</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h3>3. Добавить новое событие — 1 шаг</h3>
+          <p>В <code>packages/api/src/shared/tracking.ts</code> добавить запись:</p>
+          <pre><code>export const TRACKING_EVENTS = {
+  // ...
+  apartment_view: {
+    title: "Просмотр квартиры",
+    description: "Открытие модалки или страницы квартиры в каталоге",
+    category: "engagement",
+  },
+} as const satisfies Record&lt;string, TrackingEventMeta&gt;;</code></pre>
+          <p>Что произойдёт автоматически:</p>
+          <ul>
+            <li>В <code>track()</code> появится новый ключ с автокомплитом и type-check;</li>
+            <li>В админке <code>/sites/[id]</code> в таблице целей появится строка в нужной категории;</li>
+            <li>В этой документации — тоже (страница сама собирается из реестра);</li>
+            <li>В dev-консоли вызов будет печататься с заголовком из <code>title</code>.</li>
+          </ul>
+          <p>
+            Затем вызывайте в нужном месте: <code>track("apartment_view", { id })</code> и
+            сообщите клиенту, что в кабинете Метрики нужно создать цель типа
+            <strong>JavaScript-событие</strong> с условием совпадения по имени <code>apartment_view</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>4. Куда вызывать события</h3>
+          <p class="callout callout-warn">
+            <strong>Главное правило: ищите централизованную точку.</strong>
+          </p>
+          <ul>
+            <li>
+              Все формы заявок проходят через <code>ModalProvider.vue</code> —
+              там стоит один <code>trackFormSubmit</code> в успехе сабмита.
+              Не разбрасывайте по блокам.
+            </li>
+            <li>
+              <code>tel:</code>-ссылки — в <code>WebHeader</code>,
+              <code>WebFooter</code>, <code>ContactsBlock</code>.
+            </li>
+            <li>
+              Иконки соцсетей (мессенджеры) — там же, фильтр по типу
+              <code>telegram</code> / <code>whatsapp</code>.
+            </li>
+            <li>
+              Своё действие внутри блока (открытие модалки, скачивание PDF,
+              переключение таба) — вызывайте <code>track</code> прямо в
+              обработчике в renderer'е блока.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>5. Добавить нового провайдера аналитики</h3>
+          <p>
+            Сейчас работает только Яндекс.Метрика. Чтобы подключить ещё один
+            сервис (GA4, GTM, Top.Mail.Ru, кастомный пиксель) — bus и блоки
+            трогать не нужно:
+          </p>
+          <ol>
+            <li>
+              <strong>Расширить схему</strong> <code>SiteSettings.analytics</code> в
+              <code>packages/db/src/schema/sites.ts</code>.
+            </li>
+            <li>
+              <strong>Расширить Zod</strong> <code>analyticsSchema</code> в
+              <code>packages/api/src/routers/sites.ts</code>.
+            </li>
+            <li>
+              <strong>Реализовать <code>TrackingProvider</code></strong> в
+              <code>apps/web/app/utils/tracking-providers.ts</code> и
+              добавить в массив <code>TRACKING_PROVIDERS</code>.
+            </li>
+            <li>
+              <strong>Создать Nuxt-плагин</strong> для загрузки SDK
+              провайдера в <code>apps/web/app/plugins/&lt;provider&gt;.ts</code>
+              по аналогии с <code>yandex-metrika.ts</code>.
+            </li>
+            <li>
+              <strong>Добавить карточку настроек</strong> в
+              <code>apps/admin/app/pages/sites/[id].vue</code> рядом с
+              карточкой Метрики.
+            </li>
+          </ol>
+          <p>
+            Пример провайдера <code>send</code>:
+          </p>
+          <pre><code>const googleAnalyticsProvider: TrackingProvider = {
+  name: "google-analytics",
+  send(gate, event, params) {
+    const id = gate?.analytics?.googleAnalytics?.measurementId;
+    if (!id) return;
+    if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+    window.gtag("event", event, params ?? {});
+  },
+};</code></pre>
+        </section>
+
+        <section>
+          <h3>6. Тестирование в dev</h3>
+          <p>
+            По умолчанию SDK Метрики в dev <strong>не загружается</strong>
+            (чтобы не засорять статистику тестовыми хитами). Но <code>track()</code>
+            всегда логирует событие в консоль — срабатывание целей видно
+            в DevTools без подключения счётчика.
+          </p>
+          <p>
+            Чтобы включить полноценную загрузку SDK в dev:
+          </p>
+          <pre><code>NUXT_PUBLIC_METRIKA_DEV=true pnpm dev:web</code></pre>
+          <p>
+            или в <code>.env</code>:
+            <code>NUXT_PUBLIC_METRIKA_DEV=true</code>.
+            В кабинете Метрики добавьте <code>localhost</code> как разрешённый
+            домен или открывайте страницу с <code>?_ym_debug=1</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>7. Когда событие НЕ срабатывает</h3>
+          <ul>
+            <li>Сайт неактивен (<code>gate.status !== 'active'</code>);</li>
+            <li>В <code>Site.settings.analytics.yandexMetrika.counterId</code> пусто;</li>
+            <li>В dev без <code>NUXT_PUBLIC_METRIKA_DEV=true</code> SDK не грузится (но dev-логи в консоли будут);</li>
+            <li>На странице с <code>locked</code>-гейтом (форма ввода пароля).</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>8. Где что лежит</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/api/src/shared/tracking.ts</code> — реестр событий</li>
+            <li><code>packages/api/src/routers/sites.ts</code> — Zod для <code>analytics</code></li>
+            <li><code>packages/api/src/routers/public/site.ts</code> — отдаёт <code>analytics</code> на web</li>
+            <li><code>packages/db/src/schema/sites.ts</code> — <code>SiteSettings.analytics</code></li>
+            <li><code>apps/web/app/composables/useTracking.ts</code> — bus</li>
+            <li><code>apps/web/app/utils/tracking-providers.ts</code> — провайдеры</li>
+            <li><code>apps/web/app/plugins/yandex-metrika.ts</code> — загрузка SDK + SPA hits</li>
+            <li><code>apps/admin/app/pages/sites/[id].vue</code> — карточка настроек + таблица целей</li>
+            <li><code>docs/tracking.md</code> — эта же документация в репо</li>
           </ul>
         </section>
       </article>

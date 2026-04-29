@@ -9,6 +9,16 @@ Turborepo монорепо:
 - `packages/api` — oRPC роутер + Zod схемы
 - `packages/db` — Drizzle ORM + PostgreSQL
 
+## Трекинг и аналитика
+
+Per-site Яндекс.Метрика + универсальный bus событий `useTracking()`.
+Реестр событий — `packages/api/src/shared/tracking.ts` (одна правка → новое
+событие появляется в TS-типах, в админской таблице и в dev-логах). Провайдеры
+аналитики — массив в `apps/web/app/utils/tracking-providers.ts` (Метрика
+сейчас, GA/GTM добавляются туда же без правки блоков).
+
+Подробности и инструкции по добавлению событий/провайдеров: [`docs/tracking.md`](docs/tracking.md).
+
 ## UI в admin: только @nuxt/ui
 
 В `apps/admin` всегда используем готовые компоненты из `@nuxt/ui` v4

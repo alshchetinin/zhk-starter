@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { SOCIAL_TYPE_ICONS, type SocialLinkType } from "@zhk/api/shared/socials";
+import {
+  SOCIAL_TYPE_ICONS,
+  isMessengerSocial,
+  type SocialLinkType,
+} from "@zhk/api/shared/socials";
 import { telHref } from "~/utils/phone";
 
 const props = defineProps<{
@@ -11,9 +15,14 @@ const props = defineProps<{
 
 const { orpc } = useOrpc();
 const { socials: siteSocials } = useSiteContacts();
+const { trackPhoneClick, trackMessengerClick } = useTracking();
 
 function socialsFor(c: { socials?: { type: SocialLinkType; link: string }[] | null }) {
   return c.socials && c.socials.length ? c.socials : siteSocials.value;
+}
+
+function onSocialClick(type: SocialLinkType) {
+  if (isMessengerSocial(type)) trackMessengerClick(type);
 }
 
 const { data, suspense } = useQuery(
@@ -63,6 +72,7 @@ const mapCoordinates = computed(() => {
               v-if="c.phone"
               :href="telHref(c.phone)"
               class="font-medium text-[var(--web-text-primary)] hover:text-[var(--web-accent)]"
+              @click="trackPhoneClick(c.phone)"
             >
               {{ c.phone }}
             </a>
@@ -86,6 +96,7 @@ const mapCoordinates = computed(() => {
               target="_blank"
               rel="noopener"
               class="flex size-9 items-center justify-center rounded-full border border-[var(--web-border)] text-[var(--web-text-secondary)] transition hover:border-[var(--web-accent)] hover:text-[var(--web-accent)]"
+              @click="onSocialClick(s.type)"
             >
               <Icon :name="SOCIAL_TYPE_ICONS[s.type] ?? 'lucide:link'" class="size-4" />
             </a>
