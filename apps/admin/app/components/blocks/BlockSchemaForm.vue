@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BlockField } from "@zhk/api/shared/blocks";
+import type { BlockField, BlockFieldType } from "@zhk/api/shared/blocks";
 import type { BlockMetaForm } from "~/utils/block-schema";
 import { blockFieldTypes, blockSubFieldTypes } from "~/utils/block-schema";
 
@@ -8,11 +8,24 @@ const props = defineProps<{
 }>();
 
 const meta = defineModel<BlockMetaForm>("meta", { required: true });
+// ВАЖНО: caller обязан передавать клон (structuredClone) — форма мутирует
+// вложенные объекты напрямую, передача allBlocks[].fields без клона испортит
+// реестр до перезагрузки.
 const fields = defineModel<BlockField[]>("fields", { required: true });
 
-// Mutable copies for USelect items (as const → readonly tuple compat)
-const fieldTypeItems = blockFieldTypes.map((t) => ({ value: t.value as BlockField["type"], label: t.label }));
-const subFieldTypeItems = blockSubFieldTypes.map((t) => ({ value: t.value as BlockField["type"], label: t.label }));
+// Стабильные ключи v-for: фокус не прыгает при reorder/удалении
+const keys = new WeakMap<object, number>();
+let nextKey = 1;
+function keyOf(o: object) {
+  if (!keys.has(o)) keys.set(o, nextKey++);
+  return keys.get(o)!;
+}
+
+// Смена типа сбрасывает default — старый default может противоречить новой схеме
+function setFieldType(f: BlockField, type: BlockFieldType) {
+  f.type = type;
+  delete f.default;
+}
 
 function addField() {
   fields.value = [
@@ -90,7 +103,7 @@ function removeSubField(parent: BlockField, i: number) {
       <div v-else class="space-y-3">
         <div
           v-for="(field, i) in fields"
-          :key="i"
+          :key="keyOf(field)"
           class="p-3 rounded-md border border-(--ui-border) bg-(--ui-bg-elevated)/30"
         >
           <div class="flex items-start gap-2">
@@ -113,7 +126,13 @@ function removeSubField(parent: BlockField, i: number) {
             <div class="flex-1 grid grid-cols-2 gap-2">
               <UInput v-model="field.name" placeholder="name (camelCase)" size="sm" />
               <UInput v-model="field.label" placeholder="Label" size="sm" />
-              <USelect v-model="field.type" :items="fieldTypeItems" size="sm" class="w-full" />
+              <USelect
+                :model-value="field.type"
+                :items="blockFieldTypes"
+                size="sm"
+                class="w-full"
+                @update:model-value="setFieldType(field, $event)"
+              />
               <div class="flex items-center gap-2">
                 <USwitch v-model="field.required" />
                 <span class="text-xs">обязательное</span>
@@ -152,13 +171,19 @@ function removeSubField(parent: BlockField, i: number) {
             <div v-if="field.subFields?.length" class="space-y-2">
               <div
                 v-for="(sf, si) in field.subFields"
-                :key="si"
+                :key="keyOf(sf)"
                 class="flex items-start gap-2"
               >
                 <div class="flex-1 grid grid-cols-2 gap-2">
                   <UInput v-model="sf.name" placeholder="name" size="xs" />
                   <UInput v-model="sf.label" placeholder="Label" size="xs" />
-                  <USelect v-model="sf.type" :items="subFieldTypeItems" size="xs" class="w-full" />
+                  <USelect
+                    :model-value="sf.type"
+                    :items="blockSubFieldTypes"
+                    size="xs"
+                    class="w-full"
+                    @update:model-value="setFieldType(sf, $event)"
+                  />
                   <div class="flex items-center gap-2">
                     <USwitch v-model="sf.required" />
                     <span class="text-xs">обязательное</span>

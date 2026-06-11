@@ -1,4 +1,5 @@
-import type { BlockField } from "@zhk/api/shared/blocks";
+import type { BlockField, BlockFieldType } from "@zhk/api/shared/blocks";
+import { BLOCK_FIELD_TYPES } from "@zhk/api/shared/blocks";
 
 export interface BlockMetaForm {
   name: string;
@@ -8,19 +9,24 @@ export interface BlockMetaForm {
   category: "none" | "content" | "project";
 }
 
-export const blockFieldTypes = [
-  { value: "string", label: "Строка" },
-  { value: "text", label: "Многострочный текст" },
-  { value: "richtext", label: "Форматированный текст" },
-  { value: "number", label: "Число" },
-  { value: "boolean", label: "Переключатель" },
-  { value: "url", label: "URL-ссылка" },
-  { value: "image", label: "Изображение" },
-  { value: "images", label: "Галерея изображений" },
-  { value: "strings", label: "Список строк" },
-  { value: "select", label: "Выбор из списка" },
-  { value: "repeater", label: "Повторяемый блок" },
-] as const;
+const blockFieldTypeLabels: Record<BlockFieldType, string> = {
+  string: "Строка",
+  text: "Многострочный текст",
+  richtext: "Форматированный текст",
+  number: "Число",
+  boolean: "Переключатель",
+  url: "URL-ссылка",
+  image: "Изображение",
+  images: "Галерея изображений",
+  strings: "Список строк",
+  select: "Выбор из списка",
+  repeater: "Повторяемый блок",
+};
+
+export const blockFieldTypes = BLOCK_FIELD_TYPES.map((value) => ({
+  value,
+  label: blockFieldTypeLabels[value],
+}));
 
 export const blockSubFieldTypes = blockFieldTypes.filter((t) => t.value !== "repeater");
 
@@ -40,8 +46,9 @@ export function serializeBlockField(f: BlockField): BlockField {
     if (opts.length) out.options = opts;
   }
   if (f.type === "repeater") {
-    if (f.minItems !== undefined && f.minItems !== null) out.minItems = Number(f.minItems);
-    if (f.maxItems !== undefined && f.maxItems !== null) out.maxItems = Number(f.maxItems);
+    // UInput type=number при стирании эмитит "" — пропускаем всё, что не number
+    if (typeof f.minItems === "number") out.minItems = f.minItems;
+    if (typeof f.maxItems === "number") out.maxItems = f.maxItems;
     if (f.subFields?.length) out.subFields = f.subFields.map(serializeBlockField);
   }
   return out;
@@ -58,8 +65,17 @@ export function buildBlockPayload(meta: BlockMetaForm, fields: BlockField[]) {
   };
 }
 
+function isFieldValid(f: BlockField): boolean {
+  if (!f.name || !f.label) return false;
+  if (f.type === "select" && !(f.options ?? []).length) return false;
+  if (f.type === "repeater" && f.subFields?.length) {
+    return f.subFields.every(isFieldValid);
+  }
+  return true;
+}
+
 export function isBlockFormValid(meta: BlockMetaForm, fields: BlockField[]): boolean {
   if (!meta.name || !meta.label || !meta.description || !meta.icon) return false;
   if (!fields.length) return false;
-  return fields.every((f) => f.name && f.label);
+  return fields.every(isFieldValid);
 }

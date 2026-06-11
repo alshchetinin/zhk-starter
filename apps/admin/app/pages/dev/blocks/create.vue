@@ -9,7 +9,7 @@ const toast = useToast();
 const queryClient = useQueryClient();
 const router = useRouter();
 
-const meta = reactive<BlockMetaForm>({
+const meta = ref<BlockMetaForm>({
   name: "",
   label: "",
   description: "",
@@ -20,7 +20,7 @@ const meta = reactive<BlockMetaForm>({
 const fields = ref<BlockField[]>([]);
 
 const createMutation = useMutation({
-  mutationFn: (payload: object) => $orpcClient.dev.blocks.create(payload),
+  mutationFn: (payload: ReturnType<typeof buildBlockPayload>) => $orpcClient.dev.blocks.create(payload),
   onSuccess: () => {
     toast.add({ title: "Блок создан", description: "Vite HMR подхватит новые файлы", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.dev.blocks.key() });
@@ -31,10 +31,10 @@ const createMutation = useMutation({
   },
 });
 
-const canSubmit = computed(() => isBlockFormValid(meta, fields.value));
+const canSubmit = computed(() => isBlockFormValid(meta.value, fields.value));
 
 function submit() {
-  createMutation.mutate(buildBlockPayload(meta, fields.value));
+  createMutation.mutate(buildBlockPayload(meta.value, fields.value));
 }
 </script>
 
