@@ -29,7 +29,7 @@ const form = reactive({
   kebab: "",
   labelRu: "",
   singularLabelRu: "",
-  icon: "i-tabler-stack-2",
+  icon: "i-solar-layers-minimalistic-linear",
 });
 
 const fields = ref<FieldInput[]>([]);
@@ -81,7 +81,7 @@ const canSubmit = computed(() => {
 <template>
   <div class="p-6 max-w-3xl mx-auto">
     <div class="flex items-center gap-2 mb-6">
-      <UButton to="/dev/collections" icon="i-tabler-arrow-left" variant="ghost" size="sm" />
+      <UButton to="/dev/collections" icon="i-solar-arrow-left-linear" variant="ghost" size="sm" />
       <h1 class="text-2xl font-semibold">Новая коллекция</h1>
     </div>
 
@@ -109,7 +109,7 @@ const canSubmit = computed(() => {
       <div class="p-4 rounded-lg border border-(--ui-border) bg-(--ui-bg)">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-medium">Дополнительные поля</h2>
-          <UButton icon="i-tabler-plus" size="sm" variant="soft" @click="addField">
+          <UButton icon="i-solar-add-square-linear" size="sm" variant="soft" @click="addField">
             Добавить поле
           </UButton>
         </div>
@@ -137,7 +137,7 @@ const canSubmit = computed(() => {
               </div>
             </div>
             <UButton
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               size="xs"
               color="error"
               variant="ghost"

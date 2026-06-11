@@ -51,13 +51,13 @@ const createMutation = useMutation({
   <PageContainer>
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <UButton variant="ghost" icon="i-tabler-arrow-left" @click="router.push('/contacts')" />
+        <UButton variant="ghost" icon="i-solar-arrow-left-linear" @click="router.push('/contacts')" />
         <h1 class="text-2xl font-bold">Новый контакт</h1>
       </div>
       <UButton
         :disabled="!canSave"
         :loading="createMutation.isPending.value"
-        icon="i-tabler-device-floppy"
+        icon="i-solar-diskette-linear"
         class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         @click="createMutation.mutate()"
       >

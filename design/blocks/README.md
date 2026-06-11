@@ -25,7 +25,7 @@
   "name": "hero",
   "label": "Главный баннер",
   "description": "Баннер с заголовком и кнопкой",
-  "icon": "i-tabler-photo",
+  "icon": "i-solar-gallery-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "subtitle", "type": "text", "label": "Подзаголовок", "required": false }

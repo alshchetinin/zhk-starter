@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const temasBlock = defineBlock({
   type: "temas",
   label: "Команда",
-  icon: "i-tabler-ghost-3",
+  icon: "i-solar-ghost-linear",
   description: "Блок с командой",
   dataSchema: z.object({
     title: z.string().min(1),

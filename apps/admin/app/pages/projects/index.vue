@@ -147,7 +147,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
       <template #actions>
         <UButton
           v-if="hasSyncableProjects"
-          icon="i-tabler-refresh"
+          icon="i-solar-refresh-linear"
           variant="outline"
           :loading="syncAllMutation.isPending.value"
           @click="syncAllMutation.mutate()"
@@ -156,7 +156,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
         </UButton>
         <UButton
           to="/projects/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Новый ЖК
@@ -169,7 +169,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
       <UInput
         v-model="search"
         placeholder="Поиск по названию или адресу"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-sm"
       />
@@ -178,7 +178,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
     <!-- List -->
     <AppDataCard v-if="isPending && !data" flush>
       <div class="p-12 text-center text-xs text-(--ui-text-dimmed) flex items-center justify-center gap-2">
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
     </AppDataCard>
@@ -204,7 +204,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
             />
             <UIcon
               v-else
-              name="i-tabler-building"
+              name="i-solar-buildings-linear"
               class="size-5 text-(--ui-text-dimmed)"
             />
           </NuxtLink>
@@ -305,12 +305,12 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
             >
               <UButton
                 :to="`/projects/${project.id}`"
-                icon="i-tabler-edit"
+                icon="i-solar-pen-new-square-linear"
                 variant="ghost"
                 title="Редактировать"
               />
               <UButton
-                icon="i-tabler-trash"
+                icon="i-solar-trash-bin-trash-linear"
                 variant="ghost"
                 title="Удалить"
                 @click="showDeleteId = project.id"
@@ -323,21 +323,21 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
 
     <AppEmptyState
       v-else
-      icon="i-tabler-building-off"
+      icon="i-solar-buildings-linear"
       title="Проектов пока нет"
       description="Создайте новый ЖК вручную или подключите интеграцию для импорта из MacroCRM / Profitbase."
     >
       <template #actions>
         <UButton
           to="/projects/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Создать ЖК
         </UButton>
         <UButton
           to="/integrations"
-          icon="i-tabler-plug-connected"
+          icon="i-solar-plug-circle-linear"
           variant="outline"
         >
           Интеграции
@@ -374,7 +374,7 @@ function soldPct(p: { soldApartmentsCount?: number | null; totalApartmentsCount?
           </UButton>
           <UButton
             color="error"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             :loading="deleteMutation.isPending.value"
             @click="
               projectToDelete && deleteMutation.mutate(projectToDelete.id)

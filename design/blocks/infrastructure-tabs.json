@@ -2,7 +2,7 @@
   "name": "infrastructure-tabs",
   "label": "Инфраструктура",
   "description": "Секция инфраструктуры с табами и изображениями",
-  "icon": "i-tabler-trees",
+  "icon": "i-solar-leaf-linear",
   "fields": [
     { "name": "subtitle", "type": "string", "label": "Подзаголовок", "required": false },
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },

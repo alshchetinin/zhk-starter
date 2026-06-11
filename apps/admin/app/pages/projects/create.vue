@@ -88,7 +88,7 @@ function submit() {
           </UButton>
           <UButton
             color="primary"
-            icon="i-tabler-plus"
+            icon="i-solar-add-square-linear"
             :loading="createMut.isPending.value"
             :disabled="!form.name.trim()"
             @click="submit"

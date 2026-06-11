@@ -58,7 +58,7 @@ const primaryMutation = useMutation({
     >
       <template #actions>
         <UButton
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
           @click="showCreate = true"
         >
@@ -71,7 +71,7 @@ const primaryMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -86,7 +86,7 @@ const primaryMutation = useMutation({
             class="size-10 rounded-lg bg-(--ui-bg-elevated) border border-(--ui-border) flex items-center justify-center shrink-0"
           >
             <UIcon
-              :name="item.isPrimary ? 'i-tabler-home-star' : 'i-tabler-world'"
+              :name="item.isPrimary ? 'i-solar-home-smile-linear' : 'i-solar-global-linear'"
               class="size-5 text-(--ui-text-dimmed)"
               :class="item.isPrimary && 'text-amber-500'"
             />
@@ -131,7 +131,7 @@ const primaryMutation = useMutation({
             <UButton
               v-if="!item.isPrimary"
               variant="ghost"
-              icon="i-tabler-home-star"
+              icon="i-solar-home-smile-linear"
               title="Сделать главным"
               :loading="primaryMutation.isPending.value"
               @click="primaryMutation.mutate(item.id)"
@@ -139,13 +139,13 @@ const primaryMutation = useMutation({
             <UButton
               :to="`/sites/${item.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               v-if="!item.isPrimary"
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(item.id)"
@@ -157,13 +157,13 @@ const primaryMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-world-off"
+      icon="i-solar-global-linear"
       title="Сайтов пока нет"
       description="Создайте сайт для нового региона."
     >
       <template #actions>
         <UButton
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
           @click="showCreate = true"
         >

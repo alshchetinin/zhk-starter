@@ -112,7 +112,7 @@ const updateMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -179,7 +179,7 @@ const updateMutation = useMutation({
                 />
                 <UButton
                   variant="outline"
-                  icon="i-tabler-dice"
+                  icon="i-solar-shuffle-linear"
                   size="sm"
                   title="Сгенерировать"
                   @click="generatePassword"
@@ -187,7 +187,7 @@ const updateMutation = useMutation({
                 <UButton
                   v-if="form.accessPassword"
                   variant="outline"
-                  icon="i-tabler-x"
+                  icon="i-solar-close-circle-linear"
                   size="sm"
                   title="Очистить"
                   @click="form.accessPassword = ''"
@@ -319,7 +319,7 @@ const updateMutation = useMutation({
         <div class="flex items-center gap-2 pt-1">
           <UButton
             color="primary"
-            icon="i-tabler-device-floppy"
+            icon="i-solar-diskette-linear"
             :loading="updateMutation.isPending.value"
             :disabled="metrikaIdInvalid"
             @click="updateMutation.mutate()"

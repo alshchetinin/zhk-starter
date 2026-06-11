@@ -62,7 +62,7 @@ function formatDate(d: string) {
     <div class="flex gap-2 mb-3">
       <UInput v-model="note" placeholder="Заметка (опц.)" class="flex-1" size="sm" />
       <UButton
-        icon="i-tabler-camera"
+        icon="i-solar-camera-linear"
         size="sm"
         variant="outline"
         :loading="snapshotMutation.isPending.value"
@@ -96,7 +96,7 @@ function formatDate(d: string) {
         <UButton
           size="xs"
           variant="ghost"
-          icon="i-tabler-history-toggle"
+          icon="i-solar-history-2-linear"
           title="Восстановить"
           @click="restore(v)"
         />

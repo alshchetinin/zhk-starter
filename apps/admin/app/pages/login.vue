@@ -44,7 +44,7 @@ async function handleLogin() {
           v-model="email"
           type="email"
           placeholder="admin@example.com"
-          icon="i-tabler-mail"
+          icon="i-solar-letter-linear"
           size="sm"
           required
         />
@@ -54,7 +54,7 @@ async function handleLogin() {
           v-model="password"
           type="password"
           placeholder="••••••••"
-          icon="i-tabler-lock"
+          icon="i-solar-lock-linear"
           size="sm"
           required
         />
@@ -74,7 +74,7 @@ async function handleLogin() {
       >
         <UIcon
           v-if="loading"
-          name="i-tabler-loader-2"
+          name="i-solar-refresh-linear"
           class="size-4 animate-spin"
         />
         Войти

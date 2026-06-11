@@ -53,7 +53,7 @@ const deleteMutation = useMutation({
       <template #actions>
         <UButton
           to="/mortgage/banks/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Новый банк
@@ -65,7 +65,7 @@ const deleteMutation = useMutation({
       <UInput
         v-model="search"
         placeholder="Поиск…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -75,7 +75,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -98,7 +98,7 @@ const deleteMutation = useMutation({
             />
             <UIcon
               v-else
-              name="i-tabler-building-bank"
+              name="i-solar-safe-2-linear"
               class="size-5 text-(--ui-text-dimmed)"
             />
           </NuxtLink>
@@ -122,12 +122,12 @@ const deleteMutation = useMutation({
             <UButton
               :to="`/mortgage/banks/${item.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(item.id)"
@@ -139,14 +139,14 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-building-bank"
+      icon="i-solar-safe-2-linear"
       title="Банков пока нет"
       description="Добавьте первый банк, чтобы привязывать к нему ипотечные программы."
     >
       <template #actions>
         <UButton
           to="/mortgage/banks/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Добавить банк

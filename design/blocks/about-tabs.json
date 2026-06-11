@@ -2,7 +2,7 @@
   "name": "about-tabs",
   "label": "О проекте (табы)",
   "description": "Секция о проекте с табами: картинка-слайдер, подзаголовок, описание",
-  "icon": "i-tabler-layout-bottombar",
+  "icon": "i-solar-widget-4-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "description", "type": "text", "label": "Вводный текст", "required": false },

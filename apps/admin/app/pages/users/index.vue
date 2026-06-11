@@ -66,13 +66,13 @@ function onSubmit() {
       v-if="isLoading"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
     <AppEmptyState
       v-else-if="!isAdmin"
-      icon="i-tabler-shield-lock"
+      icon="i-solar-shield-keyhole-linear"
       title="Только для администраторов"
       description="У вас нет прав на просмотр этой страницы."
     />
@@ -84,7 +84,7 @@ function onSubmit() {
       >
         <template #actions>
           <UButton
-            icon="i-tabler-user-plus"
+            icon="i-solar-user-plus-rounded-linear"
             color="primary"
             @click="isCreateOpen = true"
           >
@@ -97,7 +97,7 @@ function onSubmit() {
         v-if="isPending"
         class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
 
@@ -124,7 +124,7 @@ function onSubmit() {
               </div>
             </div>
             <UIcon
-              name="i-tabler-chevron-right"
+              name="i-solar-alt-arrow-right-linear"
               class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition shrink-0"
             />
           </NuxtLink>
@@ -149,7 +149,7 @@ function onSubmit() {
                 <UInput v-model="form.password" type="text" placeholder="Минимум 8 символов" class="flex-1" autocomplete="new-password" />
                 <UButton
                   variant="outline"
-                  icon="i-tabler-refresh"
+                  icon="i-solar-refresh-linear"
                   @click="generatePassword"
                 >
                   Сгенерировать

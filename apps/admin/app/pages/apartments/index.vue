@@ -95,7 +95,7 @@ function fmtRooms(n: number) {
     >
       <template #actions>
         <UButton
-          icon="i-tabler-filter"
+          icon="i-solar-filter-linear"
           variant="outline"
           @click="filterOpen = true"
         >
@@ -146,7 +146,7 @@ function fmtRooms(n: number) {
       <div
         class="p-12 text-center text-xs text-(--ui-text-dimmed) flex items-center justify-center gap-2"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
     </AppDataCard>
@@ -202,7 +202,7 @@ function fmtRooms(n: number) {
             </div>
           </div>
           <UIcon
-            name="i-tabler-chevron-right"
+            name="i-solar-alt-arrow-right-linear"
             class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition justify-self-end"
           />
         </NuxtLink>
@@ -211,7 +211,7 @@ function fmtRooms(n: number) {
 
     <AppEmptyState
       v-else
-      icon="i-tabler-home-off"
+      icon="i-solar-home-linear"
       title="Квартиры не найдены"
       description="Измените фильтры или добавьте квартиры через мастер заполнения секции."
     />

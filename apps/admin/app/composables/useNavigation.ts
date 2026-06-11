@@ -7,55 +7,55 @@ export interface NavItem {
 }
 
 const mainItems: NavItem[] = [
-  { label: "Дашборд", icon: "i-tabler-layout-dashboard", to: "/" },
+  { label: "Дашборд", icon: "i-solar-widget-5-linear", to: "/" },
 ];
 
 // Per-site content — changes when site switcher is changed
 const contentItems: NavItem[] = [
-  { label: "Главная", icon: "i-tabler-home-2", to: "/homepage", section: "homepage" },
-  { label: "Новости", icon: "i-tabler-news", to: "/news", section: "news" },
-  { label: "Страницы", icon: "i-tabler-file-text", to: "/pages", section: "pages" },
-  { label: "Акции", icon: "i-tabler-discount-2", to: "/promotions", section: "promotions" },
-  { label: "Документы", icon: "i-tabler-file-certificate", to: "/documents", section: "documents" },
-  { label: "Модальные окна", icon: "i-tabler-app-window", to: "/modals", section: "modals" },
+  { label: "Главная", icon: "i-solar-home-2-linear", to: "/homepage", section: "homepage" },
+  { label: "Новости", icon: "i-solar-notebook-bookmark-linear", to: "/news", section: "news" },
+  { label: "Страницы", icon: "i-solar-file-text-linear", to: "/pages", section: "pages" },
+  { label: "Акции", icon: "i-solar-sale-linear", to: "/promotions", section: "promotions" },
+  { label: "Документы", icon: "i-solar-file-check-linear", to: "/documents", section: "documents" },
+  { label: "Модальные окна", icon: "i-solar-window-frame-linear", to: "/modals", section: "modals" },
 ];
 
 // Shared across all sites
 const catalogItems: NavItem[] = [
-  { label: "Проекты", icon: "i-tabler-building", to: "/projects", section: "projects" },
-  { label: "Дома", icon: "i-tabler-building-skyscraper", to: "/buildings", section: "buildings" },
-  { label: "Квартиры", icon: "i-tabler-home", to: "/apartments", section: "apartments" },
-  { label: "Коммерция", icon: "i-tabler-shopping-cart", to: "/commerce", section: "commerce" },
-  { label: "Паркинги", icon: "i-tabler-parking", to: "/parking", section: "parking" },
-  { label: "Кладовки", icon: "i-tabler-box", to: "/storage", section: "storage" },
-  { label: "Планировки", icon: "i-tabler-layout", to: "/layouts", section: "layouts" },
-  { label: "Теги", icon: "i-tabler-tags", to: "/tags", section: "tags" },
-  { label: "Ипотека", icon: "i-tabler-coin", to: "/mortgage", section: "mortgage" },
-  { label: "Способы покупки", icon: "i-tabler-credit-card", to: "/purchase-methods", section: "purchase-methods" },
-  { label: "Заявки", icon: "i-tabler-inbox", to: "/tickets", section: "tickets" },
+  { label: "Проекты", icon: "i-solar-buildings-linear", to: "/projects", section: "projects" },
+  { label: "Дома", icon: "i-solar-buildings-2-linear", to: "/buildings", section: "buildings" },
+  { label: "Квартиры", icon: "i-solar-home-linear", to: "/apartments", section: "apartments" },
+  { label: "Коммерция", icon: "i-solar-cart-large-linear", to: "/commerce", section: "commerce" },
+  { label: "Паркинги", icon: "i-solar-garage-linear", to: "/parking", section: "parking" },
+  { label: "Кладовки", icon: "i-solar-box-linear", to: "/storage", section: "storage" },
+  { label: "Планировки", icon: "i-solar-widget-2-linear", to: "/layouts", section: "layouts" },
+  { label: "Теги", icon: "i-solar-tag-horizontal-linear", to: "/tags", section: "tags" },
+  { label: "Ипотека", icon: "i-solar-dollar-minimalistic-linear", to: "/mortgage", section: "mortgage" },
+  { label: "Способы покупки", icon: "i-solar-card-linear", to: "/purchase-methods", section: "purchase-methods" },
+  { label: "Заявки", icon: "i-solar-inbox-linear", to: "/tickets", section: "tickets" },
 ];
 
 // Company-wide brand info
 const companyItems: NavItem[] = [
-  { label: "Медиа", icon: "i-tabler-photo", to: "/media" },
-  { label: "Контакты", icon: "i-tabler-address-book", to: "/contacts", section: "contacts" },
-  { label: "Соцсети", icon: "i-tabler-brand-telegram", to: "/socials", adminOnly: true },
+  { label: "Медиа", icon: "i-solar-gallery-linear", to: "/media" },
+  { label: "Контакты", icon: "i-solar-notebook-linear", to: "/contacts", section: "contacts" },
+  { label: "Соцсети", icon: "i-solar-plain-2-linear", to: "/socials", adminOnly: true },
 ];
 
 // Admin-only system config
 const systemItems: NavItem[] = [
-  { label: "Сайты", icon: "i-tabler-building-store", to: "/sites", adminOnly: true },
-  { label: "Пользователи", icon: "i-tabler-users", to: "/users", adminOnly: true },
-  { label: "Интеграции", icon: "i-tabler-plug", to: "/integrations", adminOnly: true },
+  { label: "Сайты", icon: "i-solar-shop-2-linear", to: "/sites", adminOnly: true },
+  { label: "Пользователи", icon: "i-solar-users-group-rounded-linear", to: "/users", adminOnly: true },
+  { label: "Интеграции", icon: "i-solar-plug-circle-linear", to: "/integrations", adminOnly: true },
 ];
 
 // Dev-only tools (content-type builder). Hidden in production.
 const devItems: NavItem[] = import.meta.dev
   ? [
-      { label: "Блоки", icon: "i-tabler-puzzle", to: "/dev/blocks", adminOnly: true },
-      { label: "Коллекции", icon: "i-tabler-stack-2", to: "/dev/collections", adminOnly: true },
-      { label: "Документация", icon: "i-tabler-book", to: "/dev/docs", adminOnly: true },
-      { label: "Интеграция", icon: "i-tabler-plug", to: "/dev/integration-provider", adminOnly: true },
+      { label: "Блоки", icon: "i-solar-widget-3-linear", to: "/dev/blocks", adminOnly: true },
+      { label: "Коллекции", icon: "i-solar-layers-minimalistic-linear", to: "/dev/collections", adminOnly: true },
+      { label: "Документация", icon: "i-solar-book-linear", to: "/dev/docs", adminOnly: true },
+      { label: "Интеграция", icon: "i-solar-plug-circle-linear", to: "/dev/integration-provider", adminOnly: true },
     ]
   : [];
 

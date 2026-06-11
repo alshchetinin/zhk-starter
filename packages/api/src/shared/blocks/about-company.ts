@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const aboutCompanyBlock = defineBlock({
   type: "about-company",
   label: "О компании",
-  icon: "i-tabler-building-estate",
+  icon: "i-solar-buildings-3-linear",
   description: "Секция о компании с описанием, изображением и статистикой",
   dataSchema: z.object({
     title: z.string().min(1),

@@ -94,7 +94,7 @@ const deleteMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -113,7 +113,7 @@ const deleteMutation = useMutation({
           <UButton
             color="error"
             variant="soft"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             label="Удалить"
             @click="deleteOpen = true"
           />
@@ -183,7 +183,7 @@ const deleteMutation = useMutation({
             <div class="mt-4 flex items-center gap-2">
               <UButton
                 color="primary"
-                icon="i-tabler-device-floppy"
+                icon="i-solar-diskette-linear"
                 :loading="sunMutation.isPending.value"
                 @click="saveSun"
               >
@@ -193,7 +193,7 @@ const deleteMutation = useMutation({
                 v-if="hasSunPosition"
                 color="neutral"
                 variant="ghost"
-                icon="i-tabler-x"
+                icon="i-solar-close-circle-linear"
                 :loading="sunMutation.isPending.value"
                 @click="resetSun"
               >

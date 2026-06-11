@@ -2,10 +2,10 @@
 import { TRACKING_EVENT_LIST } from "@zhk/api/shared/tracking";
 
 const sections = [
-  { id: "blocks", label: "Блоки", icon: "i-tabler-stack-2" },
-  { id: "collections", label: "Коллекции", icon: "i-tabler-database" },
-  { id: "modals", label: "Модальные окна", icon: "i-tabler-app-window" },
-  { id: "tracking", label: "Трекинг событий", icon: "i-tabler-chart-bar" },
+  { id: "blocks", label: "Блоки", icon: "i-solar-layers-minimalistic-linear" },
+  { id: "collections", label: "Коллекции", icon: "i-solar-database-linear" },
+  { id: "modals", label: "Модальные окна", icon: "i-solar-window-frame-linear" },
+  { id: "tracking", label: "Трекинг событий", icon: "i-solar-chart-2-linear" },
 ];
 
 const activeSection = ref("blocks");
@@ -14,7 +14,7 @@ const activeSection = ref("blocks");
 <template>
   <PageContainer>
     <div class="mb-6 flex items-center gap-3">
-      <UIcon name="i-tabler-book" class="size-6 text-(--ui-text-muted)" />
+      <UIcon name="i-solar-book-linear" class="size-6 text-(--ui-text-muted)" />
       <h1 class="text-2xl font-bold">Документация</h1>
     </div>
 
@@ -78,7 +78,7 @@ const activeSection = ref("blocks");
   "name": "feature-grid",
   "label": "Сетка преимуществ",
   "description": "3–6 карточек с иконкой и текстом",
-  "icon": "i-tabler-layout-grid",
+  "icon": "i-solar-widget-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "subtitle", "type": "text", "label": "Подзаголовок", "required": false },

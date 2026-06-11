@@ -20,14 +20,14 @@ export const purchaseMethodKindLabels: Record<PurchaseMethodKind, string> = {
 };
 
 export const purchaseMethodKindIcons: Record<PurchaseMethodKind, string> = {
-  mortgage: "i-tabler-coin",
-  installment: "i-tabler-calendar-dollar",
+  mortgage: "i-solar-dollar-minimalistic-linear",
+  installment: "i-solar-calendar-linear",
   maternal_capital: "i-tabler-baby-carriage",
-  trade_in: "i-tabler-arrows-exchange",
-  military_mortgage: "i-tabler-military-award",
-  subsidy: "i-tabler-certificate",
-  cash: "i-tabler-cash",
-  custom: "i-tabler-dots",
+  trade_in: "i-solar-transfer-horizontal-linear",
+  military_mortgage: "i-solar-medal-star-linear",
+  subsidy: "i-solar-diploma-linear",
+  cash: "i-solar-banknote-2-linear",
+  custom: "i-solar-menu-dots-linear",
 };
 
 export const purchaseMethodKindOptions = (

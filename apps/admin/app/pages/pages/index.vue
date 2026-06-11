@@ -65,14 +65,14 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} страниц` : undefined"
     >
       <template #actions>
-        <UButton to="/pages/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/pages/create" icon="i-solar-add-square-linear" color="primary">
           Новая страница
         </UButton>
       </template>
     </AppPageHeader>
 
     <div class="mb-4 flex items-center gap-2">
-      <UInput v-model="search" placeholder="Поиск…" icon="i-tabler-search" size="sm" class="max-w-xs" />
+      <UInput v-model="search" placeholder="Поиск…" icon="i-solar-magnifer-linear" size="sm" class="max-w-xs" />
       <USelect v-model="statusFilter" :items="pageStatusOptions" placeholder="Все статусы" size="sm" class="max-w-[200px]" />
     </div>
 
@@ -80,7 +80,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -92,7 +92,7 @@ const deleteMutation = useMutation({
           class="group flex items-center gap-3 px-4 py-3 hover:bg-(--ui-bg-elevated) transition"
           @mouseenter="prefetchPage(item.id)"
         >
-          <UIcon name="i-tabler-file-text" class="size-4 text-(--ui-text-dimmed) shrink-0" />
+          <UIcon name="i-solar-file-text-linear" class="size-4 text-(--ui-text-dimmed) shrink-0" />
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <NuxtLink :to="`/pages/${item.id}`" class="text-sm font-semibold truncate hover:underline">
@@ -110,8 +110,8 @@ const deleteMutation = useMutation({
             </div>
           </div>
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-            <UButton :to="`/pages/${item.id}`" variant="ghost" icon="i-tabler-edit" title="Редактировать" />
-            <UButton variant="ghost" icon="i-tabler-trash" title="Удалить" :loading="deleteMutation.isPending.value" @click="deleteMutation.mutate(item.id)" />
+            <UButton :to="`/pages/${item.id}`" variant="ghost" icon="i-solar-pen-new-square-linear" title="Редактировать" />
+            <UButton variant="ghost" icon="i-solar-trash-bin-trash-linear" title="Удалить" :loading="deleteMutation.isPending.value" @click="deleteMutation.mutate(item.id)" />
           </div>
         </div>
       </div>
@@ -119,12 +119,12 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-file-text-off"
+      icon="i-solar-file-remove-linear"
       title="Страниц не найдено"
       description="Создайте первую страницу для сайта."
     >
       <template #actions>
-        <UButton to="/pages/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/pages/create" icon="i-solar-add-square-linear" color="primary">
           Создать страницу
         </UButton>
       </template>

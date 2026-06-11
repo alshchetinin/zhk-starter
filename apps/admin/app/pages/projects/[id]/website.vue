@@ -35,14 +35,14 @@ const deleteMutation = useMutation({
     <div class="mb-4 flex items-center justify-between">
       <h3 class="text-lg font-semibold">Страницы проекта</h3>
       <NuxtLink :to="`/pages/create?projectId=${project.id}`">
-        <UButton icon="i-tabler-plus" size="sm">
+        <UButton icon="i-solar-add-square-linear" size="sm">
           Создать страницу
         </UButton>
       </NuxtLink>
     </div>
 
     <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -73,12 +73,12 @@ const deleteMutation = useMutation({
 
         <div class="flex items-center gap-1 shrink-0">
           <NuxtLink :to="`/pages/${item.id}`">
-            <UButton variant="ghost" size="xs" icon="i-tabler-edit" class="rounded-lg" />
+            <UButton variant="ghost" size="xs" icon="i-solar-pen-new-square-linear" class="rounded-lg" />
           </NuxtLink>
           <UButton
             variant="ghost"
             size="xs"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             color="error"
             class="rounded-lg"
             :loading="deleteMutation.isPending.value"
@@ -92,10 +92,10 @@ const deleteMutation = useMutation({
       v-else
       class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
     >
-      <UIcon name="i-tabler-file-text-off" class="mx-auto size-12 text-(--ui-text-muted)" />
+      <UIcon name="i-solar-file-remove-linear" class="mx-auto size-12 text-(--ui-text-muted)" />
       <p class="mt-2 text-(--ui-text-muted)">У проекта пока нет страниц</p>
       <NuxtLink :to="`/pages/create?projectId=${project.id}`">
-        <UButton class="mt-4" icon="i-tabler-plus" size="sm">
+        <UButton class="mt-4" icon="i-solar-add-square-linear" size="sm">
           Создать первую страницу
         </UButton>
       </NuxtLink>

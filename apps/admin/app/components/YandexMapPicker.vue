@@ -130,7 +130,7 @@ onUnmounted(() => {
         v-if="!mapReady"
         class="flex h-full items-center justify-center text-(--ui-text-muted)"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin" />
         <span class="ml-2 text-sm">Загрузка карты...</span>
       </div>
     </div>

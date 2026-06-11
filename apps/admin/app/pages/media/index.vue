@@ -134,12 +134,12 @@ function formatFileSize(bytes: number | null | undefined): string {
     >
       <UIcon
         v-if="!uploading"
-        name="i-tabler-cloud-upload"
+        name="i-solar-cloud-upload-linear"
         class="size-10 text-(--ui-text-muted) mb-2"
       />
       <UIcon
         v-else
-        name="i-tabler-loader-2"
+        name="i-solar-refresh-linear"
         class="size-10 animate-spin text-(--ui-text-muted) mb-2"
       />
       <p class="text-sm text-(--ui-text-muted)">
@@ -152,7 +152,7 @@ function formatFileSize(bytes: number | null | undefined): string {
         }}
       </p>
       <label v-if="!uploading" class="mt-2 cursor-pointer">
-        <UButton as="span" variant="outline" icon="i-tabler-upload">
+        <UButton as="span" variant="outline" icon="i-solar-upload-linear">
           Выбрать файл
         </UButton>
         <input
@@ -180,7 +180,7 @@ function formatFileSize(bytes: number | null | undefined): string {
       <UInput
         v-model="search"
         placeholder="Поиск по имени файла..."
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         class="w-64"
       />
       <UBadge variant="subtle" color="neutral" class="ml-auto">
@@ -189,14 +189,14 @@ function formatFileSize(bytes: number | null | undefined): string {
     </div>
 
     <div v-if="isPending" class="flex justify-center py-12">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin text-2xl" />
     </div>
 
     <div
       v-else-if="items.length === 0"
       class="flex flex-col items-center justify-center py-16 text-center"
     >
-      <UIcon name="i-tabler-photo-off" class="text-4xl text-(--ui-text-dimmed) mb-3" />
+      <UIcon name="i-solar-gallery-remove-linear" class="text-4xl text-(--ui-text-dimmed) mb-3" />
       <p class="text-(--ui-text-muted)">Файлов пока нет</p>
       <p class="text-xs text-(--ui-text-dimmed) mt-1">
         Загрузите изображения через форму выше
@@ -223,7 +223,7 @@ function formatFileSize(bytes: number | null | undefined): string {
             v-else
             class="h-full w-full flex items-center justify-center bg-(--ui-bg-muted)"
           >
-            <UIcon name="i-tabler-file" class="size-10 text-(--ui-text-dimmed)" />
+            <UIcon name="i-solar-file-linear" class="size-10 text-(--ui-text-dimmed)" />
           </div>
         </div>
 
@@ -250,7 +250,7 @@ function formatFileSize(bytes: number | null | undefined): string {
           class="absolute right-2 top-2 rounded-full bg-black/50 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"
           @click="deleteMutation.mutate(item.id)"
         >
-          <UIcon name="i-tabler-trash" class="size-4 text-white" />
+          <UIcon name="i-solar-trash-bin-trash-linear" class="size-4 text-white" />
         </button>
       </div>
     </div>

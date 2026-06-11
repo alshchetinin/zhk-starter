@@ -46,7 +46,7 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} тегов` : undefined"
     >
       <template #actions>
-        <UButton to="/tags/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/tags/create" icon="i-solar-add-square-linear" color="primary">
           Новый тег
         </UButton>
       </template>
@@ -56,7 +56,7 @@ const deleteMutation = useMutation({
       <UInput
         v-model="search"
         placeholder="Поиск по названию…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -66,7 +66,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -86,7 +86,7 @@ const deleteMutation = useMutation({
               :alt="tag.name"
               class="size-full object-cover"
             />
-            <UIcon v-else name="i-tabler-tag" class="size-5 text-(--ui-text-dimmed)" />
+            <UIcon v-else name="i-solar-tag-linear" class="size-5 text-(--ui-text-dimmed)" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -113,13 +113,13 @@ const deleteMutation = useMutation({
             <UButton
               :to="`/tags/${tag.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               v-if="!tag.integrationId"
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(tag.id)"
@@ -131,12 +131,12 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-tag"
+      icon="i-solar-tag-linear"
       title="Тегов пока нет"
       description="Создайте теги, чтобы группировать планировки и квартиры."
     >
       <template #actions>
-        <UButton to="/tags/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/tags/create" icon="i-solar-add-square-linear" color="primary">
           Создать тег
         </UButton>
       </template>

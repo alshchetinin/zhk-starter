@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const heroFullscreenBlock = defineBlock({
   type: "hero-fullscreen",
   label: "Hero на весь экран",
-  icon: "i-tabler-photo",
+  icon: "i-solar-gallery-linear",
   description: "Полноэкранный hero-блок со слайдером, адресом и сроками сдачи",
   dataSchema: z.object({
     title: z.string().min(1),

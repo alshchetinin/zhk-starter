@@ -2,7 +2,7 @@
   "name": "about-cards",
   "label": "О проекте (карточки)",
   "description": "Секция с большим заголовком, описанием и карточками с изображениями",
-  "icon": "i-tabler-cards",
+  "icon": "i-solar-widget-2-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true, "description": "Крупный заголовок секции" },
     { "name": "description", "type": "text", "label": "Описание", "required": false },

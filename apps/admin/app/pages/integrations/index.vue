@@ -251,7 +251,7 @@ const createBatchMutation = useMutation({
       v-if="loading"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -264,7 +264,7 @@ const createBatchMutation = useMutation({
           <UButton
             v-if="hasIntegration"
             to="/integrations/settings"
-            icon="i-tabler-settings"
+            icon="i-solar-settings-linear"
             variant="outline"
           >
             Синхронизация
@@ -272,7 +272,7 @@ const createBatchMutation = useMutation({
           <UButton
             v-if="hasIntegration"
             to="/integrations/logs"
-            icon="i-tabler-history"
+            icon="i-solar-history-linear"
             variant="outline"
           >
             Логи
@@ -293,7 +293,7 @@ const createBatchMutation = useMutation({
                 class="size-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"
               >
                 <UIcon
-                  name="i-tabler-plug-connected"
+                  name="i-solar-plug-circle-linear"
                   class="size-5 text-indigo-600 dark:text-indigo-400"
                 />
               </div>
@@ -309,7 +309,7 @@ const createBatchMutation = useMutation({
           <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
             <UButton
               variant="outline"
-              icon="i-tabler-refresh"
+              icon="i-solar-refresh-linear"
               :loading="pbVerifyMutation.isPending.value"
               @click="pbVerifyMutation.mutate()"
             >
@@ -319,7 +319,7 @@ const createBatchMutation = useMutation({
               class="ml-auto"
               color="error"
               variant="outline"
-              icon="i-tabler-plug-connected-x"
+              icon="i-solar-plug-circle-linear"
               @click="showRemoveConfirm = true"
             >
               Отключить
@@ -342,7 +342,7 @@ const createBatchMutation = useMutation({
             v-if="loadingPbProjects"
             class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-6 justify-center"
           >
-            <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+            <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
             Загрузка…
           </div>
 
@@ -378,7 +378,7 @@ const createBatchMutation = useMutation({
             >
               <UButton
                 color="primary"
-                icon="i-tabler-download"
+                icon="i-solar-download-linear"
                 :disabled="pbSelectedIds.size === 0"
                 :loading="pbSyncMutation.isPending.value"
                 @click="pbSyncMutation.mutate()"
@@ -391,7 +391,7 @@ const createBatchMutation = useMutation({
           <AppEmptyState
             v-else
             compact
-            icon="i-tabler-building-off"
+            icon="i-solar-buildings-linear"
             title="Проекты не найдены"
           />
         </AppDataCard>
@@ -403,7 +403,7 @@ const createBatchMutation = useMutation({
               class="size-10 rounded-lg bg-(--ui-bg-elevated) flex items-center justify-center"
             >
               <UIcon
-                name="i-tabler-plug"
+                name="i-solar-plug-circle-linear"
                 class="size-5 text-(--ui-text-dimmed)"
               />
             </div>
@@ -423,7 +423,7 @@ const createBatchMutation = useMutation({
               <UInput
                 v-model="pbAccountId"
                 placeholder="1234"
-                icon="i-tabler-hash"
+                icon="i-solar-hashtag-linear"
                 size="sm"
               />
             </UFormField>
@@ -436,14 +436,14 @@ const createBatchMutation = useMutation({
                 v-model="pbApiKey"
                 type="password"
                 placeholder="pb_api_key…"
-                icon="i-tabler-key"
+                icon="i-solar-key-linear"
                 size="sm"
               />
             </UFormField>
 
             <UButton
               color="primary"
-              icon="i-tabler-plug-connected"
+              icon="i-solar-plug-circle-linear"
               :disabled="!canSetupProfitbase"
               :loading="pbSetupMutation.isPending.value"
               @click="pbSetupMutation.mutate()"
@@ -463,7 +463,7 @@ const createBatchMutation = useMutation({
                 class="size-10 rounded-lg bg-indigo-500/10 flex items-center justify-center"
               >
                 <UIcon
-                  name="i-tabler-plug-connected"
+                  name="i-solar-plug-circle-linear"
                   class="size-5 text-indigo-600 dark:text-indigo-400"
                 />
               </div>
@@ -509,7 +509,7 @@ const createBatchMutation = useMutation({
           <div class="flex items-center gap-2 mt-4 pt-4 border-t border-(--ui-border)">
             <UButton
               variant="outline"
-              icon="i-tabler-refresh"
+              icon="i-solar-refresh-linear"
               :loading="verifyMutation.isPending.value"
               @click="verifyMutation.mutate()"
             >
@@ -519,7 +519,7 @@ const createBatchMutation = useMutation({
               class="ml-auto"
               color="error"
               variant="outline"
-              icon="i-tabler-plug-connected-x"
+              icon="i-solar-plug-circle-linear"
               @click="showRemoveConfirm = true"
             >
               Отключить
@@ -542,7 +542,7 @@ const createBatchMutation = useMutation({
             v-if="loadingComplexes"
             class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-6 justify-center"
           >
-            <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+            <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
             Загрузка…
           </div>
 
@@ -607,7 +607,7 @@ const createBatchMutation = useMutation({
             >
               <UButton
                 color="primary"
-                icon="i-tabler-plus"
+                icon="i-solar-add-square-linear"
                 :disabled="selectedIds.size === 0"
                 :loading="createBatchMutation.isPending.value"
                 @click="createBatchMutation.mutate()"
@@ -621,7 +621,7 @@ const createBatchMutation = useMutation({
               class="text-center py-4"
             >
               <UIcon
-                name="i-tabler-circle-check"
+                name="i-solar-check-circle-linear"
                 class="size-6 text-emerald-500 mx-auto mb-1"
               />
               <p class="text-xs text-(--ui-text-muted)">
@@ -633,7 +633,7 @@ const createBatchMutation = useMutation({
           <AppEmptyState
             v-else
             compact
-            icon="i-tabler-building-off"
+            icon="i-solar-buildings-linear"
             title="Комплексы не найдены"
             description="Проверьте настройки интеграции."
           />
@@ -646,7 +646,7 @@ const createBatchMutation = useMutation({
               class="size-10 rounded-lg bg-(--ui-bg-elevated) flex items-center justify-center"
             >
               <UIcon
-                name="i-tabler-plug"
+                name="i-solar-plug-circle-linear"
                 class="size-5 text-(--ui-text-dimmed)"
               />
             </div>
@@ -663,7 +663,7 @@ const createBatchMutation = useMutation({
               <UInput
                 v-model="domain"
                 placeholder="yourcompany"
-                icon="i-tabler-world"
+                icon="i-solar-global-linear"
                 size="sm"
               />
             </UFormField>
@@ -671,7 +671,7 @@ const createBatchMutation = useMutation({
               <UInput
                 v-model="apiDomain"
                 placeholder="api.macroserver.ru"
-                icon="i-tabler-server"
+                icon="i-solar-server-linear"
                 size="sm"
               />
             </UFormField>
@@ -680,7 +680,7 @@ const createBatchMutation = useMutation({
                 v-model="appSecret"
                 type="password"
                 placeholder="Секретный ключ"
-                icon="i-tabler-key"
+                icon="i-solar-key-linear"
                 size="sm"
               />
             </UFormField>
@@ -690,7 +690,7 @@ const createBatchMutation = useMutation({
 
             <UButton
               color="primary"
-              icon="i-tabler-plug-connected"
+              icon="i-solar-plug-circle-linear"
               :disabled="!canSetup"
               :loading="setupMutation.isPending.value"
               @click="setupMutation.mutate()"
@@ -715,7 +715,7 @@ const createBatchMutation = useMutation({
             </UButton>
             <UButton
             color="error"
-            icon="i-tabler-plug-connected-x"
+            icon="i-solar-plug-circle-linear"
             :loading="removeMutation.isPending.value"
             @click="removeMutation.mutate()"
           >

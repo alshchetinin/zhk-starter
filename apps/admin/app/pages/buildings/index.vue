@@ -59,7 +59,7 @@ function soldPct(b: {
       <UButton
         v-if="projectFilter"
         variant="ghost"
-        icon="i-tabler-x"
+        icon="i-solar-close-circle-linear"
         title="Сбросить фильтр"
         @click="projectFilter = ''"
       />
@@ -69,7 +69,7 @@ function soldPct(b: {
       <div
         class="p-12 text-center text-xs text-(--ui-text-dimmed) flex items-center justify-center gap-2"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
     </AppDataCard>
@@ -86,7 +86,7 @@ function soldPct(b: {
             class="size-10 rounded-lg bg-(--ui-bg-elevated) flex items-center justify-center shrink-0 border border-(--ui-border)"
           >
             <UIcon
-              name="i-tabler-building-skyscraper"
+              name="i-solar-buildings-2-linear"
               class="size-5 text-(--ui-text-dimmed)"
             />
           </div>
@@ -106,7 +106,7 @@ function soldPct(b: {
                 v-if="building.completionDate"
                 class="text-[11px] text-(--ui-text-dimmed) tabular-nums flex items-center gap-1"
               >
-                <UIcon name="i-tabler-calendar" class="size-3" />
+                <UIcon name="i-solar-calendar-linear" class="size-3" />
                 {{ building.completionDate }}
               </span>
             </div>
@@ -145,7 +145,7 @@ function soldPct(b: {
           </div>
 
           <UIcon
-            name="i-tabler-chevron-right"
+            name="i-solar-alt-arrow-right-linear"
             class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition shrink-0"
           />
         </NuxtLink>
@@ -154,7 +154,7 @@ function soldPct(b: {
 
     <AppEmptyState
       v-else
-      icon="i-tabler-building-off"
+      icon="i-solar-buildings-linear"
       title="Дома не найдены"
       description="Создайте дом со страницы проекта или подключите интеграцию для импорта."
     />

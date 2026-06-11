@@ -40,7 +40,7 @@ function confirmDelete(type: string, label: string) {
           Конструктор типов блоков контента. Изменения пишутся в исходники — Vite HMR подхватит автоматически.
         </p>
       </div>
-      <UButton to="/dev/blocks/create" icon="i-tabler-plus" color="primary">
+      <UButton to="/dev/blocks/create" icon="i-solar-add-square-linear" color="primary">
         Создать блок
       </UButton>
     </div>
@@ -65,7 +65,7 @@ function confirmDelete(type: string, label: string) {
           <div class="text-xs text-(--ui-text-muted) truncate">{{ block.description }}</div>
         </div>
         <UButton
-          icon="i-tabler-trash"
+          icon="i-solar-trash-bin-trash-linear"
           color="error"
           variant="ghost"
           size="sm"

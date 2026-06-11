@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const projectGalleryBlock = defineBlock({
   type: "project-gallery",
   label: "Галерея проекта",
-  icon: "i-tabler-photo",
+  icon: "i-solar-gallery-linear",
   description: "Галерея изображений из проекта",
   category: "project",
   dataSchema: z.object({

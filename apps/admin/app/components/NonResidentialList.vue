@@ -242,7 +242,7 @@ const columns = computed(() => {
     >
       <template #actions>
         <UButton
-          icon="i-tabler-filter"
+          icon="i-solar-filter-linear"
           variant="outline"
           @click="filterOpen = true"
         >
@@ -255,7 +255,7 @@ const columns = computed(() => {
           </span>
         </UButton>
         <UButton
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
           @click="openCreate"
         >
@@ -320,13 +320,13 @@ const columns = computed(() => {
         <div class="flex gap-1">
           <UButton
             variant="ghost"
-            icon="i-tabler-edit"
+            icon="i-solar-pen-new-square-linear"
             title="Редактировать"
             @click="openEdit(row.original as Item)"
           />
           <UButton
             variant="ghost"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             title="Удалить"
             @click="toDelete = row.original as Item"
           />
@@ -412,10 +412,10 @@ const columns = computed(() => {
           >
             <UIcon
               v-if="deleteMut.isPending.value"
-              name="i-tabler-loader-2"
+              name="i-solar-refresh-linear"
               class="size-3.5 animate-spin"
             />
-            <UIcon v-else name="i-tabler-trash" class="size-3.5" />
+            <UIcon v-else name="i-solar-trash-bin-trash-linear" class="size-3.5" />
             Удалить
           </button>
         </div>

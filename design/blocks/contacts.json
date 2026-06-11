@@ -2,7 +2,7 @@
   "name": "contacts",
   "label": "Контакты",
   "description": "Блок контактов с телефоном, email, адресом, отделами и картой",
-  "icon": "i-tabler-address-book",
+  "icon": "i-solar-notebook-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "phone", "type": "string", "label": "Телефон", "required": true },

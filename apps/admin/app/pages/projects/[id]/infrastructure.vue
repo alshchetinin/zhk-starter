@@ -121,7 +121,7 @@ const saveMutation = useMutation({
       <div class="flex items-center gap-3">
         <UButton
           variant="outline"
-          :icon="showCategories ? 'i-tabler-category' : 'i-tabler-category'"
+          :icon="showCategories ? 'i-solar-widget-6-linear' : 'i-solar-widget-6-linear'"
          
           @click="showCategories = !showCategories"
         >
@@ -133,7 +133,7 @@ const saveMutation = useMutation({
       </div>
       <UButton
         :loading="saveMutation.isPending.value"
-        icon="i-tabler-device-floppy"
+        icon="i-solar-diskette-linear"
         class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         @click="saveMutation.mutate()"
       >
@@ -148,7 +148,7 @@ const saveMutation = useMutation({
     >
       <div class="flex items-center justify-between">
         <h3 class="font-semibold text-(--ui-text-highlighted)">Категории</h3>
-        <UButton icon="i-tabler-plus" size="xs" variant="outline" @click="addCategory">
+        <UButton icon="i-solar-add-square-linear" size="xs" variant="outline" @click="addCategory">
           Добавить
         </UButton>
       </div>
@@ -185,7 +185,7 @@ const saveMutation = useMutation({
           />
           <UButton
             variant="ghost"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             size="xs"
             color="error"
             @click="removeCategory(cat.id)"
@@ -231,7 +231,7 @@ const saveMutation = useMutation({
                 />
                 <UButton
                   variant="ghost"
-                  icon="i-tabler-trash"
+                  icon="i-solar-trash-bin-trash-linear"
                   size="xs"
                   color="error"
                   @click.stop="removePin(pin.id)"

@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const contactsBlock = defineBlock({
   type: "contacts",
   label: "Контакты",
-  icon: "i-tabler-address-book",
+  icon: "i-solar-notebook-linear",
   description: "Секция контактов — выбор записей из справочника",
   dataSchema: z.object({
     title: z.string().optional(),

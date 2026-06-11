@@ -141,7 +141,7 @@ const isPaused = computed(() => {
       v-if="loading"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -158,7 +158,7 @@ const isPaused = computed(() => {
         <template #actions>
           <UButton
             to="/integrations/logs"
-            icon="i-tabler-history"
+            icon="i-solar-history-linear"
             variant="outline"
           >
             Логи
@@ -214,7 +214,7 @@ const isPaused = computed(() => {
           <div class="flex gap-2 mt-4 pt-4 border-t border-(--ui-border)">
             <UButton
               color="primary"
-              icon="i-tabler-refresh"
+              icon="i-solar-refresh-linear"
               :loading="triggerMutation.isPending.value"
               :disabled="integration.status === 'loading'"
               @click="triggerMutation.mutate()"
@@ -224,7 +224,7 @@ const isPaused = computed(() => {
             <UButton
               v-if="integration.status === 'loading'"
               variant="outline"
-              icon="i-tabler-player-stop"
+              icon="i-solar-stop-linear"
               :loading="cancelMutation.isPending.value"
               @click="cancelMutation.mutate()"
             >
@@ -315,7 +315,7 @@ const isPaused = computed(() => {
             <UButton
               v-if="isPaused"
               color="primary"
-              icon="i-tabler-player-play"
+              icon="i-solar-play-linear"
               :loading="pauseMutation.isPending.value"
               @click="pauseMutation.mutate(null)"
             >
@@ -410,7 +410,7 @@ const isPaused = computed(() => {
 
             <UButton
               variant="outline"
-              icon="i-tabler-send"
+              icon="i-solar-plain-linear"
               :loading="testNotifyMutation.isPending.value"
               :disabled="
                 !integration.notifyTelegramBotToken ||
@@ -435,7 +435,7 @@ const isPaused = computed(() => {
         <div class="flex justify-end pt-1">
           <UButton
             color="primary"
-            icon="i-tabler-device-floppy"
+            icon="i-solar-diskette-linear"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
           >
@@ -447,14 +447,14 @@ const isPaused = computed(() => {
 
     <AppEmptyState
       v-else
-      icon="i-tabler-plug-off"
+      icon="i-solar-plug-circle-linear"
       title="Интеграция не настроена"
       description="Подключите CRM, чтобы настроить расписание синхронизации."
     >
       <template #actions>
         <UButton
           to="/integrations"
-          icon="i-tabler-plug-connected"
+          icon="i-solar-plug-circle-linear"
           color="primary"
         >
           К настройке интеграции

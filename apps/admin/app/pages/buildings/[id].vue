@@ -205,7 +205,7 @@ const isSectionSubmitting = computed(
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -227,13 +227,13 @@ const isSectionSubmitting = computed(
           />
           <UButton
             :to="`/sections/create?buildingId=${id}`"
-            icon="i-tabler-stack-2"
+            icon="i-solar-layers-minimalistic-linear"
             variant="outline"
           >
             Заполнить секцию
           </UButton>
           <UButton
-            icon="i-tabler-plus"
+            icon="i-solar-add-square-linear"
             color="primary"
             @click="openCreateSection"
           >
@@ -246,7 +246,7 @@ const isSectionSubmitting = computed(
         v-if="building.integrationId"
         color="warning"
         variant="subtle"
-        icon="i-tabler-info-circle"
+        icon="i-solar-info-circle-linear"
         title="Этот дом управляется интеграцией"
         description="Изменения и удаление будут перезаписаны при следующей синхронизации."
         class="mb-4"
@@ -325,7 +325,7 @@ const isSectionSubmitting = computed(
             class="group flex items-center gap-3 px-4 py-2.5 hover:bg-(--ui-bg-elevated) transition"
           >
             <UIcon
-              name="i-tabler-layers-intersect"
+              name="i-solar-layers-minimalistic-linear"
               class="size-4 text-(--ui-text-dimmed) shrink-0"
             />
             <div class="flex-1 min-w-0">
@@ -339,13 +339,13 @@ const isSectionSubmitting = computed(
             </div>
             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
               <UButton
-                icon="i-tabler-edit"
+                icon="i-solar-pen-new-square-linear"
                 variant="ghost"
                 title="Редактировать"
                 @click.prevent.stop="openEditSection(section as Section)"
               />
               <UButton
-                icon="i-tabler-trash"
+                icon="i-solar-trash-bin-trash-linear"
                 variant="ghost"
                 title="Удалить"
                 @click.prevent.stop="sectionToDelete = section as Section"
@@ -356,7 +356,7 @@ const isSectionSubmitting = computed(
         <AppEmptyState
           v-else
           compact
-          icon="i-tabler-layers-off"
+          icon="i-solar-layers-minimalistic-linear"
           title="Секций пока нет"
           description="Создайте секцию или запустите мастер заполнения."
         />
@@ -498,7 +498,7 @@ const isSectionSubmitting = computed(
             </UButton>
             <UButton
             color="error"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             :loading="deleteSectionMut.isPending.value"
             @click="
                 sectionToDelete && deleteSectionMut.mutate(sectionToDelete.id)

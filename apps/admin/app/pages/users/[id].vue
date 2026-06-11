@@ -113,7 +113,7 @@ function toggle<T>(list: T[], value: T) {
   <PageContainer>
     <AppEmptyState
       v-if="!isAdmin"
-      icon="i-tabler-shield-lock"
+      icon="i-solar-shield-keyhole-linear"
       title="Только для администраторов"
       description="У вас нет прав на просмотр этой страницы."
     />
@@ -141,7 +141,7 @@ function toggle<T>(list: T[], value: T) {
           />
           <UButton
             v-if="userData && userData.role === 'editor' && userData.id !== me?.id"
-            icon="i-tabler-eye"
+            icon="i-solar-eye-linear"
             variant="outline"
             @click="startImpersonation(userData.id)"
           >
@@ -154,7 +154,7 @@ function toggle<T>(list: T[], value: T) {
         v-if="isPending"
         class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
 
@@ -171,7 +171,7 @@ function toggle<T>(list: T[], value: T) {
           <div class="mt-4">
             <UButton
               color="primary"
-              icon="i-tabler-device-floppy"
+              icon="i-solar-diskette-linear"
               :loading="roleMutation.isPending.value"
               @click="roleMutation.mutate()"
             >
@@ -255,7 +255,7 @@ function toggle<T>(list: T[], value: T) {
             <div class="pt-1">
               <UButton
                 color="primary"
-                icon="i-tabler-device-floppy"
+                icon="i-solar-diskette-linear"
                 :loading="permissionsMutation.isPending.value"
                 @click="permissionsMutation.mutate()"
               >
@@ -290,12 +290,12 @@ function toggle<T>(list: T[], value: T) {
             >
               <UIcon
                 v-if="banMutation.isPending.value"
-                name="i-tabler-loader-2"
+                name="i-solar-refresh-linear"
                 class="size-3.5 animate-spin"
               />
               <UIcon
                 v-else
-                :name="userData.banned ? 'i-tabler-lock-open' : 'i-tabler-lock'"
+                :name="userData.banned ? 'i-solar-lock-unlocked-linear' : 'i-solar-lock-linear'"
                 class="size-3.5"
               />
               {{ userData.banned ? "Разблокировать" : "Заблокировать" }}

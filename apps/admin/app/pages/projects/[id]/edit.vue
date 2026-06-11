@@ -87,7 +87,7 @@ const saveMutation = useMutation({
           <UInput
             v-model="form.name"
             placeholder="ЖК Солнечный"
-            icon="i-tabler-building"
+            icon="i-solar-buildings-linear"
             size="sm"
           />
         </UFormField>
@@ -95,7 +95,7 @@ const saveMutation = useMutation({
           <UInput
             v-model="form.address"
             placeholder="ул. Примерная, 1"
-            icon="i-tabler-map-pin"
+            icon="i-solar-map-point-linear"
             size="sm"
           />
         </UFormField>
@@ -111,7 +111,7 @@ const saveMutation = useMutation({
           <UInput
             v-model="form.type"
             placeholder="Жилой комплекс"
-            icon="i-tabler-tag"
+            icon="i-solar-tag-linear"
             size="sm"
           />
         </UFormField>
@@ -119,7 +119,7 @@ const saveMutation = useMutation({
           <UInput
             v-model="form.location"
             placeholder="Приморский район"
-            icon="i-tabler-map-2"
+            icon="i-solar-map-linear"
             size="sm"
           />
         </UFormField>
@@ -146,7 +146,7 @@ const saveMutation = useMutation({
         <UInput
           v-model="form.cameraUrl"
           placeholder="https://..."
-          icon="i-tabler-video"
+          icon="i-solar-videocamera-linear"
           size="sm"
         />
       </UFormField>
@@ -155,7 +155,7 @@ const saveMutation = useMutation({
     <div class="flex items-center gap-2 pt-2">
       <UButton
         color="primary"
-        icon="i-tabler-device-floppy"
+        icon="i-solar-diskette-linear"
         :disabled="!canSave"
         :loading="saveMutation.isPending.value"
         @click="saveMutation.mutate()"

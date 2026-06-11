@@ -36,12 +36,12 @@ const definition = computed(() =>
       @click="isOpen = !isOpen"
     >
       <UIcon
-        name="i-tabler-chevron-right"
+        name="i-solar-alt-arrow-right-linear"
         class="size-4 text-(--ui-text-muted) transition-transform duration-200"
         :class="{ 'rotate-90': isOpen }"
       />
       <UIcon
-        :name="definition?.icon ?? 'i-tabler-puzzle'"
+        :name="definition?.icon ?? 'i-solar-widget-3-linear'"
         class="size-4 text-(--ui-text-muted)"
       />
       <span class="text-sm font-medium flex-1">{{
@@ -50,21 +50,21 @@ const definition = computed(() =>
       <UButton
         variant="ghost"
         size="xs"
-        icon="i-tabler-arrow-up"
+        icon="i-solar-arrow-up-linear"
         :disabled="index === 0"
         @click.stop="$emit('moveUp')"
       />
       <UButton
         variant="ghost"
         size="xs"
-        icon="i-tabler-arrow-down"
+        icon="i-solar-arrow-down-linear"
         :disabled="index === total - 1"
         @click.stop="$emit('moveDown')"
       />
       <UButton
         variant="ghost"
         size="xs"
-        icon="i-tabler-trash"
+        icon="i-solar-trash-bin-trash-linear"
         color="error"
         @click.stop="showRemoveConfirm = true"
       />

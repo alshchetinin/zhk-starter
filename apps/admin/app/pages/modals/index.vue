@@ -49,7 +49,7 @@ const deleteMutation = useMutation({
         <UInput
           v-model="search"
           placeholder="Поиск..."
-          icon="i-tabler-search"
+          icon="i-solar-magnifer-linear"
           class="w-48"
         />
         <USelect
@@ -60,7 +60,7 @@ const deleteMutation = useMutation({
         />
         <NuxtLink to="/modals/create">
           <UButton
-            icon="i-tabler-plus"
+            icon="i-solar-add-square-linear"
             class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
           >
             Новое окно
@@ -70,7 +70,7 @@ const deleteMutation = useMutation({
     </div>
 
     <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -81,7 +81,7 @@ const deleteMutation = useMutation({
         class="flex items-center gap-4 rounded-lg border border-(--ui-border) bg-(--ui-bg) p-4 transition-shadow hover:shadow-md"
       >
         <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-(--ui-bg-elevated) shrink-0">
-          <UIcon name="i-tabler-app-window" class="size-5 text-(--ui-text-muted)" />
+          <UIcon name="i-solar-window-frame-linear" class="size-5 text-(--ui-text-muted)" />
         </div>
 
         <div class="flex-1 min-w-0">
@@ -107,12 +107,12 @@ const deleteMutation = useMutation({
 
         <div class="flex items-center gap-1 shrink-0">
           <NuxtLink :to="`/modals/${item.id}`">
-            <UButton variant="ghost" size="xs" icon="i-tabler-edit" class="rounded-lg" />
+            <UButton variant="ghost" size="xs" icon="i-solar-pen-new-square-linear" class="rounded-lg" />
           </NuxtLink>
           <UButton
             variant="ghost"
             size="xs"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             color="error"
             class="rounded-lg"
             :loading="deleteMutation.isPending.value"
@@ -126,10 +126,10 @@ const deleteMutation = useMutation({
       v-else
       class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
     >
-      <UIcon name="i-tabler-app-window" class="mx-auto size-12 text-(--ui-text-muted)" />
+      <UIcon name="i-solar-window-frame-linear" class="mx-auto size-12 text-(--ui-text-muted)" />
       <p class="mt-2 text-(--ui-text-muted)">Модальные окна не найдены</p>
       <NuxtLink to="/modals/create">
-        <UButton class="mt-4" icon="i-tabler-plus">Создать первое окно</UButton>
+        <UButton class="mt-4" icon="i-solar-add-square-linear">Создать первое окно</UButton>
       </NuxtLink>
     </div>
 

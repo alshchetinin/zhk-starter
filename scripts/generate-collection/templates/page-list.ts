@@ -46,12 +46,12 @@ const deleteMutation = useMutation({
         <UInput
           v-model="search"
           placeholder="Поиск..."
-          icon="i-tabler-search"
+          icon="i-solar-magnifer-linear"
           class="w-48"
         />
         <NuxtLink to="/${names.kebab}/create">
           <UButton
-            icon="i-tabler-plus"
+            icon="i-solar-add-square-linear"
             class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl transition-colors"
           >
             Добавить
@@ -64,7 +64,7 @@ const deleteMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-(--ui-text-muted)"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -88,14 +88,14 @@ const deleteMutation = useMutation({
             <UButton
               variant="ghost"
               size="xs"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               class="rounded-lg"
             />
           </NuxtLink>
           <UButton
             variant="ghost"
             size="xs"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             color="error"
             class="rounded-lg"
             :loading="deleteMutation.isPending.value"
@@ -110,7 +110,7 @@ const deleteMutation = useMutation({
       class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center"
     >
       <UIcon
-        name="i-tabler-database-off"
+        name="i-solar-database-linear"
         class="mx-auto size-12 text-(--ui-text-muted)"
       />
       <p class="mt-2 text-(--ui-text-muted)">Записи не найдены</p>

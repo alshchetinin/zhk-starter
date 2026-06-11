@@ -50,7 +50,7 @@ const { data, isPending } = useQuery(
       <UButton
         v-if="roomsFilter"
         variant="ghost"
-        icon="i-tabler-x"
+        icon="i-solar-close-circle-linear"
         title="Сбросить"
         @click="roomsFilter = ''"
       />
@@ -60,7 +60,7 @@ const { data, isPending } = useQuery(
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -83,7 +83,7 @@ const { data, isPending } = useQuery(
           />
           <div v-else class="flex items-center justify-center w-full h-full">
             <UIcon
-              name="i-tabler-photo-off"
+              name="i-solar-gallery-remove-linear"
               class="size-10 text-(--ui-text-dimmed)"
             />
           </div>
@@ -119,7 +119,7 @@ const { data, isPending } = useQuery(
 
     <AppEmptyState
       v-else
-      icon="i-tabler-layout-off"
+      icon="i-solar-widget-2-linear"
       title="Планировок не найдено"
       description="Создайте планировки на странице ЖК."
     />

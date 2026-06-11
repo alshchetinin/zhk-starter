@@ -165,7 +165,7 @@ function onFloorPlanClick(event: MouseEvent) {
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -291,7 +291,7 @@ function onFloorPlanClick(event: MouseEvent) {
                 class="flex items-start gap-2"
               >
                 <UIcon
-                  name="i-tabler-discount-2"
+                  name="i-solar-sale-linear"
                   class="mt-0.5 size-4 text-amber-500 shrink-0"
                 />
                 <div class="min-w-0">
@@ -315,7 +315,7 @@ function onFloorPlanClick(event: MouseEvent) {
                 class="flex items-center gap-3 rounded-md px-2 py-1.5 -mx-2 hover:bg-(--ui-bg-elevated) transition group"
               >
                 <UIcon
-                  name="i-tabler-building"
+                  name="i-solar-buildings-linear"
                   class="size-4 text-(--ui-text-dimmed)"
                 />
                 <div class="flex-1 min-w-0">
@@ -327,7 +327,7 @@ function onFloorPlanClick(event: MouseEvent) {
                   </p>
                 </div>
                 <UIcon
-                  name="i-tabler-chevron-right"
+                  name="i-solar-alt-arrow-right-linear"
                   class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
                 />
               </NuxtLink>
@@ -337,7 +337,7 @@ function onFloorPlanClick(event: MouseEvent) {
                 class="flex items-center gap-3 rounded-md px-2 py-1.5 -mx-2 hover:bg-(--ui-bg-elevated) transition group"
               >
                 <UIcon
-                  name="i-tabler-building-skyscraper"
+                  name="i-solar-buildings-2-linear"
                   class="size-4 text-(--ui-text-dimmed)"
                 />
                 <div class="flex-1 min-w-0">
@@ -349,7 +349,7 @@ function onFloorPlanClick(event: MouseEvent) {
                   </p>
                 </div>
                 <UIcon
-                  name="i-tabler-chevron-right"
+                  name="i-solar-alt-arrow-right-linear"
                   class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
                 />
               </NuxtLink>
@@ -365,7 +365,7 @@ function onFloorPlanClick(event: MouseEvent) {
               <UButton
                 size="sm"
                 color="primary"
-                icon="i-tabler-device-floppy"
+                icon="i-solar-diskette-linear"
                 :loading="saveTagsMutation.isPending.value"
                 @click="saveTagsMutation.mutate()"
               >
@@ -380,7 +380,7 @@ function onFloorPlanClick(event: MouseEvent) {
               class="mb-3 flex items-start gap-2 text-xs text-(--ui-text-muted) bg-(--ui-bg-elevated) rounded-md px-3 py-2"
             >
               <UIcon
-                name="i-tabler-arrow-down-left"
+                name="i-solar-arrow-left-down-linear"
                 class="size-3.5 mt-0.5 shrink-0"
               />
               <div>
@@ -401,7 +401,7 @@ function onFloorPlanClick(event: MouseEvent) {
             <div class="mt-4 flex items-center gap-2">
               <UButton
                 color="primary"
-                icon="i-tabler-device-floppy"
+                icon="i-solar-diskette-linear"
                 :loading="sunMutation.isPending.value"
                 @click="saveSun"
               >
@@ -411,7 +411,7 @@ function onFloorPlanClick(event: MouseEvent) {
                 v-if="!isSunInherited"
                 color="neutral"
                 variant="ghost"
-                icon="i-tabler-x"
+                icon="i-solar-close-circle-linear"
                 :loading="sunMutation.isPending.value"
                 @click="resetSun"
               >
@@ -432,7 +432,7 @@ function onFloorPlanClick(event: MouseEvent) {
               class="flex items-center justify-center h-48 rounded-lg bg-(--ui-bg-elevated)"
             >
               <UIcon
-                name="i-tabler-photo-off"
+                name="i-solar-gallery-remove-linear"
                 class="size-10 text-(--ui-text-dimmed)"
               />
             </div>
@@ -446,7 +446,7 @@ function onFloorPlanClick(event: MouseEvent) {
               :to="`/layouts/${apartment.apartmentLayout.id}`"
               class="mt-2 inline-flex items-center gap-1 text-xs text-(--ui-text-muted) hover:text-(--ui-text) transition"
             >
-              <UIcon name="i-tabler-external-link" class="size-3" />
+              <UIcon name="i-solar-square-arrow-right-up-linear" class="size-3" />
               Открыть планировку
             </NuxtLink>
           </AppDataCard>

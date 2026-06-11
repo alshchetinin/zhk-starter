@@ -86,7 +86,7 @@ const deleteMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-(--ui-text-muted)"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -94,7 +94,7 @@ const deleteMutation = useMutation({
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <NuxtLink to="/${names.kebab}">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
+            <UButton variant="ghost" icon="i-solar-arrow-left-linear" size="sm" />
           </NuxtLink>
           <h1 class="text-2xl font-bold">{{ form.title || "Редактирование" }}</h1>
         </div>
@@ -102,7 +102,7 @@ const deleteMutation = useMutation({
           <UButton
             variant="outline"
             color="error"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             class="rounded-xl"
             :loading="deleteMutation.isPending.value"
             @click="deleteMutation.mutate()"
@@ -110,7 +110,7 @@ const deleteMutation = useMutation({
             Удалить
           </UButton>
           <UButton
-            icon="i-tabler-device-floppy"
+            icon="i-solar-diskette-linear"
             class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) rounded-xl"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"

@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const infrastructureTabsBlock = defineBlock({
   type: "infrastructure-tabs",
   label: "Инфраструктура",
-  icon: "i-tabler-trees",
+  icon: "i-solar-leaf-linear",
   description: "Секция инфраструктуры с табами и изображениями",
   dataSchema: z.object({
     subtitle: z.string().optional(),

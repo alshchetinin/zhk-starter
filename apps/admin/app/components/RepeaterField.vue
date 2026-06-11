@@ -80,7 +80,7 @@ function updateItem(index: number, key: string, value: unknown) {
         @click="toggleItem(i)"
       >
         <UIcon
-          name="i-tabler-chevron-right"
+          name="i-solar-alt-arrow-right-linear"
           class="size-4 text-(--ui-text-muted) transition-transform duration-200"
           :class="{ 'rotate-90': openItems.has(i) }"
         />
@@ -90,21 +90,21 @@ function updateItem(index: number, key: string, value: unknown) {
         <UButton
           variant="ghost"
           size="xs"
-          icon="i-tabler-arrow-up"
+          icon="i-solar-arrow-up-linear"
           :disabled="i === 0"
           @click.stop="moveItem(i, -1)"
         />
         <UButton
           variant="ghost"
           size="xs"
-          icon="i-tabler-arrow-down"
+          icon="i-solar-arrow-down-linear"
           :disabled="i === model.length - 1"
           @click.stop="moveItem(i, 1)"
         />
         <UButton
           variant="ghost"
           size="xs"
-          icon="i-tabler-trash"
+          icon="i-solar-trash-bin-trash-linear"
           color="error"
           :disabled="!canRemove"
           @click.stop="removeItem(i)"
@@ -122,7 +122,7 @@ function updateItem(index: number, key: string, value: unknown) {
 
     <UButton
       v-if="canAdd"
-      icon="i-tabler-plus"
+      icon="i-solar-add-square-linear"
       variant="outline"
       size="sm"
       @click="addItem"

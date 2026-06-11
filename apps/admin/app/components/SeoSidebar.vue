@@ -25,7 +25,7 @@ const showSeo = ref(false);
     >
       <span class="font-semibold">SEO</span>
       <UIcon
-        :name="showSeo ? 'i-tabler-chevron-up' : 'i-tabler-chevron-down'"
+        :name="showSeo ? 'i-solar-alt-arrow-up-linear' : 'i-solar-alt-arrow-down-linear'"
         class="size-5 text-(--ui-text-muted)"
       />
     </button>

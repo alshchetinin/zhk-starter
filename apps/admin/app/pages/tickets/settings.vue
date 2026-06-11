@@ -39,14 +39,14 @@ const saveMutation = useMutation({
 <template>
   <PageContainer>
     <div v-if="loading" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin text-3xl" />
     </div>
 
     <template v-else>
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <NuxtLink to="/tickets">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
+            <UButton variant="ghost" icon="i-solar-arrow-left-linear" size="sm" />
           </NuxtLink>
           <div>
             <h1 class="text-2xl font-semibold text-(--ui-text-highlighted)">
@@ -59,7 +59,7 @@ const saveMutation = useMutation({
         </div>
         <UButton
           :loading="saveMutation.isPending.value"
-          icon="i-tabler-device-floppy"
+          icon="i-solar-diskette-linear"
           class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
           @click="saveMutation.mutate()"
         >
@@ -72,7 +72,7 @@ const saveMutation = useMutation({
         <div class="border border-(--ui-border) p-6 space-y-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-              <UIcon name="i-tabler-brand-telegram" class="text-blue-500 text-xl" />
+              <UIcon name="i-solar-plain-2-linear" class="text-blue-500 text-xl" />
             </div>
             <div>
               <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Telegram</h2>
@@ -84,7 +84,7 @@ const saveMutation = useMutation({
             <UInput
               v-model="form.telegramBotToken"
               placeholder="123456:ABC-DEF..."
-              icon="i-tabler-key"
+              icon="i-solar-key-linear"
               size="xl"
               class="w-full"
             />
@@ -94,7 +94,7 @@ const saveMutation = useMutation({
             <UInput
               v-model="form.telegramChatId"
               placeholder="-1001234567890"
-              icon="i-tabler-message"
+              icon="i-solar-chat-square-linear"
               size="xl"
               class="w-full"
             />

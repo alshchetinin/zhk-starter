@@ -19,14 +19,14 @@ function formatPrice(price: string | number | null) {
   <PageContainer>
     <UBreadcrumb
       :items="[
-        { label: 'Паркинги', to: '/parking', icon: 'i-tabler-parking' },
+        { label: 'Паркинги', to: '/parking', icon: 'i-solar-garage-linear' },
         { label: item ? (item.name ?? '—') : '...' },
       ]"
       class="mb-6"
     />
 
     <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка…</span>
     </div>
 
@@ -63,7 +63,7 @@ function formatPrice(price: string | number | null) {
             :to="`/projects/${item.project.id}`"
             class="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-(--ui-bg-elevated)"
           >
-            <UIcon name="i-tabler-building" class="size-5 text-(--ui-text-muted)" />
+            <UIcon name="i-solar-buildings-linear" class="size-5 text-(--ui-text-muted)" />
             <div>
               <p class="text-xs text-(--ui-text-muted)">Проект</p>
               <p class="text-sm font-medium">{{ item.project.name }}</p>
@@ -74,7 +74,7 @@ function formatPrice(price: string | number | null) {
             :to="`/buildings/${item.building.id}`"
             class="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-(--ui-bg-elevated)"
           >
-            <UIcon name="i-tabler-building-skyscraper" class="size-5 text-(--ui-text-muted)" />
+            <UIcon name="i-solar-buildings-2-linear" class="size-5 text-(--ui-text-muted)" />
             <div>
               <p class="text-xs text-(--ui-text-muted)">Корпус</p>
               <p class="text-sm font-medium">{{ item.building.name }}</p>

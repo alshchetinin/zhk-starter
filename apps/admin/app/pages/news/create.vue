@@ -58,12 +58,12 @@ const createMutation = useMutation({
     <div class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <NuxtLink to="/news">
-          <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
+          <UButton variant="ghost" icon="i-solar-arrow-left-linear" size="sm" />
         </NuxtLink>
         <h1 class="text-2xl font-bold">Новая статья</h1>
       </div>
       <UButton
-        icon="i-tabler-device-floppy"
+        icon="i-solar-diskette-linear"
         class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         :loading="createMutation.isPending.value"
         @click="createMutation.mutate()"

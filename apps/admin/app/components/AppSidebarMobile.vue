@@ -14,7 +14,7 @@ const { navGroups, isActive, handleSignOut } = useNavigation();
     <template #header>
       <div class="flex items-center justify-between w-full">
         <span class="text-xl font-bold">ZHK Admin</span>
-        <UButton color="neutral" variant="ghost" icon="i-tabler-x" @click="close" />
+        <UButton color="neutral" variant="ghost" icon="i-solar-close-circle-linear" @click="close" />
       </div>
     </template>
 
@@ -60,7 +60,7 @@ const { navGroups, isActive, handleSignOut } = useNavigation();
             block
             variant="ghost"
             color="neutral"
-            icon="i-tabler-logout"
+            icon="i-solar-logout-2-linear"
             label="Sign Out"
             class="mt-2"
             @click="handleSignOut"

@@ -2,7 +2,7 @@
   "name": "about-company",
   "label": "О компании",
   "description": "Секция о компании с описанием, изображением и статистикой",
-  "icon": "i-tabler-building-estate",
+  "icon": "i-solar-buildings-3-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "description", "type": "text", "label": "Описание", "required": false },

@@ -89,7 +89,7 @@ const hasApartments = computed(() =>
   <div>
     <AppEmptyState
       v-if="!buildings.length"
-      icon="i-tabler-building-skyscraper"
+      icon="i-solar-buildings-2-linear"
       title="В проекте нет домов"
       description="Сначала добавьте дом, затем создайте секции и квартиры."
     />
@@ -115,7 +115,7 @@ const hasApartments = computed(() =>
         v-if="isLoadingApartments"
         class="flex items-center gap-2 py-8 text-xs text-(--ui-text-dimmed) justify-center"
       >
-        <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
         Загрузка…
       </div>
 
@@ -181,7 +181,7 @@ const hasApartments = computed(() =>
 
       <AppEmptyState
         v-else
-        icon="i-tabler-home-off"
+        icon="i-solar-home-linear"
         title="В этом доме нет квартир"
         description="Добавьте секции и квартиры для отображения шахматки."
       />

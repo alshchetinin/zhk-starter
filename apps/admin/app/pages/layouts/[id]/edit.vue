@@ -199,7 +199,7 @@ const saveTagsMutation = useMutation({
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -217,12 +217,12 @@ const saveTagsMutation = useMutation({
           <UButton
             variant="ghost"
             :to="`/layouts/${id}`"
-            icon="i-tabler-x"
+            icon="i-solar-close-circle-linear"
             label="Отмена"
           />
           <UButton
             color="primary"
-            icon="i-tabler-device-floppy"
+            icon="i-solar-diskette-linear"
             label="Сохранить"
             :loading="updateMutation.isPending.value"
             @click="updateMutation.mutate()"
@@ -234,7 +234,7 @@ const saveTagsMutation = useMutation({
         v-if="lockedFields.length"
         color="warning"
         variant="subtle"
-        icon="i-tabler-refresh"
+        icon="i-solar-refresh-linear"
         :title="`Эти поля обновляются интеграцией${layout.integration?.type ? ` «${layout.integration.type}»` : ''} и недоступны для ручной правки`"
         :description="lockedLabels.join(', ')"
         class="mb-4"
@@ -321,7 +321,7 @@ const saveTagsMutation = useMutation({
               <UButton
                 size="sm"
                 variant="soft"
-                icon="i-tabler-device-floppy"
+                icon="i-solar-diskette-linear"
                 :loading="saveTagsMutation.isPending.value"
                 @click="saveTagsMutation.mutate()"
               >

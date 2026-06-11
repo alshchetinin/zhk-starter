@@ -66,7 +66,7 @@ const handleClick = (event: MouseEvent) => {
 <template>
   <div class="select-none">
     <p class="mb-2 flex items-center text-sm font-medium text-(--ui-text)">
-      <UIcon name="i-tabler-sun-filled" class="mr-1.5 size-4 text-yellow-500" />
+      <UIcon name="i-solar-sun-2-linear" class="mr-1.5 size-4 text-yellow-500" />
       Положение солнца относительно планировки
     </p>
 
@@ -117,17 +117,17 @@ const handleClick = (event: MouseEvent) => {
 
           <!-- Восход (слева) -->
           <div class="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <UIcon name="i-tabler-sunrise" class="size-5 text-yellow-500" />
+            <UIcon name="i-solar-sunrise-linear" class="size-5 text-yellow-500" />
           </div>
 
           <!-- Закат (справа) -->
           <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2">
-            <UIcon name="i-tabler-moon" class="size-5 text-orange-500" />
+            <UIcon name="i-solar-moon-linear" class="size-5 text-orange-500" />
           </div>
 
           <!-- Солнце в верхней точке (полдень) -->
           <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-            <UIcon name="i-tabler-sun-filled" class="size-7 text-yellow-500" />
+            <UIcon name="i-solar-sun-2-linear" class="size-7 text-yellow-500" />
           </div>
         </div>
 

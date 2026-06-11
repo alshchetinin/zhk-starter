@@ -97,7 +97,7 @@ const deleteMutation = useMutation({
         />
       </div>
       <NuxtLink :to="`/projects/${projectId}/progress/create`">
-        <UButton icon="i-tabler-plus" class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)">
+        <UButton icon="i-solar-add-square-linear" class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)">
           Добавить запись
         </UButton>
       </NuxtLink>
@@ -105,7 +105,7 @@ const deleteMutation = useMutation({
 
     <!-- Loading -->
     <div v-if="isPending" class="flex justify-center py-12">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin text-2xl" />
     </div>
 
     <!-- Empty state -->
@@ -141,7 +141,7 @@ const deleteMutation = useMutation({
                 class="h-full w-full object-cover"
               />
               <div v-else class="flex h-full items-center justify-center">
-                <UIcon name="i-tabler-photo" class="text-xl text-(--ui-text-dimmed)" />
+                <UIcon name="i-solar-gallery-linear" class="text-xl text-(--ui-text-dimmed)" />
               </div>
             </div>
 
@@ -170,7 +170,7 @@ const deleteMutation = useMutation({
             <!-- Actions -->
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               size="sm"
               color="error"
               :loading="deleteMutation.isPending.value"

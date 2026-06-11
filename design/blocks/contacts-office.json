@@ -2,7 +2,7 @@
   "name": "contacts-office",
   "label": "Контакты",
   "description": "Секция контактов с адресом, картой, отделами и соцсетями",
-  "icon": "i-tabler-address-book",
+  "icon": "i-solar-notebook-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "phone", "type": "string", "label": "Основной телефон", "required": true },

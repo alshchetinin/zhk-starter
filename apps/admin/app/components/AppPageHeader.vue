@@ -21,12 +21,12 @@ defineProps<{
           :to="back"
           class="hover:text-(--ui-text) transition flex items-center"
         >
-          <UIcon name="i-tabler-arrow-left" class="size-3.5" />
+          <UIcon name="i-solar-arrow-left-linear" class="size-3.5" />
         </NuxtLink>
         <template v-for="(c, i) in crumbs" :key="i">
           <UIcon
             v-if="i > 0 || back"
-            name="i-tabler-chevron-right"
+            name="i-solar-alt-arrow-right-linear"
             class="size-3 shrink-0"
           />
           <NuxtLink

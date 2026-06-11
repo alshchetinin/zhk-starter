@@ -65,7 +65,7 @@ const createMutation = useMutation({
       <template #actions>
         <UButton
           color="primary"
-          icon="i-tabler-device-floppy"
+          icon="i-solar-diskette-linear"
           :loading="createMutation.isPending.value"
           :disabled="!form.name || !form.rate"
           @click="createMutation.mutate()"

@@ -64,9 +64,9 @@ function sortableHeader(column: any, label: string) {
     label,
     icon: isSorted
       ? isSorted === "asc"
-        ? "i-tabler-sort-ascending"
-        : "i-tabler-sort-descending"
-      : "i-tabler-arrows-sort",
+        ? "i-solar-sort-from-bottom-to-top-linear"
+        : "i-solar-sort-from-top-to-bottom-linear"
+      : "i-solar-sort-vertical-linear",
     class: "-mx-2.5",
     onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
   });
@@ -112,7 +112,7 @@ const columns: TableColumn<any>[] = [
     cell: ({ row }) =>
       h(UButton, {
         variant: "ghost",
-        icon: "i-tabler-trash",
+        icon: "i-solar-trash-bin-trash-linear",
         size: "xs",
         color: "error",
         onClick: (e: Event) => {
@@ -140,7 +140,7 @@ function onRowClick(_e: Event, row: any) {
       <template #actions>
         <UButton
           to="/tickets/settings"
-          icon="i-tabler-settings"
+          icon="i-solar-settings-linear"
           variant="outline"
         >
           Настройки
@@ -152,7 +152,7 @@ function onRowClick(_e: Event, row: any) {
       <UInput
         v-model="search"
         placeholder="Поиск по телефону…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -169,13 +169,13 @@ function onRowClick(_e: Event, row: any) {
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
     <AppEmptyState
       v-else-if="items.length === 0"
-      icon="i-tabler-inbox"
+      icon="i-solar-inbox-linear"
       title="Заявок пока нет"
       description="Сюда будут поступать заявки с сайта."
     />

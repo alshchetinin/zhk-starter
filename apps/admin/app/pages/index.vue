@@ -32,9 +32,9 @@ const greeting = computed(() => {
       </div>
 
       <div class="flex items-center gap-1.5">
-        <UButton variant="outline" to="/projects/create" icon="i-tabler-plus">ЖК</UButton>
-        <UButton variant="outline" to="/buildings" icon="i-tabler-plus">Дом</UButton>
-        <UButton variant="outline" to="/news" icon="i-tabler-plus">Новость</UButton>
+        <UButton variant="outline" to="/projects/create" icon="i-solar-add-square-linear">ЖК</UButton>
+        <UButton variant="outline" to="/buildings" icon="i-solar-add-square-linear">Дом</UButton>
+        <UButton variant="outline" to="/news" icon="i-solar-add-square-linear">Новость</UButton>
       </div>
     </header>
 
@@ -42,7 +42,7 @@ const greeting = computed(() => {
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 

@@ -70,7 +70,7 @@ const triggerLabel = (t: string) =>
       <template #actions>
         <UButton
           to="/integrations/settings"
-          icon="i-tabler-settings"
+          icon="i-solar-settings-linear"
           variant="outline"
         >
           Настройки
@@ -94,13 +94,13 @@ const triggerLabel = (t: string) =>
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
     <AppEmptyState
       v-else-if="items.length === 0"
-      icon="i-tabler-history-off"
+      icon="i-solar-history-linear"
       title="Запусков ещё не было"
       description="Здесь появятся логи синхронизации с Profitbase / MacroCRM."
     />

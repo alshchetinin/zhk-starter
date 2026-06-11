@@ -54,7 +54,7 @@ JSON конфиг (`BlockInfo`):
   "name": "block-name",
   "label": "Название блока",
   "description": "Описание для админки",
-  "icon": "i-tabler-icon-name",
+  "icon": "i-solar-icon-name-linear",
   "fields": [
     { "name": "fieldName", "type": "string", "label": "Поле", "required": true },
     { "name": "optField", "type": "text", "label": "Опциональное", "required": false, "description": "Подсказка" },
@@ -92,7 +92,7 @@ JSON конфиг (`BlockInfo`):
 ### Admin editor
 - `defineModel<{...}>({ required: true })` + `set()` helper
 - UI: `@nuxt/ui` — UInput, UTextarea, UEditor, USelect, USwitch, ImageUpload, GalleryUpload, RepeaterField
-- Иконки: `i-tabler-*`
+- Иконки: Solar linear — `i-solar-*-linear` (например `i-solar-home-linear`). Коллекция `@iconify-json/solar`. Несколько устаревших исключений на Tabler там, где у Solar нет аналога (`crane`, `blockquote`, `h-1/h-2/h-3`, `baby-carriage`)
 
 ### Web renderer
 - `defineProps<{...}>()`

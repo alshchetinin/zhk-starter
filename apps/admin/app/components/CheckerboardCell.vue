@@ -64,15 +64,15 @@ function formatPrice(price: string | number) {
 
         <div class="space-y-1.5 text-sm">
           <div class="flex items-center gap-2 text-(--ui-text-muted)">
-            <UIcon name="i-tabler-bed" class="size-4" />
+            <UIcon name="i-solar-bed-linear" class="size-4" />
             <span>{{ apartment.roomsCount === 0 ? "Studio" : `${apartment.roomsCount} rooms` }}</span>
           </div>
           <div class="flex items-center gap-2 text-(--ui-text-muted)">
-            <UIcon name="i-tabler-ruler-2" class="size-4" />
+            <UIcon name="i-solar-ruler-linear" class="size-4" />
             <span>{{ apartment.area }} m²</span>
           </div>
           <div class="flex items-center gap-2 font-medium">
-            <UIcon name="i-tabler-cash" class="size-4" />
+            <UIcon name="i-solar-banknote-2-linear" class="size-4" />
             <span>{{ formatPrice(apartment.price) }} ₽</span>
           </div>
         </div>
@@ -82,7 +82,7 @@ function formatPrice(price: string | number) {
             :to="`/apartments/${apartment.id}`"
             variant="outline"
             size="xs"
-            icon="i-tabler-eye"
+            icon="i-solar-eye-linear"
             class="flex-1"
           >
             View
@@ -92,7 +92,7 @@ function formatPrice(price: string | number) {
             :to="`/layouts/${apartment.apartmentLayoutId}`"
             variant="outline"
             size="xs"
-            icon="i-tabler-layout"
+            icon="i-solar-widget-2-linear"
             class="flex-1"
           >
             Layout

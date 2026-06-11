@@ -48,17 +48,17 @@ async function main() {
   if (p.isCancel(singularLabelRu)) process.exit(0);
 
   const iconInput = await p.text({
-    message: "Tabler-иконка для навигации (Enter — i-tabler-list):",
-    initialValue: "i-tabler-",
+    message: "Solar-иконка для навигации (Enter — i-solar-list-linear):",
+    initialValue: "i-solar-",
     validate(value) {
-      if (value && !value.startsWith("i-tabler-"))
-        return "Иконка должна начинаться с i-tabler-";
+      if (value && !value.startsWith("i-solar-"))
+        return "Иконка должна начинаться с i-solar-";
       return undefined;
     },
   });
   if (p.isCancel(iconInput)) process.exit(0);
   const icon =
-    !iconInput || iconInput === "i-tabler-" ? "i-tabler-list" : iconInput;
+    !iconInput || iconInput === "i-solar-" ? "i-solar-list-linear" : iconInput;
 
   const names = deriveNames(nameInput, labelRu, singularLabelRu);
 

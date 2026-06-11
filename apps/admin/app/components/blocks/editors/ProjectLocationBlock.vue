@@ -45,7 +45,7 @@ const { data: projectData } = useProjectData(computed(() => model.value.projectI
         :style="{ height: `${Math.min(model.mapHeight, 300)}px` }"
       >
         <div class="text-center">
-          <UIcon name="i-tabler-map-pin" class="size-8 mx-auto mb-1" />
+          <UIcon name="i-solar-map-point-linear" class="size-8 mx-auto mb-1" />
           <p>Координаты: {{ projectData.coordinates }}</p>
         </div>
       </div>

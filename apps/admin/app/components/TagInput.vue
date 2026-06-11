@@ -33,7 +33,7 @@ function onKeydown(e: KeyboardEvent) {
     <UBadge v-for="(tag, i) in model" :key="tag" variant="subtle" color="neutral" class="gap-1">
       {{ tag }}
       <button class="ml-0.5 hover:text-(--ui-text)" @click="removeTag(i)">
-        <UIcon name="i-tabler-x" class="size-3" />
+        <UIcon name="i-solar-close-circle-linear" class="size-3" />
       </button>
     </UBadge>
     <input

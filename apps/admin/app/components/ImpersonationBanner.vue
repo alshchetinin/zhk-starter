@@ -13,7 +13,7 @@ const { isImpersonating, impersonated, stopImpersonation } = useCurrentUser();
       v-if="isImpersonating"
       class="sticky top-0 z-50 w-full bg-amber-500 text-white px-4 py-2 flex items-center justify-center gap-3 shadow-md"
     >
-      <UIcon name="i-tabler-eye" class="size-5" />
+      <UIcon name="i-solar-eye-linear" class="size-5" />
       <span class="text-sm font-medium">
         Режим предпросмотра прав: {{ impersonated?.name ?? impersonated?.email ?? "Редактор" }}
       </span>
@@ -22,7 +22,7 @@ const { isImpersonating, impersonated, stopImpersonation } = useCurrentUser();
         size="xs"
         variant="solid"
         color="neutral"
-        icon="i-tabler-x"
+        icon="i-solar-close-circle-linear"
         class="ml-3"
         @click="stopImpersonation"
       >

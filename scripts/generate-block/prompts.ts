@@ -188,16 +188,16 @@ export async function collectBlockInfo(): Promise<BlockInfo> {
   if (p.isCancel(description)) process.exit(0);
 
   const iconInput = await p.text({
-    message: "Tabler-иконка (Enter — i-tabler-ghost-3):",
-    initialValue: "i-tabler-",
+    message: "Solar-иконка (Enter — i-solar-widget-linear):",
+    initialValue: "i-solar-",
     validate(value) {
-      if (value && !value.startsWith("i-tabler-"))
-        return "Иконка должна начинаться с i-tabler-";
+      if (value && !value.startsWith("i-solar-"))
+        return "Иконка должна начинаться с i-solar-";
       return undefined;
     },
   });
   if (p.isCancel(iconInput)) process.exit(0);
-  const icon = (!iconInput || iconInput === "i-tabler-") ? "i-tabler-ghost-3" : iconInput;
+  const icon = (!iconInput || iconInput === "i-solar-") ? "i-solar-widget-linear" : iconInput;
 
   const fields: FieldInfo[] = [];
 

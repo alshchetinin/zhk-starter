@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const projectStatsBlock = defineBlock({
   type: "project-stats",
   label: "Статистика квартир",
-  icon: "i-tabler-chart-bar",
+  icon: "i-solar-chart-2-linear",
   description: "Количество свободных и общее число квартир",
   category: "project",
   dataSchema: z.object({

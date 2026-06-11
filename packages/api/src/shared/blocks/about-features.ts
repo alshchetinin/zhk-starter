@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const aboutFeaturesBlock = defineBlock({
   type: "about-features",
   label: "Карточки о проекте",
-  icon: "i-tabler-layout-grid",
+  icon: "i-solar-widget-linear",
   description: "Секция с карточками-преимуществами проекта с изображениями",
   dataSchema: z.object({
     title: z.string().min(1),

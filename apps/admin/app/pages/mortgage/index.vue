@@ -55,10 +55,10 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} программ` : undefined"
     >
       <template #actions>
-        <UButton to="/mortgage/banks" icon="i-tabler-building-bank" variant="outline">
+        <UButton to="/mortgage/banks" icon="i-solar-safe-2-linear" variant="outline">
           Банки
         </UButton>
-        <UButton to="/mortgage/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/mortgage/create" icon="i-solar-add-square-linear" color="primary">
           Новая программа
         </UButton>
       </template>
@@ -68,7 +68,7 @@ const deleteMutation = useMutation({
       <UInput
         v-model="search"
         placeholder="Поиск…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -89,7 +89,7 @@ const deleteMutation = useMutation({
       <UButton
         v-if="bankFilter"
         variant="ghost"
-        icon="i-tabler-x"
+        icon="i-solar-close-circle-linear"
         @click="bankFilter = undefined"
       />
     </div>
@@ -98,7 +98,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -120,7 +120,7 @@ const deleteMutation = useMutation({
             />
             <UIcon
               v-else
-              name="i-tabler-building-bank"
+              name="i-solar-safe-2-linear"
               class="size-5 text-(--ui-text-dimmed)"
             />
           </div>
@@ -166,12 +166,12 @@ const deleteMutation = useMutation({
             <UButton
               :to="`/mortgage/${item.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(item.id)"
@@ -183,12 +183,12 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-coin"
+      icon="i-solar-dollar-minimalistic-linear"
       title="Ипотечных программ не найдено"
       description="Создайте первую программу с банком и ставкой."
     >
       <template #actions>
-        <UButton to="/mortgage/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/mortgage/create" icon="i-solar-add-square-linear" color="primary">
           Создать программу
         </UButton>
       </template>

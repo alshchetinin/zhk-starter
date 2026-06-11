@@ -65,7 +65,7 @@ const deleteMutation = useMutation({
         />
         <NuxtLink to="/contacts/new">
           <UButton
-            icon="i-tabler-plus"
+            icon="i-solar-add-square-linear"
             class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
           >
             Новый контакт
@@ -75,7 +75,7 @@ const deleteMutation = useMutation({
     </div>
 
     <div v-if="isPending" class="flex items-center gap-2 text-(--ui-text-muted)">
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -104,20 +104,20 @@ const deleteMutation = useMutation({
             </UBadge>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-(--ui-text-dimmed)">
-            <span v-if="item.phone"><UIcon name="i-tabler-phone" class="mr-1" />{{ item.phone }}</span>
-            <span v-if="item.email"><UIcon name="i-tabler-mail" class="mr-1" />{{ item.email }}</span>
-            <span v-if="item.address" class="truncate"><UIcon name="i-tabler-map-pin" class="mr-1" />{{ item.address }}</span>
+            <span v-if="item.phone"><UIcon name="i-solar-phone-linear" class="mr-1" />{{ item.phone }}</span>
+            <span v-if="item.email"><UIcon name="i-solar-letter-linear" class="mr-1" />{{ item.email }}</span>
+            <span v-if="item.address" class="truncate"><UIcon name="i-solar-map-point-linear" class="mr-1" />{{ item.address }}</span>
           </div>
         </div>
 
         <div class="flex items-center gap-1 shrink-0">
           <NuxtLink :to="`/contacts/${item.id}`">
-            <UButton variant="ghost" size="xs" icon="i-tabler-edit" class="rounded-lg" />
+            <UButton variant="ghost" size="xs" icon="i-solar-pen-new-square-linear" class="rounded-lg" />
           </NuxtLink>
           <UButton
             variant="ghost"
             size="xs"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             color="error"
             class="rounded-lg"
             :loading="deleteMutation.isPending.value"
@@ -128,10 +128,10 @@ const deleteMutation = useMutation({
     </div>
 
     <div v-else class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-12 text-center">
-      <UIcon name="i-tabler-address-book-off" class="mx-auto size-12 text-(--ui-text-muted)" />
+      <UIcon name="i-solar-notebook-minimalistic-linear" class="mx-auto size-12 text-(--ui-text-muted)" />
       <p class="mt-2 text-(--ui-text-muted)">Контактов пока нет</p>
       <NuxtLink to="/contacts/new">
-        <UButton class="mt-4" icon="i-tabler-plus">Создать первый контакт</UButton>
+        <UButton class="mt-4" icon="i-solar-add-square-linear">Создать первый контакт</UButton>
       </NuxtLink>
     </div>
   </PageContainer>

@@ -304,14 +304,14 @@ const isSubmitting = computed(
   <div>
     <div class="mb-4 flex items-center justify-between gap-2">
       <UButton
-        icon="i-tabler-plus"
+        icon="i-solar-add-square-linear"
         color="primary"
         @click="openCreate"
       >
         Добавить квартиру
       </UButton>
       <UButton
-        icon="i-tabler-filter"
+        icon="i-solar-filter-linear"
         variant="outline"
         @click="filterOpen = true"
       >
@@ -374,13 +374,13 @@ const isSubmitting = computed(
         <div class="flex gap-1">
           <UButton
             variant="ghost"
-            icon="i-tabler-edit"
+            icon="i-solar-pen-new-square-linear"
             title="Редактировать"
             @click="openEdit(row.original as Apartment)"
           />
           <UButton
             variant="ghost"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             title="Удалить"
             @click="toDelete = row.original as Apartment"
           />
@@ -471,7 +471,7 @@ const isSubmitting = computed(
           </UButton>
           <UButton
             color="error"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             :loading="deleteMut.isPending.value"
             @click="toDelete && deleteMut.mutate(toDelete.id)"
           >

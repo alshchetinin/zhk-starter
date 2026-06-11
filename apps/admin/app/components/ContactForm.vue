@@ -55,19 +55,19 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
       <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Контактная информация</h2>
 
       <UFormField label="Телефон">
-        <UInput :model-value="model.phone" placeholder="+7 (999) 123-45-67" icon="i-tabler-phone" size="xl" class="w-full" @update:model-value="(v) => set('phone', v as string)" />
+        <UInput :model-value="model.phone" placeholder="+7 (999) 123-45-67" icon="i-solar-phone-linear" size="xl" class="w-full" @update:model-value="(v) => set('phone', v as string)" />
       </UFormField>
 
       <UFormField label="Email">
-        <UInput :model-value="model.email" placeholder="info@company.ru" icon="i-tabler-mail" size="xl" class="w-full" @update:model-value="(v) => set('email', v as string)" />
+        <UInput :model-value="model.email" placeholder="info@company.ru" icon="i-solar-letter-linear" size="xl" class="w-full" @update:model-value="(v) => set('email', v as string)" />
       </UFormField>
 
       <UFormField label="Адрес">
-        <UInput :model-value="model.address" placeholder="г. Москва, ул. Примерная, д. 1" icon="i-tabler-map-pin" size="xl" class="w-full" @update:model-value="(v) => set('address', v as string)" />
+        <UInput :model-value="model.address" placeholder="г. Москва, ул. Примерная, д. 1" icon="i-solar-map-point-linear" size="xl" class="w-full" @update:model-value="(v) => set('address', v as string)" />
       </UFormField>
 
       <UFormField label="Часы работы">
-        <UInput :model-value="model.workingHours" placeholder="Пн-Пт 9:00-18:00" icon="i-tabler-clock" size="xl" class="w-full" @update:model-value="(v) => set('workingHours', v as string)" />
+        <UInput :model-value="model.workingHours" placeholder="Пн-Пт 9:00-18:00" icon="i-solar-clock-circle-linear" size="xl" class="w-full" @update:model-value="(v) => set('workingHours', v as string)" />
       </UFormField>
 
       <UFormField label="Фото">
@@ -81,7 +81,7 @@ function set<K extends keyof ContactFormValue>(key: K, value: ContactFormValue[K
       <YandexMapPicker :model-value="model.coordinates" @update:model-value="(v) => set('coordinates', v as string)" />
 
       <UFormField label="Ссылка на карту" description="Альтернатива координатам — прямая ссылка">
-        <UInput :model-value="model.mapLink" placeholder="https://yandex.ru/maps/..." icon="i-tabler-link" size="xl" class="w-full" @update:model-value="(v) => set('mapLink', v as string)" />
+        <UInput :model-value="model.mapLink" placeholder="https://yandex.ru/maps/..." icon="i-solar-link-linear" size="xl" class="w-full" @update:model-value="(v) => set('mapLink', v as string)" />
       </UFormField>
     </div>
 

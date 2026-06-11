@@ -46,7 +46,7 @@ const baseClass =
           {{ label }}
         </span>
         <UIcon
-          name="i-tabler-arrow-up-right"
+          name="i-solar-arrow-right-up-linear"
           class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
         />
         <slot name="badge" />

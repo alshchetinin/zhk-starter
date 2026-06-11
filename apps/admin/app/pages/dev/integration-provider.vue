@@ -81,7 +81,7 @@ function apply() {
     </div>
 
     <div v-if="isPending" class="flex justify-center py-20">
-      <UIcon name="i-tabler-loader-2" class="animate-spin text-3xl" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin text-3xl" />
     </div>
 
     <template v-else>
@@ -116,7 +116,7 @@ function apply() {
           >
             <div class="flex gap-2">
               <UIcon
-                name="i-tabler-alert-triangle"
+                name="i-solar-danger-triangle-linear"
                 class="text-amber-600 dark:text-amber-400 text-lg shrink-0"
               />
               <div class="text-amber-900 dark:text-amber-200">
@@ -133,7 +133,7 @@ function apply() {
             <UButton
               :disabled="!isDirty"
               :loading="setMutation.isPending.value"
-              icon="i-tabler-device-floppy"
+              icon="i-solar-diskette-linear"
               class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted) transition-colors"
               @click="apply"
             >

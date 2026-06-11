@@ -51,13 +51,13 @@ const navSections = computed(() => [
 ].filter((s) => s.items.length > 0));
 
 const menuItems = computed(() => [
-  [{ label: "Sign Out", icon: "i-tabler-logout", onSelect: handleSignOut }],
+  [{ label: "Sign Out", icon: "i-solar-logout-2-linear", onSelect: handleSignOut }],
 ]);
 </script>
 
 <template>
   <aside
-    class="fixed left-2 top-2 bottom-2 z-40 hidden lg:flex flex-col rounded-lg border border-(--ui-border) bg-(--ui-bg)/95 backdrop-blur-sm shadow-md shadow-black/[0.04] transition-all duration-300"
+    class="fixed left-0 top-0 bottom-0 z-40 hidden lg:flex flex-col border-r border-(--ui-border) bg-(--ui-bg) transition-all duration-300"
     :class="[isCollapsed ? 'w-14' : 'w-[232px]']"
   >
     <!-- Header -->
@@ -72,7 +72,7 @@ const menuItems = computed(() => [
         @click="toggle"
       >
         <UIcon
-          :name="isCollapsed ? 'i-tabler-layout-sidebar-right' : 'i-tabler-layout-sidebar-left-collapse'"
+          name="i-solar-sidebar-minimalistic-linear"
           class="size-3.5"
         />
       </button>
@@ -128,12 +128,12 @@ const menuItems = computed(() => [
             @click="toggleSiteExpand(site.id)"
           >
             <UIcon
-              name="i-tabler-chevron-right"
+              name="i-solar-alt-arrow-right-linear"
               class="size-3 shrink-0 opacity-60 transition-transform duration-150"
               :class="{ 'rotate-90': expandedSites[site.id] }"
             />
             <UIcon
-              :name="site.isPrimary ? 'i-tabler-home-star' : 'i-tabler-building-store'"
+              :name="site.isPrimary ? 'i-solar-home-smile-linear' : 'i-solar-shop-2-linear'"
               class="size-3.5 shrink-0 opacity-80"
             />
             <span class="truncate flex-1">{{ site.name }}</span>
@@ -152,7 +152,7 @@ const menuItems = computed(() => [
                 : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated)'"
               @click="setSite(site.id)"
             >
-              <UIcon :name="site.isPrimary ? 'i-tabler-home-star' : 'i-tabler-building-store'" class="size-4" />
+              <UIcon :name="site.isPrimary ? 'i-solar-home-smile-linear' : 'i-solar-shop-2-linear'" class="size-4" />
             </button>
           </UTooltip>
 
@@ -237,7 +237,7 @@ const menuItems = computed(() => [
             <span class="text-[12.5px] font-medium truncate w-full block">{{ user?.name || user?.email || 'User' }}</span>
             <span class="text-[11px] text-(--ui-text-dimmed) truncate w-full block">{{ user?.email }}</span>
           </div>
-          <UIcon v-if="!isCollapsed" name="i-tabler-chevron-up" class="size-3.5 text-(--ui-text-dimmed) shrink-0" />
+          <UIcon v-if="!isCollapsed" name="i-solar-alt-arrow-up-linear" class="size-3.5 text-(--ui-text-dimmed) shrink-0" />
         </button>
       </UDropdownMenu>
     </div>

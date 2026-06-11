@@ -63,7 +63,7 @@ const sectionLabel = {
           <code class="text-xs">pnpm db:push</code> запускается автоматически.
         </p>
       </div>
-      <UButton to="/dev/collections/create" icon="i-tabler-plus" color="primary">
+      <UButton to="/dev/collections/create" icon="i-solar-add-square-linear" color="primary">
         Создать коллекцию
       </UButton>
     </div>
@@ -77,7 +77,7 @@ const sectionLabel = {
         class="flex items-center gap-3 p-3 rounded-lg border border-(--ui-border) bg-(--ui-bg)"
       >
         <UIcon
-          :name="col.icon ?? 'i-tabler-stack-2'"
+          :name="col.icon ?? 'i-solar-layers-minimalistic-linear'"
           class="size-5 shrink-0 text-(--ui-text-muted)"
         />
         <div class="flex-1 min-w-0">
@@ -90,10 +90,10 @@ const sectionLabel = {
           </div>
         </div>
         <UTooltip v-if="col.referenceCount > 0" :text="`${col.referenceCount} внешних ссылок — удалить нельзя`">
-          <UIcon name="i-tabler-link" class="size-4 text-(--ui-text-dimmed)" />
+          <UIcon name="i-solar-link-linear" class="size-4 text-(--ui-text-dimmed)" />
         </UTooltip>
         <UButton
-          icon="i-tabler-trash"
+          icon="i-solar-trash-bin-trash-linear"
           color="error"
           variant="ghost"
           size="sm"

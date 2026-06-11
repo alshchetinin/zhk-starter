@@ -55,7 +55,7 @@ const saveMutation = useMutation({
       v-if="loading"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -66,7 +66,7 @@ const saveMutation = useMutation({
       >
         <template #actions>
           <UButton
-            icon="i-tabler-eye"
+            icon="i-solar-eye-linear"
             :variant="showPreview ? 'solid' : 'outline'"
             :color="showPreview ? 'primary' : 'neutral'"
             @click="showPreview = !showPreview"
@@ -75,7 +75,7 @@ const saveMutation = useMutation({
           </UButton>
           <UButton
             color="primary"
-            icon="i-tabler-device-floppy"
+            icon="i-solar-diskette-linear"
             :loading="saveMutation.isPending.value"
             @click="saveMutation.mutate()"
           >

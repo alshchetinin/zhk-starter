@@ -47,7 +47,7 @@ const deleteMutation = useMutation({
       <template #actions>
         <UButton
           to="/purchase-methods/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Новый способ
@@ -59,7 +59,7 @@ const deleteMutation = useMutation({
       <UInput
         v-model="search"
         placeholder="Поиск…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -73,7 +73,7 @@ const deleteMutation = useMutation({
       <UButton
         v-if="kindFilter"
         variant="ghost"
-        icon="i-tabler-x"
+        icon="i-solar-close-circle-linear"
         title="Сбросить"
         @click="kindFilter = undefined"
       />
@@ -83,7 +83,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -145,12 +145,12 @@ const deleteMutation = useMutation({
             <UButton
               :to="`/purchase-methods/${item.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(item.id)"
@@ -162,14 +162,14 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-credit-card"
+      icon="i-solar-card-linear"
       title="Способы покупки не настроены"
       description="Добавьте рассрочки, ипотеки и другие способы оплаты."
     >
       <template #actions>
         <UButton
           to="/purchase-methods/create"
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
         >
           Добавить способ

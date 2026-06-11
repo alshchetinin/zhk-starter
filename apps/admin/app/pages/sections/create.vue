@@ -155,7 +155,7 @@ function moveSegment(stack: FormStack, idx: number, dir: -1 | 1) {
 const presets: { label: string; icon: string; factory: () => FormStack }[] = [
   {
     label: "Студии ×10 эт.",
-    icon: "i-tabler-home",
+    icon: "i-solar-home-linear",
     factory: () => ({
       id: crypto.randomUUID(),
       segments: [freshSegment(1, 10, 0, 28)],
@@ -163,7 +163,7 @@ const presets: { label: string; icon: string; factory: () => FormStack }[] = [
   },
   {
     label: "2к-башня 1–25",
-    icon: "i-tabler-building-skyscraper",
+    icon: "i-solar-buildings-2-linear",
     factory: () => ({
       id: crypto.randomUUID(),
       segments: [freshSegment(1, 25, 2, 60)],
@@ -171,7 +171,7 @@ const presets: { label: string; icon: string; factory: () => FormStack }[] = [
   },
   {
     label: "Смешанный 1к/2к/4к",
-    icon: "i-tabler-layout-grid",
+    icon: "i-solar-widget-linear",
     factory: () => ({
       id: crypto.randomUUID(),
       segments: [
@@ -502,18 +502,18 @@ const schemeItems = computed(() => numberingSchemeItems);
           class="text-(--ui-text-muted) hover:text-(--ui-text) transition"
           @click="router.push(`/buildings/${buildingId}`)"
         >
-          <UIcon name="i-tabler-arrow-left" class="size-4" />
+          <UIcon name="i-solar-arrow-left-linear" class="size-4" />
         </button>
         <div class="flex items-center gap-1.5 text-xs text-(--ui-text-muted) min-w-0">
           <NuxtLink to="/buildings" class="hover:text-(--ui-text)">Дома</NuxtLink>
-          <UIcon name="i-tabler-chevron-right" class="size-3" />
+          <UIcon name="i-solar-alt-arrow-right-linear" class="size-3" />
           <NuxtLink
             :to="`/buildings/${buildingId}`"
             class="hover:text-(--ui-text) truncate"
           >
             {{ building?.name ?? "…" }}
           </NuxtLink>
-          <UIcon name="i-tabler-chevron-right" class="size-3 shrink-0" />
+          <UIcon name="i-solar-alt-arrow-right-linear" class="size-3 shrink-0" />
           <span class="text-(--ui-text) font-medium truncate">Заполнить секцию</span>
         </div>
       </div>
@@ -523,7 +523,7 @@ const schemeItems = computed(() => numberingSchemeItems);
           v-if="draft?.savedAt"
           class="text-[11px] text-(--ui-text-dimmed) flex items-center gap-1"
         >
-          <UIcon name="i-tabler-cloud-check" class="size-3" />
+          <UIcon name="i-solar-cloud-check-linear" class="size-3" />
           {{ new Date(draft.savedAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) }}
         </span>
         <button
@@ -576,7 +576,7 @@ const schemeItems = computed(() => numberingSchemeItems);
               title="Скрыть превью"
               @click="previewCollapsed = true"
             >
-              <UIcon name="i-tabler-eye-off" class="size-3.5" />
+              <UIcon name="i-solar-eye-closed-linear" class="size-3.5" />
             </button>
           </div>
 
@@ -665,7 +665,7 @@ const schemeItems = computed(() => numberingSchemeItems);
         class="order-2 lg:order-1 self-start flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-(--ui-border) text-xs text-(--ui-text-muted) hover:text-(--ui-text) hover:bg-(--ui-bg-elevated) transition"
         @click="previewCollapsed = false"
       >
-        <UIcon name="i-tabler-eye" class="size-3.5" />
+        <UIcon name="i-solar-eye-linear" class="size-3.5" />
         Показать превью
       </button>
 
@@ -718,7 +718,7 @@ const schemeItems = computed(() => numberingSchemeItems);
               v-model="numberingScheme"
               :items="schemeItems"
               size="sm"
-              icon="i-tabler-hash"
+              icon="i-solar-hashtag-linear"
             />
           </div>
 
@@ -736,7 +736,7 @@ const schemeItems = computed(() => numberingSchemeItems);
           <div
             class="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-md px-3 py-2"
           >
-            <UIcon name="i-tabler-alert-circle" class="size-3.5 mt-0.5 shrink-0" />
+            <UIcon name="i-solar-danger-circle-linear" class="size-3.5 mt-0.5 shrink-0" />
             <div>
               <div class="font-medium">Конфликт с существующими квартирами</div>
               <div class="text-(--ui-text-muted)">
@@ -771,7 +771,7 @@ const schemeItems = computed(() => numberingSchemeItems);
               class="flex items-center gap-1 text-xs text-(--ui-text-muted) hover:text-(--ui-text) transition"
               @click="addStack"
             >
-              <UIcon name="i-tabler-plus" class="size-3.5" />
+              <UIcon name="i-solar-add-square-linear" class="size-3.5" />
               Стояк
             </button>
           </div>
@@ -818,7 +818,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                   title="Дублировать"
                   @click="duplicateStack(si)"
                 >
-                  <UIcon name="i-tabler-copy" class="size-3.5" />
+                  <UIcon name="i-solar-copy-linear" class="size-3.5" />
                 </button>
                 <button
                   v-if="stacks.length > 1"
@@ -826,7 +826,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                   title="Удалить"
                   @click="removeStack(si)"
                 >
-                  <UIcon name="i-tabler-trash" class="size-3.5" />
+                  <UIcon name="i-solar-trash-bin-trash-linear" class="size-3.5" />
                 </button>
               </div>
 
@@ -868,14 +868,14 @@ const schemeItems = computed(() => numberingSchemeItems);
                         :disabled="ai === 0"
                         @click="moveSegment(stack, ai, -1)"
                       >
-                        <UIcon name="i-tabler-chevron-up" class="size-3" />
+                        <UIcon name="i-solar-alt-arrow-up-linear" class="size-3" />
                       </button>
                       <button
                         class="h-4 text-(--ui-text-dimmed) hover:text-(--ui-text) disabled:opacity-20"
                         :disabled="ai === stack.segments.length - 1"
                         @click="moveSegment(stack, ai, 1)"
                       >
-                        <UIcon name="i-tabler-chevron-down" class="size-3" />
+                        <UIcon name="i-solar-alt-arrow-down-linear" class="size-3" />
                       </button>
                     </div>
                     <UInput
@@ -909,7 +909,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                       class="p-1 rounded text-(--ui-text-dimmed) hover:text-red-500 transition"
                       @click="removeSegment(stack, ai)"
                     >
-                      <UIcon name="i-tabler-x" class="size-3" />
+                      <UIcon name="i-solar-close-circle-linear" class="size-3" />
                     </button>
                     <div v-else></div>
                   </div>
@@ -919,7 +919,7 @@ const schemeItems = computed(() => numberingSchemeItems);
                   class="mt-1 flex items-center gap-1 text-[11px] text-(--ui-text-dimmed) hover:text-(--ui-text) transition px-1 py-0.5"
                   @click="addSegment(stack)"
                 >
-                  <UIcon name="i-tabler-plus" class="size-3" />
+                  <UIcon name="i-solar-add-square-linear" class="size-3" />
                   Сегмент
                 </button>
               </div>
@@ -961,7 +961,7 @@ const schemeItems = computed(() => numberingSchemeItems);
             >
               <UIcon
                 v-if="createMut.isPending.value"
-                name="i-tabler-loader-2"
+                name="i-solar-refresh-linear"
                 class="size-3.5 animate-spin"
               />
               Создать

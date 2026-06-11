@@ -104,10 +104,10 @@ const aptSegments = computed(() => {
 });
 
 const ticketTypes = [
-  { key: "lead", label: "Лиды", icon: "i-tabler-user-plus" },
-  { key: "callback", label: "Перезвонить", icon: "i-tabler-phone-call" },
-  { key: "question", label: "Вопросы", icon: "i-tabler-message-circle" },
-  { key: "booking", label: "Брони", icon: "i-tabler-bookmark" },
+  { key: "lead", label: "Лиды", icon: "i-solar-user-plus-rounded-linear" },
+  { key: "callback", label: "Перезвонить", icon: "i-solar-phone-calling-rounded-linear" },
+  { key: "question", label: "Вопросы", icon: "i-solar-chat-round-linear" },
+  { key: "booking", label: "Брони", icon: "i-solar-bookmark-linear" },
 ] as const;
 const ticketsMax7d = computed(() => {
   return Math.max(1, ...ticketTypes.map((t) => data.value.tickets.last7d[t.key]));
@@ -141,10 +141,10 @@ const draftItems = computed(() => {
       : data.value.drafts.bySite.find((s) => s.siteId === id)
           ?? data.value.drafts.totals;
   return [
-    { label: "Новости", n: d.news, to: "/news", icon: "i-tabler-news" },
-    { label: "Акции", n: d.promotions, to: "/promotions", icon: "i-tabler-discount" },
-    { label: "Страницы", n: d.pages, to: "/pages", icon: "i-tabler-file-text" },
-    { label: "Модалки", n: d.modals, to: "/modals", icon: "i-tabler-app-window" },
+    { label: "Новости", n: d.news, to: "/news", icon: "i-solar-notebook-bookmark-linear" },
+    { label: "Акции", n: d.promotions, to: "/promotions", icon: "i-solar-sale-linear" },
+    { label: "Страницы", n: d.pages, to: "/pages", icon: "i-solar-file-text-linear" },
+    { label: "Модалки", n: d.modals, to: "/modals", icon: "i-solar-window-frame-linear" },
     { label: "Ход стройки", n: d.constructionProgress, to: "/projects", icon: "i-tabler-crane" },
   ];
 });
@@ -288,8 +288,8 @@ function onDraftItemClick(to: string) {
               <UIcon
                 :name="
                   syncMut.isPending.value || syncTone === 'loading'
-                    ? 'i-tabler-loader-2'
-                    : 'i-tabler-refresh'
+                    ? 'i-solar-refresh-linear'
+                    : 'i-solar-refresh-linear'
                 "
                 :class="[
                   'size-3.5',
@@ -362,7 +362,7 @@ function onDraftItemClick(to: string) {
               {{ p.soldPct }}%
             </span>
             <UIcon
-              name="i-tabler-chevron-right"
+              name="i-solar-alt-arrow-right-linear"
               class="size-4 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition shrink-0"
             />
           </NuxtLink>
@@ -481,7 +481,7 @@ function onDraftItemClick(to: string) {
           >
             <UIcon
               v-if="tab.isPrimary"
-              name="i-tabler-home-star"
+              name="i-solar-home-smile-linear"
               class="size-3 opacity-70"
             />
             <span class="truncate max-w-[10rem]">{{ tab.label }}</span>
@@ -538,7 +538,7 @@ function onDraftItemClick(to: string) {
               {{ d.n }}
             </span>
             <UIcon
-              name="i-tabler-chevron-right"
+              name="i-solar-alt-arrow-right-linear"
               class="size-3.5 text-(--ui-text-dimmed) opacity-0 group-hover:opacity-100 transition"
             />
           </button>

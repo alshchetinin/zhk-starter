@@ -2,7 +2,7 @@
   "name": "hero",
   "label": "Главный баннер",
   "description": "Fullscreen баннер проекта с фоном-слайдером и CTA",
-  "icon": "i-tabler-photo",
+  "icon": "i-solar-gallery-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Название проекта", "required": true },
     { "name": "description", "type": "text", "label": "Описание", "required": false, "description": "Краткое описание под заголовком" },

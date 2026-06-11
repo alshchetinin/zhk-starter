@@ -158,7 +158,7 @@ const isSubmitting = computed(
         </span>
       </h2>
       <UButton
-        icon="i-tabler-plus"
+        icon="i-solar-add-square-linear"
         color="primary"
         @click="openCreate"
       >
@@ -181,7 +181,7 @@ const isSubmitting = computed(
               class="size-10 rounded-lg bg-(--ui-bg-elevated) border border-(--ui-border) flex items-center justify-center shrink-0"
             >
               <UIcon
-                name="i-tabler-building-skyscraper"
+                name="i-solar-buildings-2-linear"
                 class="size-5 text-(--ui-text-dimmed)"
               />
             </div>
@@ -192,7 +192,7 @@ const isSubmitting = computed(
                   v-if="building.completionDate"
                   class="text-[11px] text-(--ui-text-dimmed) tabular-nums flex items-center gap-1"
                 >
-                  <UIcon name="i-tabler-calendar" class="size-3" />
+                  <UIcon name="i-solar-calendar-linear" class="size-3" />
                   {{ building.completionDate }}
                 </span>
               </div>
@@ -219,13 +219,13 @@ const isSubmitting = computed(
           <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
             <UButton
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
               @click="openEdit(building)"
             />
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               @click="toDelete = building"
             />
@@ -235,13 +235,13 @@ const isSubmitting = computed(
     </AppDataCard>
     <AppEmptyState
       v-else
-      icon="i-tabler-building-skyscraper"
+      icon="i-solar-buildings-2-linear"
       title="Домов пока нет"
       description="Добавьте первый дом для этого проекта."
     >
       <template #actions>
         <UButton
-          icon="i-tabler-plus"
+          icon="i-solar-add-square-linear"
           color="primary"
           @click="openCreate"
         >
@@ -304,7 +304,7 @@ const isSubmitting = computed(
           </UButton>
           <UButton
             color="error"
-            icon="i-tabler-trash"
+            icon="i-solar-trash-bin-trash-linear"
             :loading="deleteMutation.isPending.value"
             @click="toDelete && deleteMutation.mutate(toDelete.id)"
           >

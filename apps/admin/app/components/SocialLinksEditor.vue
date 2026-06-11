@@ -51,7 +51,7 @@ const saveMutation = useMutation({
       </div>
       <UButton
         :loading="saveMutation.isPending.value"
-        icon="i-tabler-device-floppy"
+        icon="i-solar-diskette-linear"
         size="sm"
         class="bg-(--ui-bg-inverted) hover:bg-(--ui-bg-inverted)/90 text-(--ui-text-inverted)"
         @click="saveMutation.mutate()"

@@ -41,7 +41,7 @@ function formatDate(date: string) {
       v-if="isPending"
       class="flex items-center gap-2 text-(--ui-text-muted)"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin" />
       <span>Загрузка...</span>
     </div>
 
@@ -50,7 +50,7 @@ function formatDate(date: string) {
       <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <NuxtLink to="/tickets">
-            <UButton variant="ghost" icon="i-tabler-arrow-left" size="sm" />
+            <UButton variant="ghost" icon="i-solar-arrow-left-linear" size="sm" />
           </NuxtLink>
           <h1 class="text-2xl font-bold">{{ ticket.phone }}</h1>
           <UBadge
@@ -63,7 +63,7 @@ function formatDate(date: string) {
         <UButton
           variant="outline"
           color="error"
-          icon="i-tabler-trash"
+          icon="i-solar-trash-bin-trash-linear"
          
           :loading="deleteMutation.isPending.value"
           @click="deleteMutation.mutate()"

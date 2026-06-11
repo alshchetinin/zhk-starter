@@ -6,7 +6,7 @@ withDefaults(
     description?: string;
     compact?: boolean;
   }>(),
-  { icon: "i-tabler-inbox", compact: false },
+  { icon: "i-solar-inbox-linear", compact: false },
 );
 </script>
 

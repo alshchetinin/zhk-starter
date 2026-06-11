@@ -65,7 +65,7 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} статей` : undefined"
     >
       <template #actions>
-        <UButton to="/news/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/news/create" icon="i-solar-add-square-linear" color="primary">
           Новая статья
         </UButton>
       </template>
@@ -75,7 +75,7 @@ const deleteMutation = useMutation({
       <UInput
         v-model="search"
         placeholder="Поиск…"
-        icon="i-tabler-search"
+        icon="i-solar-magnifer-linear"
         size="sm"
         class="max-w-xs"
       />
@@ -92,7 +92,7 @@ const deleteMutation = useMutation({
       v-if="isPending && !data"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -116,7 +116,7 @@ const deleteMutation = useMutation({
             />
             <UIcon
               v-else
-              name="i-tabler-news"
+              name="i-solar-notebook-bookmark-linear"
               class="size-5 text-(--ui-text-dimmed)"
             />
           </NuxtLink>
@@ -153,12 +153,12 @@ const deleteMutation = useMutation({
             <UButton
               :to="`/news/${item.id}`"
               variant="ghost"
-              icon="i-tabler-edit"
+              icon="i-solar-pen-new-square-linear"
               title="Редактировать"
             />
             <UButton
               variant="ghost"
-              icon="i-tabler-trash"
+              icon="i-solar-trash-bin-trash-linear"
               title="Удалить"
               :loading="deleteMutation.isPending.value"
               @click="deleteMutation.mutate(item.id)"
@@ -170,12 +170,12 @@ const deleteMutation = useMutation({
 
     <AppEmptyState
       v-else
-      icon="i-tabler-news-off"
+      icon="i-solar-notebook-bookmark-linear"
       title="Новостей не найдено"
       description="Создайте первую статью для сайта."
     >
       <template #actions>
-        <UButton to="/news/create" icon="i-tabler-plus" color="primary">
+        <UButton to="/news/create" icon="i-solar-add-square-linear" color="primary">
           Создать статью
         </UButton>
       </template>

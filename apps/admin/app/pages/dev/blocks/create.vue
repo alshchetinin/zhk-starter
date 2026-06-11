@@ -36,7 +36,7 @@ const form = reactive({
   name: "",
   label: "",
   description: "",
-  icon: "i-tabler-box",
+  icon: "i-solar-box-linear",
   category: "none" as "none" | "content" | "project",
 });
 
@@ -116,7 +116,7 @@ const canSubmit = computed(() => {
 <template>
   <div class="p-6 max-w-3xl mx-auto">
     <div class="flex items-center gap-2 mb-6">
-      <UButton to="/dev/blocks" icon="i-tabler-arrow-left" variant="ghost" size="sm" />
+      <UButton to="/dev/blocks" icon="i-solar-arrow-left-linear" variant="ghost" size="sm" />
       <h1 class="text-2xl font-semibold">Новый блок</h1>
     </div>
 
@@ -154,7 +154,7 @@ const canSubmit = computed(() => {
       <div class="p-4 rounded-lg border border-(--ui-border) bg-(--ui-bg)">
         <div class="flex items-center justify-between mb-3">
           <h2 class="font-medium">Поля</h2>
-          <UButton icon="i-tabler-plus" size="sm" variant="soft" @click="addField">
+          <UButton icon="i-solar-add-square-linear" size="sm" variant="soft" @click="addField">
             Добавить поле
           </UButton>
         </div>
@@ -194,7 +194,7 @@ const canSubmit = computed(() => {
                 </div>
               </div>
               <UButton
-                icon="i-tabler-trash"
+                icon="i-solar-trash-bin-trash-linear"
                 size="xs"
                 color="error"
                 variant="ghost"
@@ -205,7 +205,7 @@ const canSubmit = computed(() => {
             <div v-if="field.type === 'repeater'" class="mt-3 pl-3 border-l-2 border-(--ui-border)">
               <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-medium text-(--ui-text-muted)">Под-поля repeater'а</span>
-                <UButton icon="i-tabler-plus" size="xs" variant="ghost" @click="addSubField(field)">
+                <UButton icon="i-solar-add-square-linear" size="xs" variant="ghost" @click="addSubField(field)">
                   Под-поле
                 </UButton>
               </div>
@@ -225,7 +225,7 @@ const canSubmit = computed(() => {
                     </div>
                   </div>
                   <UButton
-                    icon="i-tabler-x"
+                    icon="i-solar-close-circle-linear"
                     size="xs"
                     color="error"
                     variant="ghost"

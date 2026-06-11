@@ -2,7 +2,7 @@
   "name": "about-project",
   "label": "О проекте",
   "description": "Секция о проекте с табами и слайдером изображений",
-  "icon": "i-tabler-building",
+  "icon": "i-solar-buildings-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "description", "type": "text", "label": "Описание", "required": false },

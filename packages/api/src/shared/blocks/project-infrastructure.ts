@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const projectInfrastructureBlock = defineBlock({
   type: "project-infrastructure",
   label: "Инфраструктура на карте",
-  icon: "i-tabler-map-2",
+  icon: "i-solar-map-linear",
   description: "Карта инфраструктуры проекта с пинами по категориям",
   category: "project",
   dataSchema: z.object({

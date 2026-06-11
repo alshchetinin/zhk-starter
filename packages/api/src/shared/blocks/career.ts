@@ -4,7 +4,7 @@ import { defineBlock } from "./_core";
 export const careerBlock = defineBlock({
   type: "career",
   label: "Карьера",
-  icon: "i-tabler-briefcase",
+  icon: "i-solar-case-linear",
   description: "Секция с вакансиями компании",
   dataSchema: z.object({
     title: z.string().min(1),

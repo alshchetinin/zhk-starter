@@ -164,7 +164,7 @@ function updateCaption(
             class="absolute right-2 top-2 rounded-full bg-black/50 p-1 opacity-0 transition-opacity group-hover:opacity-100"
             @click="removeImage(i)"
           >
-            <UIcon name="i-tabler-x" class="size-4 text-white" />
+            <UIcon name="i-solar-close-circle-linear" class="size-4 text-white" />
           </button>
         </div>
 
@@ -203,12 +203,12 @@ function updateCaption(
     >
       <UIcon
         v-if="!uploading"
-        name="i-tabler-photo-plus"
+        name="i-solar-gallery-add-linear"
         class="size-8 text-(--ui-text-muted)"
       />
       <UIcon
         v-else
-        name="i-tabler-loader-2"
+        name="i-solar-refresh-linear"
         class="size-8 animate-spin text-(--ui-text-muted)"
       />
       <span class="mt-2 text-sm text-(--ui-text-muted)">
@@ -231,7 +231,7 @@ function updateCaption(
       <UButton
         variant="ghost"
         size="xs"
-        icon="i-tabler-photo-search"
+        icon="i-solar-gallery-minimalistic-linear"
         :disabled="uploading"
         @click.prevent="showMediaPicker = true"
       >

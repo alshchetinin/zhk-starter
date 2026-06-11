@@ -90,20 +90,20 @@ function confirmMultiple() {
         <UInput
           v-model="search"
           placeholder="Поиск по имени файла..."
-          icon="i-tabler-search"
+          icon="i-solar-magnifer-linear"
           class="w-full"
         />
       </div>
 
       <div v-if="isPending" class="flex justify-center py-12">
-        <UIcon name="i-tabler-loader-2" class="animate-spin text-2xl" />
+        <UIcon name="i-solar-refresh-linear" class="animate-spin text-2xl" />
       </div>
 
       <div
         v-else-if="items.length === 0"
         class="flex flex-col items-center justify-center py-12 text-center"
       >
-        <UIcon name="i-tabler-photo-off" class="text-4xl text-(--ui-text-dimmed) mb-3" />
+        <UIcon name="i-solar-gallery-remove-linear" class="text-4xl text-(--ui-text-dimmed) mb-3" />
         <p class="text-(--ui-text-muted)">Файлов не найдено</p>
       </div>
 
@@ -134,7 +134,7 @@ function confirmMultiple() {
           >
             <UIcon
               v-if="selectedUrls.has(item.url)"
-              name="i-tabler-check"
+              name="i-solar-check-circle-linear"
               class="size-3 text-white"
             />
           </div>

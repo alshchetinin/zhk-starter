@@ -2,7 +2,7 @@
   "name": "about-features",
   "label": "Карточки о проекте",
   "description": "Секция с карточками-преимуществами проекта с изображениями",
-  "icon": "i-tabler-layout-grid",
+  "icon": "i-solar-widget-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
     { "name": "description", "type": "text", "label": "Описание", "required": false },

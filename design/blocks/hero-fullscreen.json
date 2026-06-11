@@ -2,7 +2,7 @@
   "name": "hero-fullscreen",
   "label": "Hero на весь экран",
   "description": "Полноэкранный hero-блок со слайдером, адресом и сроками сдачи",
-  "icon": "i-tabler-photo",
+  "icon": "i-solar-gallery-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Название проекта", "required": true },
     { "name": "description", "type": "text", "label": "Описание", "required": false },

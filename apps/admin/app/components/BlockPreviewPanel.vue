@@ -43,13 +43,13 @@ const frameStyle = computed(() => ({
           :key="v"
           size="xs"
           :variant="viewport === v ? 'solid' : 'ghost'"
-          :icon="v === 'desktop' ? 'i-tabler-device-desktop' : v === 'tablet' ? 'i-tabler-device-tablet' : 'i-tabler-device-mobile'"
+          :icon="v === 'desktop' ? 'i-solar-monitor-linear' : v === 'tablet' ? 'i-solar-tablet-linear' : 'i-solar-smartphone-linear'"
           @click="viewport = v"
         />
       </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-(--ui-text-muted) truncate max-w-xs">{{ previewUrl }}</span>
-        <UButton size="xs" variant="ghost" icon="i-tabler-refresh" @click="reloadPreview" />
+        <UButton size="xs" variant="ghost" icon="i-solar-refresh-linear" @click="reloadPreview" />
       </div>
     </div>
     <div class="flex-1 flex items-start justify-center overflow-auto p-4">

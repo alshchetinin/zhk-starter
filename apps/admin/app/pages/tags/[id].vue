@@ -74,7 +74,7 @@ const deleteMutation = useMutation({
           v-if="!isImported"
           color="error"
           variant="ghost"
-          icon="i-tabler-trash"
+          icon="i-solar-trash-bin-trash-linear"
           :loading="deleteMutation.isPending.value"
           @click="deleteMutation.mutate()"
         >
@@ -82,7 +82,7 @@ const deleteMutation = useMutation({
         </UButton>
         <UButton
           color="primary"
-          icon="i-tabler-device-floppy"
+          icon="i-solar-diskette-linear"
           :loading="updateMutation.isPending.value"
           :disabled="!form.name"
           @click="updateMutation.mutate()"
@@ -102,7 +102,7 @@ const deleteMutation = useMutation({
           v-if="isImported"
           color="warning"
           variant="subtle"
-          icon="i-tabler-cloud-download"
+          icon="i-solar-cloud-download-linear"
           title="Импортированный тег"
           description="Название перезапишется при следующей синхронизации. Описание и изображение остаются ручными — они не затрагиваются."
         />

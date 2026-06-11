@@ -69,7 +69,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -90,7 +90,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
           />
           <UButton
             color="primary"
-            icon="i-tabler-pencil"
+            icon="i-solar-pen-linear"
             label="Редактировать"
             :to="`/layouts/${layout.id}/edit`"
           />
@@ -138,7 +138,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
                   />
                   <UIcon
                     v-else
-                    name="i-tabler-photo-off"
+                    name="i-solar-gallery-remove-linear"
                     class="size-8 text-(--ui-text-dimmed)"
                   />
                 </div>
@@ -167,7 +167,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
             <AppEmptyState
               v-else
               compact
-              icon="i-tabler-cube-off"
+              icon="i-solar-box-linear"
               title="3D-тура нет"
               description="Добавьте URL виджета через «Редактировать»."
             />
@@ -212,7 +212,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
             <AppEmptyState
               v-else
               compact
-              icon="i-tabler-photo-plus"
+              icon="i-solar-gallery-add-linear"
               title="Нет дополнительных изображений"
               description="Добавьте картинки с подписями через «Редактировать»."
             />
@@ -263,7 +263,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
                 <UButton
                   :to="`/apartments/${row.original.id}`"
                   variant="ghost"
-                  icon="i-tabler-eye"
+                  icon="i-solar-eye-linear"
                   title="Открыть"
                 />
               </template>
@@ -271,7 +271,7 @@ const tourUrl = computed(() => layout.value?.threeDTourUrl ?? null);
             <AppEmptyState
               v-else
               compact
-              icon="i-tabler-home-off"
+              icon="i-solar-home-linear"
               title="Нет квартир"
               description="Эта планировка ещё не привязана к квартирам."
             />

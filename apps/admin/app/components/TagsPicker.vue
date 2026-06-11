@@ -174,7 +174,7 @@ onClickOutside(containerRef, () => {
       >
         <UIcon
           v-if="tag.integrationId"
-          name="i-tabler-cloud-download"
+          name="i-solar-cloud-download-linear"
           class="size-3"
           title="Импортный тег"
         />
@@ -185,7 +185,7 @@ onClickOutside(containerRef, () => {
           class="ml-0.5 -mr-0.5 size-4 inline-flex items-center justify-center rounded hover:bg-(--ui-bg-accented) transition"
           @click.stop="removeTag(tag.id)"
         >
-          <UIcon name="i-tabler-x" class="size-3" />
+          <UIcon name="i-solar-close-circle-linear" class="size-3" />
         </button>
       </span>
 
@@ -217,12 +217,12 @@ onClickOutside(containerRef, () => {
       >
         <UIcon
           v-if="tag.integrationId"
-          name="i-tabler-cloud-download"
+          name="i-solar-cloud-download-linear"
           class="size-3.5 text-(--ui-text-dimmed)"
         />
         <UIcon
           v-else
-          name="i-tabler-tag"
+          name="i-solar-tag-linear"
           class="size-3.5 text-(--ui-text-dimmed)"
         />
         <span>{{ tag.name }}</span>
@@ -236,7 +236,7 @@ onClickOutside(containerRef, () => {
         @click="handleCreate"
       >
         <UIcon
-          name="i-tabler-plus"
+          name="i-solar-add-square-linear"
           class="size-3.5 text-(--ui-primary)"
         />
         <span>

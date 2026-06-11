@@ -58,7 +58,7 @@ const activeTabIdx = computed(() => {
       v-if="isPending"
       class="flex items-center gap-2 text-xs text-(--ui-text-dimmed) py-12 justify-center"
     >
-      <UIcon name="i-tabler-loader-2" class="animate-spin size-4" />
+      <UIcon name="i-solar-refresh-linear" class="animate-spin size-4" />
       Загрузка…
     </div>
 
@@ -82,7 +82,7 @@ const activeTabIdx = computed(() => {
           <UButton
             v-if="!isEditPage"
             :to="`/projects/${id}/edit`"
-            icon="i-tabler-pencil"
+            icon="i-solar-pen-linear"
             variant="outline"
           >
             Редактировать
