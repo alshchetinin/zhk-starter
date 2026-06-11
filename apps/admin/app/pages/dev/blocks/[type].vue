@@ -50,12 +50,15 @@ const previewVersion = ref(0);
 const previewBroken = ref(false);
 const previewSrc = computed(() => `/block-previews/${type}.png?v=${previewVersion.value}`);
 
+const previewFile = ref<File | null>(null);
+
 const uploadMutation = useMutation({
   mutationFn: (payload: { type: string; dataBase64: string }) =>
     $orpcClient.dev.blocks.uploadPreview(payload),
   onSuccess: () => {
     previewBroken.value = false;
     previewVersion.value += 1;
+    previewFile.value = null;
     toast.add({ title: "Превью загружено", color: "success" });
   },
   onError: (err: Error) => {
@@ -63,8 +66,7 @@ const uploadMutation = useMutation({
   },
 });
 
-function onPreviewFile(event: Event) {
-  const file = (event.target as HTMLInputElement).files?.[0];
+watch(previewFile, (file) => {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
@@ -72,7 +74,7 @@ function onPreviewFile(event: Event) {
     uploadMutation.mutate({ type, dataBase64 });
   };
   reader.readAsDataURL(file);
-}
+});
 </script>
 
 <template>
@@ -109,18 +111,12 @@ function onPreviewFile(event: Event) {
           <UIcon :name="def!.icon" class="size-8 text-(--ui-text-dimmed)" />
         </div>
         <div class="space-y-2">
-          <label class="flex flex-col gap-1">
-            <input
-              type="file"
-              accept="image/png"
-              class="block text-sm text-(--ui-text-muted) file:mr-3 file:py-1 file:px-3 file:rounded file:border file:border-(--ui-border) file:text-sm file:font-medium file:bg-(--ui-bg) file:text-(--ui-text) hover:file:bg-(--ui-bg-elevated) cursor-pointer"
-              :disabled="uploadMutation.isPending.value"
-              @change="onPreviewFile"
-            />
-            <span v-if="uploadMutation.isPending.value" class="text-xs text-(--ui-text-muted)">
-              Загрузка...
-            </span>
-          </label>
+          <UFileUpload
+            v-model="previewFile"
+            accept="image/png"
+            variant="button"
+            :disabled="uploadMutation.isPending.value"
+          />
           <p class="text-xs text-(--ui-text-muted)">
             PNG-скриншот блока (например, из Figma). Сохраняется в
             <code class="font-mono">apps/admin/public/block-previews/{{ type }}.png</code> — закоммить в git.
