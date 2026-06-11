@@ -15,7 +15,7 @@ import { projectLocationBlock } from "./project-location";
 import { projectInfrastructureBlock } from "./project-infrastructure";
 
 export { defineBlock } from "./_core";
-export type { BlockDefinition, BlockCategory } from "./_core";
+export type { BlockDefinition, BlockCategory, BlockField, BlockFieldType } from "./_core";
 
 export const allBlocks = [
   aboutProjectBlock,
@@ -67,4 +67,16 @@ const defaultDataByType = Object.fromEntries(
 
 export function getBlockDefaultData(type: BlockType): unknown {
   return structuredClone(defaultDataByType[type]);
+}
+
+/**
+ * Мержит сохранённые данные блока с defaultData: новые поля схемы получают
+ * default-значения, контент в БД не мигрируется (как в Strapi).
+ */
+export function normalizeBlockData(
+  type: BlockType,
+  data: unknown,
+): Record<string, unknown> {
+  const defaults = (getBlockDefaultData(type) ?? {}) as Record<string, unknown>;
+  return { ...defaults, ...((data ?? {}) as Record<string, unknown>) };
 }

@@ -6,6 +6,21 @@ export const aboutCompanyBlock = defineBlock({
   label: "О компании",
   icon: "i-solar-buildings-3-linear",
   description: "Секция о компании с описанием, изображением и статистикой",
+  fields: [
+    { name: "title", type: "string", label: "Заголовок", required: true },
+    { name: "description", type: "text", label: "Описание", required: false },
+    { name: "buttonLabel", type: "string", label: "Текст ссылки", required: false },
+    { name: "buttonUrl", type: "url", label: "URL ссылки", required: false },
+    { name: "image", type: "image", label: "Изображение", required: true },
+    {
+      name: "stats", type: "repeater", label: "Статистика", required: true,
+      minItems: 2, maxItems: 6,
+      subFields: [
+        { name: "value", type: "string", label: "Значение", required: true },
+        { name: "label", type: "string", label: "Подпись", required: true },
+      ],
+    },
+  ],
   dataSchema: z.object({
     title: z.string().min(1),
     description: z.string().optional(),

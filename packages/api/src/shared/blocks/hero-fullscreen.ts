@@ -6,6 +6,27 @@ export const heroFullscreenBlock = defineBlock({
   label: "Hero на весь экран",
   icon: "i-solar-gallery-linear",
   description: "Полноэкранный hero-блок со слайдером, адресом и сроками сдачи",
+  fields: [
+    { name: "title", type: "string", label: "Название проекта", required: true },
+    { name: "description", type: "text", label: "Описание", required: false },
+    { name: "images", type: "images", label: "Фоновые изображения", required: true },
+    { name: "address", type: "string", label: "Адрес", required: true },
+    { name: "district", type: "string", label: "Район", required: false },
+    { name: "walkTime", type: "string", label: "Пешком до метро", required: false },
+    { name: "driveTime", type: "string", label: "На машине до центра", required: false },
+    {
+      name: "buildings", type: "repeater", label: "Сроки сдачи домов", required: true,
+      minItems: 1, maxItems: 6,
+      subFields: [
+        { name: "label", type: "string", label: "Название дома", required: true },
+        { name: "date", type: "string", label: "Срок сдачи", required: true },
+      ],
+    },
+    { name: "primaryButtonLabel", type: "string", label: "Текст основной кнопки", required: false },
+    { name: "primaryButtonUrl", type: "url", label: "Ссылка основной кнопки", required: false },
+    { name: "secondaryButtonLabel", type: "string", label: "Текст доп. кнопки", required: false },
+    { name: "secondaryButtonUrl", type: "url", label: "Ссылка доп. кнопки", required: false },
+  ],
   dataSchema: z.object({
     title: z.string().min(1),
     description: z.string().optional(),

@@ -7,6 +7,11 @@ export const projectInfrastructureBlock = defineBlock({
   icon: "i-solar-map-linear",
   description: "Карта инфраструктуры проекта с пинами по категориям",
   category: "project",
+  fields: [
+    { name: "projectId", type: "string", label: "Проект", required: true },
+    { name: "mapHeight", type: "number", label: "Высота карты (px)", required: true },
+    { name: "showCategories", type: "boolean", label: "Показывать фильтр по категориям", required: true },
+  ],
   dataSchema: z.object({
     projectId: z.string().min(1),
     mapHeight: z.number().default(500),
