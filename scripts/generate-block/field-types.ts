@@ -1,3 +1,5 @@
+import type { BlockFieldType } from "../../packages/api/src/shared/blocks/_core.js";
+
 export interface VueTemplateContext {
   fieldName: string;
   label: string;
@@ -30,7 +32,7 @@ function formFieldOpen(ctx: VueTemplateContext): string {
   return `<UFormField ${props.join(" ")}>`;
 }
 
-export const FIELD_TYPES: Record<string, FieldType> = {
+export const FIELD_TYPES: Record<BlockFieldType, FieldType> = {
   string: {
     label: "Строка (string)",
     zodType: "z.string()",

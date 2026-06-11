@@ -29,8 +29,11 @@ export function readFile(filePath: string): string {
   return fs.readFileSync(filePath, "utf-8");
 }
 
+/** Атомарная запись: tmp-файл рядом + rename, чтобы HMR dev-сервера не видел полузаписанный файл. */
 export function writeFile(filePath: string, content: string): void {
-  fs.writeFileSync(filePath, content, "utf-8");
+  const tmpPath = `${filePath}.tmp-${process.pid}`;
+  fs.writeFileSync(tmpPath, content, "utf-8");
+  fs.renameSync(tmpPath, filePath);
 }
 
 export function toPascalCase(str: string): string {

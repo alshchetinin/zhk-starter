@@ -1,14 +1,19 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { beforeEach, describe, expect, it } from "vitest";
+import { fileURLToPath } from "node:url";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { allBlocks } from "../../../packages/api/src/shared/blocks/index.js";
 import {
+  buildBlockDefinitionSource,
   generateBlockDefinition,
   updateBlockDefinition,
 } from "../generators/block-definition.js";
 import { generateEditorComponent } from "../generators/editor-component.js";
 import { generateWebRenderer } from "../generators/web-renderer.js";
 import type { BlockInfo } from "../prompts.js";
+
+const REPO_ROOT_REAL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
 const INDEX_FIXTURE = `import { z } from "zod";
 import type { BlockDefinition } from "./_core";
@@ -60,6 +65,10 @@ beforeEach(() => {
   root = scaffold();
 });
 
+afterEach(() => {
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 function read(rel: string): string {
   return fs.readFileSync(path.join(root, rel), "utf-8");
 }
@@ -78,6 +87,50 @@ describe("generateBlockDefinition", () => {
     expect(idx).toContain(`import { testCardsBlock } from "./test-cards";`);
     expect(idx).toContain("  testCardsBlock,");
   });
+
+  it("эмитит default в fields-литерале и использует его в defaultData", () => {
+    const withDefault: BlockInfo = {
+      name: "with-default",
+      label: "Блок с дефолтами",
+      description: "Проверка field.default",
+      icon: "i-solar-box-linear",
+      fields: [
+        { name: "show", type: "boolean", label: "Показывать", required: true, default: true },
+        { name: "title", type: "string", label: "Заголовок", required: false, default: "Контакты" },
+        { name: "height", type: "number", label: "Высота", required: true, default: 400 },
+      ],
+    };
+    generateBlockDefinition(root, withDefault);
+    const def = read("packages/api/src/shared/blocks/with-default.ts");
+    // fields-литералы несут default
+    expect(def).toContain("default: true,");
+    expect(def).toContain(`default: "Контакты",`);
+    expect(def).toContain("default: 400,");
+    // defaultData использует default вместо канонического значения
+    expect(def).toContain("    show: true,");
+    expect(def).toContain(`    title: "Контакты",`);
+    expect(def).toContain("    height: 400,");
+  });
+});
+
+describe("канонический round-trip", () => {
+  for (const block of allBlocks) {
+    it(`${block.type}: файл определения == канонической эмиссии`, () => {
+      const info = {
+        name: block.type,
+        label: block.label,
+        icon: block.icon,
+        description: block.description,
+        ...(block.category ? { category: block.category } : {}),
+        fields: block.fields,
+      };
+      const file = fs.readFileSync(
+        path.join(REPO_ROOT_REAL, "packages/api/src/shared/blocks", `${block.type}.ts`),
+        "utf-8",
+      );
+      expect(buildBlockDefinitionSource(info as BlockInfo)).toBe(file);
+    });
+  }
 });
 
 describe("updateBlockDefinition", () => {

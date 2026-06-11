@@ -19,7 +19,7 @@ function resolveZodType(field: FieldInfo): string {
     return field.required ? base : `${base}.optional()`;
   }
 
-  const ft = FIELD_TYPES[field.type]!;
+  const ft = FIELD_TYPES[field.type];
   const base = typeof ft.zodType === "function" ? ft.zodType(field.options) : ft.zodType;
 
   if (field.required) {
@@ -29,10 +29,14 @@ function resolveZodType(field: FieldInfo): string {
 }
 
 function resolveDefaultValue(field: FieldInfo): string {
+  if (field.default !== undefined) return JSON.stringify(field.default);
   if (field.type === "repeater") return "[]";
   if (!field.required) return "undefined";
-  const ft = FIELD_TYPES[field.type]!;
-  return typeof ft.defaultValue === "function" ? ft.defaultValue(field.options) : ft.defaultValue;
+  const ft = FIELD_TYPES[field.type];
+  const value = typeof ft.defaultValue === "function" ? ft.defaultValue(field.options) : ft.defaultValue;
+  // канонический null для required image не входит в string-тип схемы — нужен явный каст
+  if (field.type === "image") return `${value} as unknown as string`;
+  return value;
 }
 
 function emitFieldLiteral(f: FieldInfo, indent: string): string {
@@ -41,6 +45,7 @@ function emitFieldLiteral(f: FieldInfo, indent: string): string {
   lines.push(`${indent}  type: "${f.type}",`);
   lines.push(`${indent}  label: ${JSON.stringify(f.label)},`);
   lines.push(`${indent}  required: ${f.required},`);
+  if (f.default !== undefined) lines.push(`${indent}  default: ${JSON.stringify(f.default)},`);
   if (f.description) lines.push(`${indent}  description: ${JSON.stringify(f.description)},`);
   if (f.options?.length) lines.push(`${indent}  options: ${JSON.stringify(f.options)},`);
   if (f.minItems !== undefined) lines.push(`${indent}  minItems: ${f.minItems},`);
@@ -54,7 +59,7 @@ function emitFieldLiteral(f: FieldInfo, indent: string): string {
   return lines.join("\n");
 }
 
-function buildBlockDefinitionSource(block: BlockInfo): string {
+export function buildBlockDefinitionSource(block: BlockInfo): string {
   const camel = toCamelCase(block.name);
 
   const fieldLiterals = block.fields

@@ -8,14 +8,31 @@ export const projectStatsBlock = defineBlock({
   description: "Количество свободных и общее число квартир",
   category: "project",
   fields: [
-    { name: "projectId", type: "string", label: "Проект", required: true },
-    { name: "showFree", type: "boolean", label: "Показывать свободные", required: true },
-    { name: "showTotal", type: "boolean", label: "Показывать всего", required: true },
+    {
+      name: "projectId",
+      type: "string",
+      label: "Проект",
+      required: true,
+    },
+    {
+      name: "showFree",
+      type: "boolean",
+      label: "Показывать свободные",
+      required: true,
+      default: true,
+    },
+    {
+      name: "showTotal",
+      type: "boolean",
+      label: "Показывать всего",
+      required: true,
+      default: true,
+    },
   ],
   dataSchema: z.object({
     projectId: z.string().min(1),
-    showFree: z.boolean().default(true),
-    showTotal: z.boolean().default(true),
+    showFree: z.boolean(),
+    showTotal: z.boolean(),
   }),
   defaultData: {
     projectId: "",

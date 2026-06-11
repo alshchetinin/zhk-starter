@@ -8,14 +8,31 @@ export const projectInfrastructureBlock = defineBlock({
   description: "Карта инфраструктуры проекта с пинами по категориям",
   category: "project",
   fields: [
-    { name: "projectId", type: "string", label: "Проект", required: true },
-    { name: "mapHeight", type: "number", label: "Высота карты (px)", required: true },
-    { name: "showCategories", type: "boolean", label: "Показывать фильтр по категориям", required: true },
+    {
+      name: "projectId",
+      type: "string",
+      label: "Проект",
+      required: true,
+    },
+    {
+      name: "mapHeight",
+      type: "number",
+      label: "Высота карты (px)",
+      required: true,
+      default: 500,
+    },
+    {
+      name: "showCategories",
+      type: "boolean",
+      label: "Показывать фильтр по категориям",
+      required: true,
+      default: true,
+    },
   ],
   dataSchema: z.object({
     projectId: z.string().min(1),
-    mapHeight: z.number().default(500),
-    showCategories: z.boolean().default(true),
+    mapHeight: z.number(),
+    showCategories: z.boolean(),
   }),
   defaultData: {
     projectId: "",

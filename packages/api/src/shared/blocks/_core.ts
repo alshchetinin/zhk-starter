@@ -24,6 +24,8 @@ export interface BlockField {
   type: BlockFieldType;
   label: string;
   required: boolean;
+  /** значение в defaultData, если отличается от канонического для типа */
+  default?: unknown;
   description?: string;
   /** только для select */
   options?: string[];

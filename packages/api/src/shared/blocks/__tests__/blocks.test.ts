@@ -31,6 +31,13 @@ describe("fields consistency", () => {
       // fields == ключи dataSchema (z.object shape)
       const shape = blockShape(block);
       expect(Object.keys(shape).sort()).toEqual([...fieldNames].sort());
+      // field.default (если задан) совпадает со значением в defaultData
+      const defaults = block.defaultData as Record<string, unknown>;
+      for (const f of block.fields) {
+        if (f.default !== undefined) {
+          expect(defaults[f.name]).toEqual(f.default);
+        }
+      }
     });
 
     const selectFields = block.fields.filter((f) => f.type === "select");
@@ -58,8 +65,12 @@ describe("fields consistency", () => {
           // zod v4: min/max length массива агрегируются в _zod.bag (minimum/maximum)
           const bag = (arr as unknown as { _zod: { bag: { minimum?: number; maximum?: number } } })
             ._zod.bag;
-          if (bag.minimum !== undefined) expect(bag.minimum).toBe(field.minItems);
-          if (bag.maximum !== undefined) expect(bag.maximum).toBe(field.maxItems);
+          if (field.minItems !== undefined && field.minItems > 0) {
+            expect(bag.minimum).toBe(field.minItems);
+          }
+          if (field.maxItems !== undefined) {
+            expect(bag.maximum).toBe(field.maxItems);
+          }
         }
       });
     }
