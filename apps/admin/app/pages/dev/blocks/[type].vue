@@ -32,10 +32,13 @@ const updateMutation = useMutation({
   mutationFn: (payload: ReturnType<typeof buildBlockPayload>) => $orpcClient.dev.blocks.update(payload),
   onSuccess: () => {
     toast.add({ title: "Схема обновлена", description: "Vite HMR подхватит изменения", color: "success" });
-    queryClient.invalidateQueries({ queryKey: $orpc.dev.blocks.key() });
   },
   onError: (err: Error) => {
     toast.add({ title: "Ошибка сохранения", description: err.message, color: "error" });
+  },
+  onSettled: () => {
+    // даже при частичном сбое генератор мог изменить файлы на диске
+    queryClient.invalidateQueries({ queryKey: $orpc.dev.blocks.key() });
   },
 });
 
@@ -62,16 +65,26 @@ const uploadMutation = useMutation({
     toast.add({ title: "Превью загружено", color: "success" });
   },
   onError: (err: Error) => {
+    previewFile.value = null;
     toast.add({ title: "Ошибка загрузки превью", description: err.message, color: "error" });
   },
 });
 
 watch(previewFile, (file) => {
   if (!file) return;
+  if (file.size > 3_300_000) {
+    toast.add({ title: "PNG больше 3 МБ", color: "error" });
+    previewFile.value = null;
+    return;
+  }
   const reader = new FileReader();
   reader.onload = () => {
     const dataBase64 = String(reader.result).split(",")[1] ?? "";
     uploadMutation.mutate({ type, dataBase64 });
+  };
+  reader.onerror = () => {
+    previewFile.value = null;
+    toast.add({ title: "Не удалось прочитать файл", color: "error" });
   };
   reader.readAsDataURL(file);
 });

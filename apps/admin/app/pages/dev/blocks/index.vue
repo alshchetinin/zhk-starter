@@ -84,6 +84,7 @@ function confirmDelete(type: string, label: string) {
           color="error"
           variant="ghost"
           size="sm"
+          aria-label="Удалить блок"
           :loading="deleteMutation.isPending.value && deleteMutation.variables.value === block.type"
           @click.prevent.stop="confirmDelete(block.type, block.label)"
         />
