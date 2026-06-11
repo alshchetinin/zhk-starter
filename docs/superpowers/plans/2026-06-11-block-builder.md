@@ -311,6 +311,20 @@ git commit -m "feat(blocks): декларативные fields в defineBlock + 
 > его поддержку: FIELD_TYPES в генераторе, enum в dev-роутере, список типов
 > в admin-форме.
 
+> **Поправка по ходу исполнения (Task 3, итог quality-ревью):** для lossless
+> round-trip в `BlockField` добавлено опциональное `default?: unknown`
+> (значение в defaultData, если отличается от канонического для типа);
+> эмиттер учитывает его в `resolveDefaultValue`/`emitFieldLiteral`; 12
+> определений приведены к канонической форме эмиттера (`.default()` из Zod
+> заменён на `field.default`, поведение defaultData сохранено байт-в-байт);
+> idempotency-тест закрепляет «файл определения == канонической эмиссии».
+> Последствия для следующих задач: **Task 4** — `fieldSchema` в dev-роутере
+> дополняется `default: z.unknown().optional()`; **Task 5** —
+> `serializeBlockField` обязан переносить `default` (`if (f.default !==
+> undefined) out.default = f.default;`), иначе сохранение из UI потеряет
+> дефолты. Также `writeFile` в scripts стал атомарным (tmp + rename),
+> `FIELD_TYPES` типизирован как `Record<BlockFieldType, FieldType>`.
+
 ### Task 3: Генератор — эмиссия fields + update-режим
 
 **Files:**
@@ -694,6 +708,7 @@ const fieldSchema: z.ZodType<BlockField> = z.lazy(() =>
     options: z.array(z.string()).optional(),
     description: z.string().optional(),
     required: z.boolean(),
+    default: z.unknown().optional(),
     subFields: z.array(fieldSchema).optional(),
     minItems: z.number().int().min(0).optional(),
     maxItems: z.number().int().min(1).optional(),
@@ -847,6 +862,8 @@ export function serializeBlockField(f: BlockField): BlockField {
     required: f.required,
   };
   if (f.description) out.description = f.description;
+  // default не редактируется в UI, но обязан переживать round-trip
+  if (f.default !== undefined) out.default = f.default;
   if (f.type === "select") {
     const opts = (f.options ?? []).map((s) => s.trim()).filter(Boolean);
     if (opts.length) out.options = opts;
