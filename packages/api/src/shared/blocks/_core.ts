@@ -11,6 +11,7 @@ export type BlockFieldType =
   | "url"
   | "image"
   | "images"
+  | "strings"
   | "select"
   | "repeater";
 

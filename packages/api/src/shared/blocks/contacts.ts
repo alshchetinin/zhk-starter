@@ -9,7 +9,7 @@ export const contactsBlock = defineBlock({
   fields: [
     { name: "title", type: "string", label: "Заголовок", required: false },
     {
-      name: "contactIds", type: "images", label: "Контакты", required: true,
+      name: "contactIds", type: "strings", label: "Контакты", required: true,
       description: "Выберите записи из справочника контактов",
     },
     { name: "showMap", type: "boolean", label: "Показывать карту", required: true },
