@@ -14,6 +14,12 @@ const contentBlocks = computed(() =>
 const projectBlocks = computed(() =>
   blockDefinitions.filter(d => d.category === "project"),
 );
+
+// Типы, у которых нет превью-PNG (img выдал ошибку) — показываем только иконку.
+const withoutPreview = ref(new Set<string>());
+function markBroken(type: string) {
+  withoutPreview.value = new Set(withoutPreview.value).add(type);
+}
 </script>
 
 <template>
@@ -21,24 +27,34 @@ const projectBlocks = computed(() =>
     Добавить блок
   </UButton>
 
-  <USlideover v-model:open="open" title="Добавить блок" side="right">
+  <USlideover v-model:open="open" title="Добавить блок" side="right" :ui="{ content: 'sm:max-w-lg' }">
     <template #body>
-      <div class="space-y-1">
+      <div class="space-y-2">
         <button
           v-for="def in contentBlocks"
           :key="def.type"
-          class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-(--ui-bg-elevated) transition-colors text-left"
+          class="w-full rounded-lg border border-(--ui-border) hover:border-(--ui-border-accented) hover:bg-(--ui-bg-elevated) transition-colors text-left overflow-hidden"
           @click="
             $emit('select', def.type);
             open = false;
           "
         >
-          <UIcon :name="def.icon" class="size-5 text-(--ui-text-muted)" />
-          <div>
-            <p class="text-sm font-medium">{{ def.label }}</p>
-            <p class="text-xs text-(--ui-text-muted)">
-              {{ def.description }}
-            </p>
+          <img
+            v-if="!withoutPreview.has(def.type)"
+            :src="`/block-previews/${def.type}.png`"
+            alt=""
+            loading="lazy"
+            class="w-full aspect-[16/7] object-cover object-top border-b border-(--ui-border)"
+            @error="markBroken(def.type)"
+          />
+          <div class="flex items-center gap-3 px-3 py-2.5">
+            <UIcon :name="def.icon" class="size-5 shrink-0 text-(--ui-text-muted)" />
+            <div>
+              <p class="text-sm font-medium">{{ def.label }}</p>
+              <p class="text-xs text-(--ui-text-muted)">
+                {{ def.description }}
+              </p>
+            </div>
           </div>
         </button>
 
@@ -49,18 +65,28 @@ const projectBlocks = computed(() =>
           <button
             v-for="def in projectBlocks"
             :key="def.type"
-            class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-(--ui-bg-elevated) transition-colors text-left"
+            class="w-full rounded-lg border border-(--ui-border) hover:border-(--ui-border-accented) hover:bg-(--ui-bg-elevated) transition-colors text-left overflow-hidden"
             @click="
               $emit('select', def.type);
               open = false;
             "
           >
-            <UIcon :name="def.icon" class="size-5 text-(--ui-text-muted)" />
-            <div>
-              <p class="text-sm font-medium">{{ def.label }}</p>
-              <p class="text-xs text-(--ui-text-muted)">
-                {{ def.description }}
-              </p>
+            <img
+              v-if="!withoutPreview.has(def.type)"
+              :src="`/block-previews/${def.type}.png`"
+              alt=""
+              loading="lazy"
+              class="w-full aspect-[16/7] object-cover object-top border-b border-(--ui-border)"
+              @error="markBroken(def.type)"
+            />
+            <div class="flex items-center gap-3 px-3 py-2.5">
+              <UIcon :name="def.icon" class="size-5 shrink-0 text-(--ui-text-muted)" />
+              <div>
+                <p class="text-sm font-medium">{{ def.label }}</p>
+                <p class="text-xs text-(--ui-text-muted)">
+                  {{ def.description }}
+                </p>
+              </div>
             </div>
           </button>
         </template>
