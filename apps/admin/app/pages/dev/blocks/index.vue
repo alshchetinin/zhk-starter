@@ -5,6 +5,12 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
+// Типы без превью-PNG — показываем иконку вместо мини-превью.
+const withoutPreview = ref(new Set<string>());
+function markBroken(type: string) {
+  withoutPreview.value = new Set(withoutPreview.value).add(type);
+}
+
 const { data, isPending } = useQuery({
   ...$orpc.dev.blocks.list.queryOptions(),
   staleTime: 0,
@@ -48,12 +54,21 @@ function confirmDelete(type: string, label: string) {
     <div v-if="isPending" class="text-sm text-(--ui-text-muted)">Загрузка...</div>
 
     <div v-else-if="data" class="grid gap-2">
-      <div
+      <NuxtLink
         v-for="block in data"
         :key="block.type"
-        class="flex items-center gap-3 p-3 rounded-lg border border-(--ui-border) bg-(--ui-bg)"
+        :to="`/dev/blocks/${block.type}`"
+        class="flex items-center gap-3 p-3 rounded-lg border border-(--ui-border) bg-(--ui-bg) hover:border-(--ui-border-accented) transition-colors"
       >
-        <UIcon :name="block.icon" class="size-5 shrink-0 text-(--ui-text-muted)" />
+        <img
+          v-if="!withoutPreview.has(block.type)"
+          :src="`/block-previews/${block.type}.png`"
+          alt=""
+          loading="lazy"
+          class="w-16 h-10 shrink-0 rounded border border-(--ui-border) object-cover object-top"
+          @error="markBroken(block.type)"
+        />
+        <UIcon v-else :name="block.icon" class="size-5 shrink-0 text-(--ui-text-muted)" />
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <div class="font-medium">{{ block.label }}</div>
@@ -70,9 +85,9 @@ function confirmDelete(type: string, label: string) {
           variant="ghost"
           size="sm"
           :loading="deleteMutation.isPending.value && deleteMutation.variables.value === block.type"
-          @click="confirmDelete(block.type, block.label)"
+          @click.prevent.stop="confirmDelete(block.type, block.label)"
         />
-      </div>
+      </NuxtLink>
     </div>
   </div>
 </template>
