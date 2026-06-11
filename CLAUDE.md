@@ -71,6 +71,35 @@ JSON конфиг (`BlockInfo`):
 }
 ```
 
+Типы полей: `string`, `text`, `richtext`, `number`, `boolean`, `url`,
+`image`, `images`, `strings` (массив строк), `select`, `repeater`.
+
+### Dev-билдер блоков (/dev/blocks)
+
+В dev-режиме админки есть раздел «Разработка → Блоки»: создание, удаление и
+**редактирование схемы полей** существующих блоков (как Strapi content-type
+builder). Изменения пишутся в исходники (определение + admin-редактор),
+Vite HMR подхватывает. Web-рендерер при редактировании полей не трогается —
+вёрстку под новые поля добавлять руками.
+
+- Определение блока и admin-редактор — **генерируемые артефакты**: ручные
+  правки в них перезапишутся при сохранении из UI. Idempotency-тест
+  (`scripts/generate-block/__tests__/`) держит файлы определений байт-в-байт
+  равными канонической эмиссии генератора.
+- `defineBlock` содержит декларативный `fields: BlockField[]` (включая
+  `default` для значений, отличных от канонических) — единый source of truth
+  для билдера, генератора и форм; consistency-тесты
+  (`packages/api/src/shared/blocks/__tests__/`) следят, что fields совпадают
+  с dataSchema/defaultData.
+- Данные контента в БД не мигрируются: при загрузке блок мержится с
+  defaultData (`normalizeBlockData`), новые поля получают default.
+
+### Превью блока в пикере
+
+PNG-скриншот блока кладётся в `apps/admin/public/block-previews/{type}.png`
+(руками или загрузкой на странице `/dev/blocks/{type}`) и коммитится в git.
+Пикер и список блоков показывают картинку, при её отсутствии — иконку.
+
 ### Генератор создаёт 3 файла
 
 1. `packages/api/src/shared/blocks/{type}.ts` — `defineBlock({ type, label, icon, description, category?, dataSchema, defaultData })` — единый source of truth: Zod-схема, метаданные для picker, default data. Плюс добавляется в `allBlocks` массив в `blocks/index.ts`.
