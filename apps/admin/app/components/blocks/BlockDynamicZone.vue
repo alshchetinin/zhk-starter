@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ContentBlock, type BlockType, getBlockDefaultData } from "@zhk/api/shared/blocks";
+import { type ContentBlock, type BlockType, getBlockDefaultData, normalizeBlockData } from "@zhk/api/shared/blocks";
 import { blockEditorComponents } from "./editors/index";
 
 const model = defineModel<ContentBlock[]>({ default: () => [] });
@@ -51,7 +51,7 @@ function updateBlockData(index: number, data: Record<string, unknown>) {
     >
       <component
         :is="blockEditorComponents[block.type]"
-        :model-value="block.data"
+        :model-value="normalizeBlockData(block.type, block.data)"
         @update:model-value="updateBlockData(i, $event)"
       />
     </BlockWrapper>

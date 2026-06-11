@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ContentBlock } from "@zhk/api/shared/blocks";
+import { normalizeBlockData } from "@zhk/api/shared/blocks";
 import { blockRendererComponents } from "./renderers/index";
 import FallbackBlock from "./renderers/FallbackBlock.vue";
 
@@ -13,7 +14,7 @@ function getComponent(type: string) {
 
 function getProps(block: ContentBlock) {
   return blockRendererComponents[block.type]
-    ? block.data
+    ? normalizeBlockData(block.type, block.data)
     : { ...block.data, blockType: block.type };
 }
 </script>
