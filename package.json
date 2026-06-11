@@ -23,6 +23,7 @@
     "db:down": "turbo -F @zhk/db db:down",
     "db:seed": "pnpm --filter server db:seed",
     "db:reset": "pnpm db:down && pnpm db:start && sleep 2 && pnpm db:push && pnpm db:seed",
+    "test": "vitest run",
     "generate:block": "tsx scripts/generate-block.ts",
     "generate:collection": "tsx scripts/generate-collection.ts",
     "generate:theme": "tsx scripts/generate-theme.ts"
@@ -38,7 +39,8 @@
     "@zhk/config": "workspace:*",
     "tsx": "^4.21.0",
     "turbo": "^2.6.3",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.1.8"
   },
   "packageManager": "pnpm@10.18.1"
 }
