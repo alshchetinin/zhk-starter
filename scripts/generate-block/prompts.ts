@@ -1,18 +1,8 @@
 import * as p from "@clack/prompts";
+import type { BlockField } from "../../packages/api/src/shared/blocks/_core.js";
 import { FIELD_TYPES } from "./field-types.js";
 
-export interface FieldInfo {
-  name: string;
-  type: string;
-  label: string;
-  options?: string[];
-  description?: string;
-  required: boolean;
-  /** Repeater-specific */
-  subFields?: FieldInfo[];
-  minItems?: number;
-  maxItems?: number;
-}
+export type FieldInfo = BlockField;
 
 export interface BlockInfo {
   name: string;
@@ -91,7 +81,7 @@ async function collectSingleField(
 
   return {
     name: fieldName,
-    type: fieldType as string,
+    type: fieldType as FieldInfo["type"],
     label: fieldLabel,
     options: fieldOptions,
     description: fieldDescription || undefined,

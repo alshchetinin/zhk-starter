@@ -35,6 +35,66 @@ function resolveDefaultValue(field: FieldInfo): string {
   return typeof ft.defaultValue === "function" ? ft.defaultValue(field.options) : ft.defaultValue;
 }
 
+function emitFieldLiteral(f: FieldInfo, indent: string): string {
+  const lines = [`${indent}{`];
+  lines.push(`${indent}  name: "${f.name}",`);
+  lines.push(`${indent}  type: "${f.type}",`);
+  lines.push(`${indent}  label: ${JSON.stringify(f.label)},`);
+  lines.push(`${indent}  required: ${f.required},`);
+  if (f.description) lines.push(`${indent}  description: ${JSON.stringify(f.description)},`);
+  if (f.options?.length) lines.push(`${indent}  options: ${JSON.stringify(f.options)},`);
+  if (f.minItems !== undefined) lines.push(`${indent}  minItems: ${f.minItems},`);
+  if (f.maxItems !== undefined) lines.push(`${indent}  maxItems: ${f.maxItems},`);
+  if (f.subFields?.length) {
+    lines.push(`${indent}  subFields: [`);
+    lines.push(f.subFields.map((sf) => emitFieldLiteral(sf, `${indent}    `)).join("\n"));
+    lines.push(`${indent}  ],`);
+  }
+  lines.push(`${indent}},`);
+  return lines.join("\n");
+}
+
+function buildBlockDefinitionSource(block: BlockInfo): string {
+  const camel = toCamelCase(block.name);
+
+  const fieldLiterals = block.fields
+    .map((f) => emitFieldLiteral(f, "    "))
+    .join("\n");
+
+  const dataFields = block.fields
+    .map((f) => `    ${f.name}: ${resolveZodType(f)},`)
+    .join("\n");
+
+  const defaultFields = block.fields
+    .map((f) => `    ${f.name}: ${resolveDefaultValue(f)},`)
+    .join("\n");
+
+  const categoryLine = block.category ? `  category: "${block.category}",\n` : "";
+
+  return [
+    `import { z } from "zod";`,
+    `import { defineBlock } from "./_core";`,
+    ``,
+    `export const ${camel}Block = defineBlock({`,
+    `  type: "${block.name}",`,
+    `  label: ${JSON.stringify(block.label)},`,
+    `  icon: "${block.icon}",`,
+    `  description: ${JSON.stringify(block.description)},`,
+    categoryLine ? categoryLine.trimEnd() : null,
+    `  fields: [`,
+    fieldLiterals,
+    `  ],`,
+    `  dataSchema: z.object({`,
+    dataFields,
+    `  }),`,
+    `  defaultData: {`,
+    defaultFields,
+    `  },`,
+    `});`,
+    ``,
+  ].filter((l) => l !== null).join("\n");
+}
+
 /**
  * Creates `packages/api/src/shared/blocks/{type}.ts` and registers it
  * in `packages/api/src/shared/blocks/index.ts`.
@@ -48,37 +108,7 @@ export function generateBlockDefinition(rootDir: string, block: BlockInfo): void
     throw new Error(`Файл ${blockFile} уже существует`);
   }
 
-  const dataFields = block.fields
-    .map((f) => `    ${f.name}: ${resolveZodType(f)},`)
-    .join("\n");
-
-  const defaultFields = block.fields
-    .map((f) => `    ${f.name}: ${resolveDefaultValue(f)},`)
-    .join("\n");
-
-  const categoryLine = block.category ? `  category: "${block.category}",\n` : "";
-
-  const content = [
-    `import { z } from "zod";`,
-    `import { defineBlock } from "./_core";`,
-    ``,
-    `export const ${camel}Block = defineBlock({`,
-    `  type: "${block.name}",`,
-    `  label: "${block.label}",`,
-    `  icon: "${block.icon}",`,
-    `  description: "${block.description}",`,
-    categoryLine ? categoryLine.trimEnd() : null,
-    `  dataSchema: z.object({`,
-    dataFields,
-    `  }),`,
-    `  defaultData: {`,
-    defaultFields,
-    `  },`,
-    `});`,
-    ``,
-  ].filter((l) => l !== null).join("\n");
-
-  writeFile(blockFile, content);
+  writeFile(blockFile, buildBlockDefinitionSource(block));
 
   const indexFile = path.join(blocksDir, "index.ts");
   let idx = readFile(indexFile);
@@ -100,4 +130,22 @@ export function generateBlockDefinition(rootDir: string, block: BlockInfo): void
   }
 
   writeFile(indexFile, idx);
+}
+
+/**
+ * Rewrites an existing block definition (fields/meta changed in /dev/blocks).
+ * Does not touch index.ts registration.
+ */
+export function updateBlockDefinition(rootDir: string, block: BlockInfo): void {
+  const blockFile = path.join(
+    rootDir,
+    "packages/api/src/shared/blocks",
+    `${block.name}.ts`,
+  );
+
+  if (!fs.existsSync(blockFile)) {
+    throw new Error(`Блок "${block.name}" не существует (${blockFile})`);
+  }
+
+  writeFile(blockFile, buildBlockDefinitionSource(block));
 }

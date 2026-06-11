@@ -142,6 +142,18 @@ export const FIELD_TYPES: Record<string, FieldType> = {
     },
   },
 
+  strings: {
+    label: "Список строк (array of strings)",
+    zodType: "z.array(z.string())",
+    tsType: "string[]",
+    defaultValue: "[]",
+    vueTemplate: (ctx) => {
+      const m = ctx.modelPrefix ?? "model";
+      const u = ctx.updateFn ?? "set";
+      return `    ${formFieldOpen(ctx)}\n      <TagInput :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+    },
+  },
+
   select: {
     label: "Выбор из списка (select)",
     zodType: (options) =>

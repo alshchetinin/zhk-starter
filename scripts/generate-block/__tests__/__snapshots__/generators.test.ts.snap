@@ -1,0 +1,185 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`editor и renderer > editor: snapshot (включая TagInput для strings) 1`] = `
+"<script setup lang="ts">
+const model = defineModel<{
+  title: string;
+  subtitle?: string;
+  tags?: string[];
+  size: string;
+  items: Array<{ name: string; photo?: string | null }>;
+}>({ required: true });
+
+function set<K extends keyof typeof model.value>(key: K, value: typeof model.value[K]) {
+  model.value = { ...model.value, [key]: value };
+}
+</script>
+
+<template>
+  <div class="space-y-4">
+    <UFormField label="Заголовок" required>
+      <UInput :model-value="model.title" @update:model-value="set('title', $event)" />
+    </UFormField>
+    <UFormField label="Подзаголовок" description="Подсказка">
+      <UTextarea :model-value="model.subtitle" @update:model-value="set('subtitle', $event)" :rows="4" />
+    </UFormField>
+    <UFormField label="Теги">
+      <TagInput :model-value="model.tags" @update:model-value="set('tags', $event)" />
+    </UFormField>
+    <UFormField label="Размер" required>
+      <USelect :model-value="model.size" @update:model-value="set('size', $event)" class="w-full" :items="[{ label: 'small', value: 'small' }, { label: 'large', value: 'large' }]" />
+    </UFormField>
+    <UFormField label="Карточки" required>
+      <RepeaterField
+        :model-value="model.items"
+        @update:model-value="set('items', $event)"
+        :default-item="() => ({ name: '', photo: undefined })"
+        :min="1" :max="6"
+      >
+        <template #item="{ item, update }">
+          <div class="space-y-3">
+    <UFormField label="Название" required>
+      <UInput :model-value="item.name" @update:model-value="update('name', $event)" />
+    </UFormField>
+    <UFormField label="Фото">
+      <ImageUpload :model-value="item.photo" @update:model-value="update('photo', $event)" folder="blocks" />
+    </UFormField>
+          </div>
+        </template>
+      </RepeaterField>
+    </UFormField>
+  </div>
+</template>
+"
+`;
+
+exports[`editor и renderer > renderer: snapshot 1`] = `
+"<script setup lang="ts">
+defineProps<{
+  title: string;
+  subtitle?: string;
+  tags?: string[];
+  size: string;
+  items: Array<{ name: string; photo?: string | null }>;
+}>();
+
+const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
+</script>
+
+<template>
+  <div class="section">
+    <div class="container-web">
+      <Motion as="div" v-bind="fadeUp">
+        <!-- TODO: рендеринг полей: title, subtitle, tags, size -->
+        <pre class="rounded-xl bg-[var(--web-bg-muted)] p-4 text-sm">{{ title, subtitle, tags, size }}</pre>
+      </Motion>
+
+      <Motion
+        as="div"
+        :variants="staggerContainer"
+        initial="hidden"
+        whileInView="show"
+        :inViewOptions="{ once: true }"
+        class="mt-8 grid gap-6 md:grid-cols-3"
+      >
+        <Motion
+          as="div"
+          v-for="(item, i) in items"
+          :key="i"
+          :variants="staggerChild"
+        >
+          <UiCard hoverable>
+            <template #header>
+              <img :src="item.photo" :alt="item.name" :loading="i > 0 ? 'lazy' : undefined" class="aspect-[4/3] w-full object-cover" />
+            </template>
+            <!-- TODO: рендеринг содержимого карточки -->
+            <pre class="text-sm">{{ item }}</pre>
+          </UiCard>
+        </Motion>
+      </Motion>
+    </div>
+  </div>
+</template>
+"
+`;
+
+exports[`generateBlockDefinition > эмитит fields, dataSchema, defaultData и регистрирует в index.ts 1`] = `
+"import { z } from "zod";
+import { defineBlock } from "./_core";
+
+export const testCardsBlock = defineBlock({
+  type: "test-cards",
+  label: "Тестовые карточки",
+  icon: "i-solar-box-linear",
+  description: "Блок для теста генератора",
+  category: "content",
+  fields: [
+    {
+      name: "title",
+      type: "string",
+      label: "Заголовок",
+      required: true,
+    },
+    {
+      name: "subtitle",
+      type: "text",
+      label: "Подзаголовок",
+      required: false,
+      description: "Подсказка",
+    },
+    {
+      name: "tags",
+      type: "strings",
+      label: "Теги",
+      required: false,
+    },
+    {
+      name: "size",
+      type: "select",
+      label: "Размер",
+      required: true,
+      options: ["small","large"],
+    },
+    {
+      name: "items",
+      type: "repeater",
+      label: "Карточки",
+      required: true,
+      minItems: 1,
+      maxItems: 6,
+      subFields: [
+        {
+          name: "name",
+          type: "string",
+          label: "Название",
+          required: true,
+        },
+        {
+          name: "photo",
+          type: "image",
+          label: "Фото",
+          required: false,
+        },
+      ],
+    },
+  ],
+  dataSchema: z.object({
+    title: z.string().min(1),
+    subtitle: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    size: z.enum(["small", "large"]),
+    items: z.array(z.object({
+    name: z.string().min(1),
+    photo: z.string().url().nullable(),
+  })).min(1).max(6),
+  }),
+  defaultData: {
+    title: "",
+    subtitle: undefined,
+    tags: undefined,
+    size: "small",
+    items: [],
+  },
+});
+"
+`;
