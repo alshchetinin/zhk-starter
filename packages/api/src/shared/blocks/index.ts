@@ -14,7 +14,7 @@ import { projectStatsBlock } from "./project-stats";
 import { projectLocationBlock } from "./project-location";
 import { projectInfrastructureBlock } from "./project-infrastructure";
 
-export { defineBlock } from "./_core";
+export { defineBlock, BLOCK_FIELD_TYPES } from "./_core";
 export type { BlockDefinition, BlockCategory, BlockField, BlockFieldType } from "./_core";
 
 export const allBlocks = [

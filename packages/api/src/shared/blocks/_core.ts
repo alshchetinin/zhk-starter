@@ -2,18 +2,21 @@ import { z } from "zod";
 
 export type BlockCategory = "content" | "project";
 
-export type BlockFieldType =
-  | "string"
-  | "text"
-  | "richtext"
-  | "number"
-  | "boolean"
-  | "url"
-  | "image"
-  | "images"
-  | "strings"
-  | "select"
-  | "repeater";
+export const BLOCK_FIELD_TYPES = [
+  "string",
+  "text",
+  "richtext",
+  "number",
+  "boolean",
+  "url",
+  "image",
+  "images",
+  "strings",
+  "select",
+  "repeater",
+] as const;
+
+export type BlockFieldType = (typeof BLOCK_FIELD_TYPES)[number];
 
 /**
  * Декларативное описание поля блока — единый source of truth для

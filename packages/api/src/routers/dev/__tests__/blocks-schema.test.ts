@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fieldSchema, blockInfoSchema } from "../blocks-schema";
+import { BLOCK_FIELD_TYPES } from "../../../shared/blocks/_core";
 
 describe("fieldSchema", () => {
   it("accepts a valid string field", () => {
@@ -62,6 +63,19 @@ describe("fieldSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts every type from BLOCK_FIELD_TYPES", () => {
+    for (const type of BLOCK_FIELD_TYPES) {
+      const result = fieldSchema.safeParse({
+        name: "field",
+        type,
+        label: "Поле",
+        required: true,
+        ...(type === "select" ? { options: ["a", "b"] } : {}),
+      });
+      expect(result.success, `тип "${type}" должен приниматься`).toBe(true);
+    }
+  });
+
   it("rejects required image field with default: null", () => {
     const result = fieldSchema.safeParse({
       name: "photo",
@@ -73,7 +87,22 @@ describe("fieldSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       const messages = result.error.issues.map((i) => i.message);
-      expect(messages).toContain("default: null недопустим для обязательного image");
+      expect(messages).toContain("default: null допустим только для необязательного image");
+    }
+  });
+
+  it("rejects required string field with default: null", () => {
+    const result = fieldSchema.safeParse({
+      name: "title",
+      type: "string",
+      label: "Заголовок",
+      required: true,
+      default: null,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain("default: null допустим только для необязательного image");
     }
   });
 
@@ -108,6 +137,49 @@ describe("fieldSchema", () => {
     if (!result.success) {
       const allMessages = result.error.issues.map((i) => i.message);
       expect(allMessages).toContain("select требует непустой options");
+    }
+  });
+
+  it("rejects repeater inside subFields", () => {
+    const result = fieldSchema.safeParse({
+      name: "items",
+      type: "repeater",
+      label: "Элементы",
+      required: true,
+      subFields: [
+        {
+          name: "nested",
+          type: "repeater",
+          label: "Вложенный",
+          required: true,
+          subFields: [
+            { name: "title", type: "string", label: "Заголовок", required: true },
+          ],
+        },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain("repeater внутри subFields запрещён");
+    }
+  });
+
+  it("rejects duplicate names within subFields", () => {
+    const result = fieldSchema.safeParse({
+      name: "items",
+      type: "repeater",
+      label: "Элементы",
+      required: true,
+      subFields: [
+        { name: "title", type: "string", label: "Заголовок", required: true },
+        { name: "title", type: "text", label: "Дубликат", required: false },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain('дубликат имени поля "title" в subFields');
     }
   });
 });
@@ -151,6 +223,24 @@ describe("blockInfoSchema", () => {
     if (!result.success) {
       const messages = result.error.issues.map((i) => i.message);
       expect(messages).toContain("select требует непустой options");
+    }
+  });
+
+  it("rejects duplicate field names", () => {
+    const result = blockInfoSchema.safeParse({
+      name: "dup-block",
+      label: "Блок с дублями",
+      description: "Два поля с одним именем",
+      icon: "i-solar-home-linear",
+      fields: [
+        { name: "title", type: "string", label: "Заголовок", required: true },
+        { name: "title", type: "text", label: "Дубликат", required: false },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain('дубликат имени поля "title"');
     }
   });
 });

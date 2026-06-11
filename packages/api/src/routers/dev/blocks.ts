@@ -5,9 +5,7 @@ import fs from "node:fs";
 import { devProcedure } from "../../index";
 import { REPO_ROOT } from "../../utils/paths";
 import { toCamelCase, toPascalCase } from "../../utils/naming";
-import { fieldSchema, blockInfoSchema } from "./blocks-schema";
-
-export { fieldSchema, blockInfoSchema };
+import { blockInfoSchema } from "./blocks-schema";
 
 const BLOCKS_DIR = path.join(REPO_ROOT, "packages/api/src/shared/blocks");
 const PREVIEWS_DIR = path.join(REPO_ROOT, "apps/admin/public/block-previews");
@@ -91,11 +89,9 @@ export const devBlocksRouter = {
         import("../../../../../scripts/generate-block/generators/web-renderer.js"),
       ]);
 
-      const blockInfo = input as unknown as Parameters<typeof generateBlockDefinition>[1];
-
-      generateBlockDefinition(REPO_ROOT, blockInfo);
-      generateEditorComponent(REPO_ROOT, blockInfo);
-      generateWebRenderer(REPO_ROOT, blockInfo);
+      generateBlockDefinition(REPO_ROOT, input);
+      generateEditorComponent(REPO_ROOT, input);
+      generateWebRenderer(REPO_ROOT, input);
 
       return { type: input.name, ok: true };
     }),
@@ -103,8 +99,9 @@ export const devBlocksRouter = {
   update: devProcedure
     .input(blockInfoSchema)
     .handler(async ({ input }) => {
-      const blockFile = path.join(BLOCKS_DIR, `${input.name}.ts`);
-      if (!fs.existsSync(blockFile)) {
+      // Существование проверяем через readBlocksFromDisk, а не existsSync:
+      // index.ts и _*.ts там отфильтрованы — name "index" не перезапишет реестр.
+      if (!readBlocksFromDisk().some((b) => b.type === input.name)) {
         throw new ORPCError("NOT_FOUND", {
           message: `Блок "${input.name}" не найден`,
         });
@@ -115,10 +112,16 @@ export const devBlocksRouter = {
         import("../../../../../scripts/generate-block/generators/editor-component.js"),
       ]);
 
-      const blockInfo = input as unknown as Parameters<typeof updateBlockDefinition>[1];
-
-      updateBlockDefinition(REPO_ROOT, blockInfo);
-      generateEditorComponent(REPO_ROOT, blockInfo);
+      updateBlockDefinition(REPO_ROOT, input);
+      try {
+        generateEditorComponent(REPO_ROOT, input);
+      } catch (err) {
+        throw new ORPCError("INTERNAL_SERVER_ERROR", {
+          message: `Определение обновлено, но генерация редактора упала: ${
+            err instanceof Error ? err.message : String(err)
+          }. Проверьте git diff.`,
+        });
+      }
 
       return { type: input.name, ok: true };
     }),
@@ -132,15 +135,15 @@ export const devBlocksRouter = {
       }),
     )
     .handler(({ input }) => {
-      if (!fs.existsSync(path.join(BLOCKS_DIR, `${input.type}.ts`))) {
+      if (!readBlocksFromDisk().some((b) => b.type === input.type)) {
         throw new ORPCError("NOT_FOUND", {
           message: `Блок "${input.type}" не найден`,
         });
       }
 
       const buf = Buffer.from(input.dataBase64, "base64");
-      const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
-      if (!buf.subarray(0, 4).equals(PNG_MAGIC)) {
+      const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+      if (buf.length < 8 || !buf.subarray(0, 8).equals(PNG_MAGIC)) {
         throw new ORPCError("BAD_REQUEST", { message: "Файл должен быть PNG" });
       }
 
@@ -151,14 +154,15 @@ export const devBlocksRouter = {
     }),
 
   delete: devProcedure
-    .input(z.object({ type: z.string().min(1) }))
+    .input(z.object({ type: z.string().regex(/^[a-z][a-z0-9-]*$/) }))
     .handler(async ({ input }) => {
-      const blockFile = path.join(BLOCKS_DIR, `${input.type}.ts`);
-      if (!fs.existsSync(blockFile)) {
+      // readBlocksFromDisk фильтрует index.ts/_*.ts — name "index" не удалит реестр.
+      if (!readBlocksFromDisk().some((b) => b.type === input.type)) {
         throw new ORPCError("NOT_FOUND", {
           message: `Блок "${input.type}" не найден`,
         });
       }
+      const blockFile = path.join(BLOCKS_DIR, `${input.type}.ts`);
 
       const pascal = toPascalCase(input.type);
       const files = [
