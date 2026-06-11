@@ -5,52 +5,12 @@ import fs from "node:fs";
 import { devProcedure } from "../../index";
 import { REPO_ROOT } from "../../utils/paths";
 import { toCamelCase, toPascalCase } from "../../utils/naming";
+import { fieldSchema, blockInfoSchema } from "./blocks-schema";
+
+export { fieldSchema, blockInfoSchema };
 
 const BLOCKS_DIR = path.join(REPO_ROOT, "packages/api/src/shared/blocks");
-
-const fieldSchema: z.ZodType<{
-  name: string;
-  type: string;
-  label: string;
-  options?: string[];
-  description?: string;
-  required: boolean;
-  subFields?: unknown[];
-  minItems?: number;
-  maxItems?: number;
-}> = z.lazy(() =>
-  z.object({
-    name: z.string().regex(/^[a-z][a-zA-Z0-9]*$/, "camelCase имя"),
-    type: z.enum([
-      "string",
-      "text",
-      "richtext",
-      "number",
-      "boolean",
-      "url",
-      "image",
-      "images",
-      "select",
-      "repeater",
-    ]),
-    label: z.string().min(1),
-    options: z.array(z.string()).optional(),
-    description: z.string().optional(),
-    required: z.boolean(),
-    subFields: z.array(fieldSchema).optional(),
-    minItems: z.number().int().min(0).optional(),
-    maxItems: z.number().int().min(1).optional(),
-  }),
-);
-
-const blockInfoSchema = z.object({
-  name: z.string().regex(/^[a-z][a-z0-9-]*$/, "kebab-case имя блока"),
-  label: z.string().min(1),
-  description: z.string().min(1),
-  icon: z.string().min(1),
-  category: z.enum(["content", "project"]).optional(),
-  fields: z.array(fieldSchema).min(1),
-});
+const PREVIEWS_DIR = path.join(REPO_ROOT, "apps/admin/public/block-previews");
 
 function extractString(source: string, key: string): string | null {
   const match = source.match(new RegExp(`${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
@@ -140,6 +100,56 @@ export const devBlocksRouter = {
       return { type: input.name, ok: true };
     }),
 
+  update: devProcedure
+    .input(blockInfoSchema)
+    .handler(async ({ input }) => {
+      const blockFile = path.join(BLOCKS_DIR, `${input.name}.ts`);
+      if (!fs.existsSync(blockFile)) {
+        throw new ORPCError("NOT_FOUND", {
+          message: `Блок "${input.name}" не найден`,
+        });
+      }
+
+      const [{ updateBlockDefinition }, { generateEditorComponent }] = await Promise.all([
+        import("../../../../../scripts/generate-block/generators/block-definition.js"),
+        import("../../../../../scripts/generate-block/generators/editor-component.js"),
+      ]);
+
+      const blockInfo = input as unknown as Parameters<typeof updateBlockDefinition>[1];
+
+      updateBlockDefinition(REPO_ROOT, blockInfo);
+      generateEditorComponent(REPO_ROOT, blockInfo);
+
+      return { type: input.name, ok: true };
+    }),
+
+  uploadPreview: devProcedure
+    .input(
+      z.object({
+        type: z.string().regex(/^[a-z][a-z0-9-]*$/),
+        /** PNG в base64 без data:-префикса, до ~3 МБ файла */
+        dataBase64: z.string().min(1).max(4_500_000),
+      }),
+    )
+    .handler(({ input }) => {
+      if (!fs.existsSync(path.join(BLOCKS_DIR, `${input.type}.ts`))) {
+        throw new ORPCError("NOT_FOUND", {
+          message: `Блок "${input.type}" не найден`,
+        });
+      }
+
+      const buf = Buffer.from(input.dataBase64, "base64");
+      const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+      if (!buf.subarray(0, 4).equals(PNG_MAGIC)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Файл должен быть PNG" });
+      }
+
+      fs.mkdirSync(PREVIEWS_DIR, { recursive: true });
+      fs.writeFileSync(path.join(PREVIEWS_DIR, `${input.type}.png`), buf);
+
+      return { ok: true, size: buf.length };
+    }),
+
   delete: devProcedure
     .input(z.object({ type: z.string().min(1) }))
     .handler(async ({ input }) => {
@@ -155,6 +165,7 @@ export const devBlocksRouter = {
         blockFile,
         path.join(REPO_ROOT, `apps/admin/app/components/blocks/editors/${pascal}Block.vue`),
         path.join(REPO_ROOT, `apps/web/app/components/blocks/renderers/${pascal}Block.vue`),
+        path.join(PREVIEWS_DIR, `${input.type}.png`),
       ];
 
       for (const file of files) {
