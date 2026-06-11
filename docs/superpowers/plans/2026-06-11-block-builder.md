@@ -305,12 +305,35 @@ git commit -m "feat(blocks): декларативные fields в defineBlock + 
 
 ---
 
+> **Поправка по ходу исполнения (Task 2):** добавлен тип поля `strings`
+> (массив произвольных строк, редактор — `TagInput`) для полей вида
+> `z.array(z.string())` (например, `contacts.contactIds`). Tasks 3–5 включают
+> его поддержку: FIELD_TYPES в генераторе, enum в dev-роутере, список типов
+> в admin-форме.
+
 ### Task 3: Генератор — эмиссия fields + update-режим
 
 **Files:**
 - Modify: `scripts/generate-block/prompts.ts`
+- Modify: `scripts/generate-block/field-types.ts` (новый тип `strings`)
 - Modify: `scripts/generate-block/generators/block-definition.ts`
 - Test: `scripts/generate-block/__tests__/generators.test.ts`
+
+**Новый тип в `scripts/generate-block/field-types.ts`** — добавить в `FIELD_TYPES` после `images`:
+
+```ts
+  strings: {
+    label: "Список строк (array of strings)",
+    zodType: "z.array(z.string())",
+    tsType: "string[]",
+    defaultValue: "[]",
+    vueTemplate: (ctx) => {
+      const m = ctx.modelPrefix ?? "model";
+      const u = ctx.updateFn ?? "set";
+      return `    ${formFieldOpen(ctx)}\n      <TagInput :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+    },
+  },
+```
 
 - [ ] **Step 1: Написать падающие тесты**
 
@@ -663,6 +686,7 @@ const fieldSchema: z.ZodType<BlockField> = z.lazy(() =>
       "url",
       "image",
       "images",
+      "strings",
       "select",
       "repeater",
     ]),
@@ -807,6 +831,7 @@ export const blockFieldTypes = [
   { value: "url", label: "URL-ссылка" },
   { value: "image", label: "Изображение" },
   { value: "images", label: "Галерея изображений" },
+  { value: "strings", label: "Список строк" },
   { value: "select", label: "Выбор из списка" },
   { value: "repeater", label: "Повторяемый блок" },
 ] as const;
