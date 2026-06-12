@@ -3,6 +3,7 @@ import { env } from "@zhk/env/server";
 import {
   consume,
   createLimiter,
+  resolveRateLimitConfig,
   type RateLimitScope,
 } from "@zhk/ratelimit";
 import { o } from "../index";
@@ -45,7 +46,6 @@ interface RateLimitOpts {
   keyBy?: KeyBy;
   /** Для keyBy "ip+extra": достаёт значение из input. */
   extractExtra?: (input: unknown) => string | undefined;
-  failMode?: "open" | "closed";
 }
 
 /**
@@ -55,24 +55,33 @@ interface RateLimitOpts {
  */
 export function rateLimit(scope: RateLimitScope, opts: RateLimitOpts = {}) {
   const keyBy = opts.keyBy ?? "ip";
-  const failMode = opts.failMode ?? "open";
+  // failMode — единый источник правды: конфиг scope. createLimiter использует
+  // его для наличия insurance-лимитера, consume — для решения при сбое стораджа.
+  // Передавать failMode в opts нельзя: рассинхрон с лимитером ломает fail-closed.
+  const { failMode } = resolveRateLimitConfig(
+    scope,
+    env as unknown as Record<string, unknown>,
+  );
 
+  // Context (os.$context<Context>()) уже несёт clientIp/siteId/responseHeaders —
+  // oRPC прокидывает его через цепочку middleware без сужения, каст не нужен.
   return o.middleware(async ({ context, next }, input) => {
     if (!env.RL_ENABLED) return next({ context });
 
-    const ctx = context as unknown as KeyableContext & {
-      responseHeaders: Headers;
-    };
     const extra = opts.extractExtra ? opts.extractExtra(input) : undefined;
-    const key = buildRateLimitKey(keyBy, ctx, extra);
+    const key = buildRateLimitKey(keyBy, context, extra);
     const decision = await consume(limiterFor(scope), key, failMode);
 
-    ctx.responseHeaders.set("RateLimit-Limit", String(decision.limit));
-    ctx.responseHeaders.set("RateLimit-Remaining", String(decision.remaining));
-    ctx.responseHeaders.set("RateLimit-Reset", String(Math.ceil(decision.resetAtMs / 1000)));
+    // limit=0 — сбой стораджа (нет реального лимита). Заголовки RateLimit-*
+    // ставим только при валидном лимите, чтобы не вводить клиента в заблуждение.
+    if (decision.limit > 0) {
+      context.responseHeaders.set("RateLimit-Limit", String(decision.limit));
+      context.responseHeaders.set("RateLimit-Remaining", String(decision.remaining));
+      context.responseHeaders.set("RateLimit-Reset", String(Math.ceil(decision.resetAtMs / 1000)));
+    }
 
     if (!decision.allowed) {
-      ctx.responseHeaders.set("Retry-After", String(decision.retryAfterSec));
+      context.responseHeaders.set("Retry-After", String(decision.retryAfterSec));
       throw new ORPCError("TOO_MANY_REQUESTS", {
         message: "Слишком много запросов. Повторите позже.",
         data: { retryAfterSec: decision.retryAfterSec },
