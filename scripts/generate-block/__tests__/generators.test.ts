@@ -35,6 +35,8 @@ const BLOCK: BlockInfo = {
     { name: "subtitle", type: "text", label: "Подзаголовок", required: false, description: "Подсказка" },
     { name: "tags", type: "strings", label: "Теги", required: false },
     { name: "size", type: "select", label: "Размер", required: true, options: ["small", "large"] },
+    { name: "mainProject", type: "project", label: "Проект", required: true },
+    { name: "contactList", type: "contacts", label: "Контакты", required: false },
     {
       name: "items",
       type: "repeater",

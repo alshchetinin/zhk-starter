@@ -16,7 +16,5 @@ const items = computed(() =>
 </script>
 
 <template>
-  <UFormField label="Проект">
-    <USelect v-model="model" :items="items" placeholder="Выберите проект" />
-  </UFormField>
+  <USelect v-model="model" :items="items" placeholder="Выберите проект" class="w-full" />
 </template>

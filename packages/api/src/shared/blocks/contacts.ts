@@ -16,7 +16,7 @@ export const contactsBlock = defineBlock({
     },
     {
       name: "contactIds",
-      type: "strings",
+      type: "contacts",
       label: "Контакты",
       required: true,
       description: "Выберите записи из справочника контактов",

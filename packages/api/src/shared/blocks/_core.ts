@@ -13,6 +13,8 @@ export const BLOCK_FIELD_TYPES = [
   "images",
   "strings",
   "select",
+  "project",
+  "contacts",
   "repeater",
 ] as const;
 

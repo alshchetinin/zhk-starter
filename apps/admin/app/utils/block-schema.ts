@@ -20,6 +20,8 @@ const blockFieldTypeLabels: Record<BlockFieldType, string> = {
   images: "Галерея изображений",
   strings: "Список строк",
   select: "Выбор из списка",
+  project: "Проект",
+  contacts: "Контакты (справочник)",
   repeater: "Повторяемый блок",
 };
 

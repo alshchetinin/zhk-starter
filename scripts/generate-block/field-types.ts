@@ -172,6 +172,31 @@ export const FIELD_TYPES: Record<BlockFieldType, FieldType> = {
     },
   },
 
+  project: {
+    label: "Проект (relation)",
+    zodType: "z.string()",
+    tsType: "string",
+    defaultValue: '""',
+    minWhenRequired: true,
+    vueTemplate: (ctx) => {
+      const m = ctx.modelPrefix ?? "model";
+      const u = ctx.updateFn ?? "set";
+      return `    ${formFieldOpen(ctx)}\n      <ProjectSelector :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+    },
+  },
+
+  contacts: {
+    label: "Контакты (relation)",
+    zodType: "z.array(z.string())",
+    tsType: "string[]",
+    defaultValue: "[]",
+    vueTemplate: (ctx) => {
+      const m = ctx.modelPrefix ?? "model";
+      const u = ctx.updateFn ?? "set";
+      return `    ${formFieldOpen(ctx)}\n      <ContactsSelector :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+    },
+  },
+
   repeater: {
     label: "Повторяемый блок (repeater)",
     zodType: "z.array(z.object({}))",

@@ -10,7 +10,7 @@ export const projectInfrastructureBlock = defineBlock({
   fields: [
     {
       name: "projectId",
-      type: "string",
+      type: "project",
       label: "Проект",
       required: true,
     },

@@ -7,6 +7,8 @@ const model = defineModel<{
   subtitle?: string;
   tags?: string[];
   size: string;
+  mainProject: string;
+  contactList?: string[];
   items: Array<{ name: string; photo?: string | null }>;
 }>({ required: true });
 
@@ -28,6 +30,12 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
     </UFormField>
     <UFormField label="Размер" required>
       <USelect :model-value="model.size" @update:model-value="set('size', $event)" class="w-full" :items="[{ label: 'small', value: 'small' }, { label: 'large', value: 'large' }]" />
+    </UFormField>
+    <UFormField label="Проект" required>
+      <ProjectSelector :model-value="model.mainProject" @update:model-value="set('mainProject', $event)" />
+    </UFormField>
+    <UFormField label="Контакты">
+      <ContactsSelector :model-value="model.contactList" @update:model-value="set('contactList', $event)" />
     </UFormField>
     <UFormField label="Карточки" required>
       <RepeaterField
@@ -60,6 +68,8 @@ defineProps<{
   subtitle?: string;
   tags?: string[];
   size: string;
+  mainProject: string;
+  contactList?: string[];
   items: Array<{ name: string; photo?: string | null }>;
 }>();
 
@@ -70,8 +80,8 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
   <div class="section">
     <div class="container-web">
       <Motion as="div" v-bind="fadeUp">
-        <!-- TODO: рендеринг полей: title, subtitle, tags, size -->
-        <pre class="rounded-xl bg-[var(--web-bg-muted)] p-4 text-sm">{{ title, subtitle, tags, size }}</pre>
+        <!-- TODO: рендеринг полей: title, subtitle, tags, size, mainProject, contactList -->
+        <pre class="rounded-xl bg-[var(--web-bg-muted)] p-4 text-sm">{{ title, subtitle, tags, size, mainProject, contactList }}</pre>
       </Motion>
 
       <Motion
@@ -141,6 +151,18 @@ export const testCardsBlock = defineBlock({
       options: ["small","large"],
     },
     {
+      name: "mainProject",
+      type: "project",
+      label: "Проект",
+      required: true,
+    },
+    {
+      name: "contactList",
+      type: "contacts",
+      label: "Контакты",
+      required: false,
+    },
+    {
       name: "items",
       type: "repeater",
       label: "Карточки",
@@ -168,6 +190,8 @@ export const testCardsBlock = defineBlock({
     subtitle: z.string().optional(),
     tags: z.array(z.string()).optional(),
     size: z.enum(["small", "large"]),
+    mainProject: z.string().min(1),
+    contactList: z.array(z.string()).optional(),
     items: z.array(z.object({
     name: z.string().min(1),
     photo: z.string().url().nullable(),
@@ -178,6 +202,8 @@ export const testCardsBlock = defineBlock({
     subtitle: undefined,
     tags: undefined,
     size: "small",
+    mainProject: "",
+    contactList: undefined,
     items: [],
   },
 });

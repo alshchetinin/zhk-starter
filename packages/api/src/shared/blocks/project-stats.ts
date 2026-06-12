@@ -10,7 +10,7 @@ export const projectStatsBlock = defineBlock({
   fields: [
     {
       name: "projectId",
-      type: "string",
+      type: "project",
       label: "Проект",
       required: true,
     },
