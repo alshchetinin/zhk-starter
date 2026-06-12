@@ -7,7 +7,7 @@ const props = defineProps<{
   };
 }>();
 
-const { data: projectData } = useProjectData(computed(() => props.data.projectId || null));
+const { data: projectData, isPending } = useProjectData(computed(() => props.data.projectId || null));
 </script>
 
 <template>
@@ -15,10 +15,12 @@ const { data: projectData } = useProjectData(computed(() => props.data.projectId
     <div v-if="!data.projectId" class="rounded-lg border border-dashed border-(--ui-border) p-6 text-center text-sm text-(--ui-text-muted)">
       Выберите проект для отображения карты
     </div>
+    <p v-else-if="isPending" class="text-xs text-(--ui-text-muted)">Загрузка данных проекта…</p>
     <template v-else-if="projectData">
       <div v-if="data.showAddress && projectData.address" class="text-sm">
         <span class="text-(--ui-text-muted)">Адрес:</span> {{ projectData.address }}
       </div>
+      <!-- превью в админке намеренно ограничено 300px, фактическая высота — на сайте -->
       <div
         v-if="projectData.coordinates"
         class="rounded-lg border border-(--ui-border) bg-(--ui-bg-elevated) flex items-center justify-center text-sm text-(--ui-text-muted)"

@@ -7,7 +7,7 @@ const props = defineProps<{
   };
 }>();
 
-const { data: projectData } = useProjectData(computed(() => props.data.projectId || null));
+const { data: projectData, isPending } = useProjectData(computed(() => props.data.projectId || null));
 
 const previewImages = computed(() => {
   const gallery = projectData.value?.gallery ?? [];
@@ -19,7 +19,12 @@ const previewImages = computed(() => {
   <div v-if="!data.projectId" class="rounded-lg border border-dashed border-(--ui-border) p-6 text-center text-sm text-(--ui-text-muted)">
     Выберите проект для отображения галереи
   </div>
-  <div v-else-if="previewImages.length" class="grid gap-2" :class="`grid-cols-${data.columns}`">
+  <p v-else-if="isPending" class="text-xs text-(--ui-text-muted)">Загрузка данных проекта…</p>
+  <div
+    v-else-if="previewImages.length"
+    class="grid gap-2"
+    :class="{ 'grid-cols-2': data.columns === '2', 'grid-cols-3': data.columns === '3', 'grid-cols-4': data.columns === '4' }"
+  >
     <img
       v-for="(src, i) in previewImages"
       :key="i"
