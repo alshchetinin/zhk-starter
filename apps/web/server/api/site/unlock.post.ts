@@ -20,10 +20,11 @@ export default defineEventHandler(async (event) => {
   if (!response.ok) {
     const payload = await response.json().catch(() => null);
     const message = payload?.json?.message ?? "UNLOCK_FAILED";
+    const retryAfterSec = payload?.json?.data?.retryAfterSec as number | undefined;
     throw createError({
       statusCode: response.status,
       statusMessage: message,
-      data: { message },
+      data: { message, retryAfterSec },
     });
   }
 

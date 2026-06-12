@@ -23,6 +23,7 @@ const isLoading = ref(false);
 
 type SubmitState = "idle" | "submitting" | "submitted" | "success";
 const submitState = ref<SubmitState>("idle");
+const submitError = ref<string | null>(null);
 const checkDrawn = ref(false);
 
 let submitTimers: ReturnType<typeof setTimeout>[] = [];
@@ -68,6 +69,7 @@ function resetForm() {
   clearSubmitTimers();
   formValues.value = {};
   submitState.value = "idle";
+  submitError.value = null;
   showErrors.value = false;
   checkDrawn.value = false;
 }
@@ -140,6 +142,7 @@ async function handleSubmit() {
   showErrors.value = true;
   if (!isValid.value) return;
   submitState.value = "submitting";
+  submitError.value = null;
   clearSubmitTimers();
 
   try {
@@ -163,6 +166,11 @@ async function handleSubmit() {
   } catch (err) {
     console.error("[modal] submit failed", err);
     submitState.value = "idle";
+    const e = err as { status?: number; code?: string; data?: { retryAfterSec?: number } };
+    if (e?.status === 429 || e?.code === "TOO_MANY_REQUESTS") {
+      const sec = e?.data?.retryAfterSec ?? 60;
+      submitError.value = `Слишком много попыток. Повторите через ${sec} сек.`;
+    }
   }
 }
 
@@ -359,6 +367,8 @@ const errorTransitionProps = {
                 </span>
                 <span v-else>Отправить</span>
               </button>
+
+              <p v-if="submitError" class="!mt-2 text-sm text-red-500">{{ submitError }}</p>
             </form>
 
             <p class="mt-4 text-center text-[11px] leading-tight text-[var(--web-text-muted)]">

@@ -16,15 +16,26 @@ async function submit() {
     });
     if (import.meta.client) window.location.reload();
   } catch (e) {
-    const message =
-      (e as { data?: { message?: string }; statusMessage?: string })?.data
-        ?.message ??
-      (e as { statusMessage?: string })?.statusMessage ??
-      "";
-    error.value =
-      message === "WRONG_PASSWORD"
-        ? "Неверный пароль"
-        : "Не удалось разблокировать сайт";
+    const err = e as {
+      statusCode?: number;
+      statusMessage?: string;
+      data?: {
+        message?: string;
+        retryAfterSec?: number;
+        data?: { retryAfterSec?: number };
+      };
+    };
+    if (err?.statusCode === 429) {
+      const sec =
+        err?.data?.data?.retryAfterSec ?? err?.data?.retryAfterSec ?? 60;
+      error.value = `Слишком много попыток. Повторите через ${sec} сек.`;
+    } else {
+      const message = err?.data?.message ?? err?.statusMessage ?? "";
+      error.value =
+        message === "WRONG_PASSWORD"
+          ? "Неверный пароль"
+          : "Не удалось разблокировать сайт";
+    }
   } finally {
     loading.value = false;
   }
