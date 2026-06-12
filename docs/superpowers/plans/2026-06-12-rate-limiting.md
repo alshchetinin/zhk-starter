@@ -1125,6 +1125,13 @@ git commit -m "feat(web): обработка 429 на формах заявки 
 
 Напиши руководство (по образцу docs/tracking.md): архитектура трёх уровней, пакет `@zhk/ratelimit` (getClientIp, createLimiter, consume, config), таблица scopes с дефолтами и failMode, env-оверрайды `RL_*` и `REDIS_URL`, как добавить лимит на новую процедуру (`.use(rateLimit(scope, opts))`), fail-open/closed семантика, локальный Redis (docker-compose), поведение 429 на web. Сверяй каждое утверждение с кодом.
 
+**ОБЯЗАТЕЛЬНО** включи раздел «Требование к reverse-proxy (Traefik)»: вся
+схема ключей опирается на то, что Traefik **перезаписывает** `x-forwarded-for`
+реальным IP клиента, а не аппендит к клиентскому значению. Если прокси доверяет
+входящему XFF — клиент спуфит IP заголовком и обходит лимит. Перед прод-деплоем
+проверить конфиг Traefik (`forwardedHeaders.trustedIPs` = только адреса
+LB/прокси; не `insecure: true`). Это поднял quality-ревью Task 2.
+
 - [ ] **Step 2: CLAUDE.md**
 
 Добавь раздел «Rate limiting» со ссылкой на docs/rate-limiting.md и краткой памяткой: горячие ручки защищены через `.use(rateLimit(...))`, движок — `@zhk/ratelimit` на Redis, env `RL_*`.
