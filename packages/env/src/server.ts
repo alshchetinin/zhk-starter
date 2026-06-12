@@ -18,6 +18,18 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
+    REDIS_URL: z.string().url().default("redis://localhost:6379"),
+    RL_AUTH_SIGNIN_POINTS: z.coerce.number().int().positive().optional(),
+    RL_AUTH_SIGNIN_DURATION: z.coerce.number().int().positive().optional(),
+    RL_SITE_UNLOCK_POINTS: z.coerce.number().int().positive().optional(),
+    RL_SITE_UNLOCK_DURATION: z.coerce.number().int().positive().optional(),
+    RL_TICKET_CREATE_POINTS: z.coerce.number().int().positive().optional(),
+    RL_TICKET_CREATE_DURATION: z.coerce.number().int().positive().optional(),
+    RL_TICKET_HOURLY_POINTS: z.coerce.number().int().positive().optional(),
+    RL_CONTACTS_GETBYIDS_POINTS: z.coerce.number().int().positive().optional(),
+    RL_PUBLIC_READ_POINTS: z.coerce.number().int().positive().optional(),
+    RL_HONO_CEILING_POINTS: z.coerce.number().int().positive().optional(),
+    RL_ENABLED: z.enum(["true", "false"]).default("true").transform((v) => v === "true"),
     S3_ACCESS_KEY_ID: z.string().min(1),
     S3_ACCESS_SECRET: z.string().min(1),
     S3_BUCKET: z.string().min(1),
