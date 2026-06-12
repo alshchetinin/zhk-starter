@@ -10,7 +10,6 @@
   "dependencies": {
     "@zhk/db": "workspace:*",
     "@zhk/env": "workspace:*",
-    "@zhk/ratelimit": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
