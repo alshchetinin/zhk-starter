@@ -1623,3 +1623,34 @@ git commit -m "docs: dev-билдер блоков и превью в пикер
 ```bash
 gh issue comment 57 --body "Реализация по плану docs/superpowers/plans/2026-06-11-block-builder.md завершена: fields в defineBlock + миграция 12 блоков, dev.blocks.update/uploadPreview, страница /dev/blocks/[type], превью в пикере, normalize-merge, vitest-тесты."
 ```
+
+---
+
+### Task 10 (добавлена после ручной проверки пользователем): relation-типы `project` и `contacts`
+
+**Мотивация:** пользователь сохранил схему `project-gallery` из dev-билдера —
+канонический редактор заменил кастомный `ProjectSelector` на `UInput`-строку
+(документированный lossy-trade-off). Решение: связи «поле → сущность» становятся
+**типами полей**, тогда селекторы — часть канонического шаблона и не теряются.
+
+**Объём:**
+
+1. `BLOCK_FIELD_TYPES` += `"project"`, `"contacts"` (перед `repeater`).
+2. Селекторы в `apps/admin/app/components/blocks/editors/` (не матчатся glob `*Block.vue`):
+   - `ProjectSelector.vue` — рефакторится в «чистый» селект (defineModel<string>,
+     USelect с загрузкой проектов, без внутреннего UFormField — обёртку даёт
+     канонический шаблон);
+   - новый `ContactsSelector.vue` — defineModel<string[]>, USelectMenu multiple
+     по справочнику контактов (логика из ContactsBlock.vue).
+3. `FIELD_TYPES` в генераторе: `project` (zod `z.string()`, minWhenRequired,
+   default `""`, шаблон UFormField+ProjectSelector), `contacts`
+   (zod `z.array(z.string())` БЕЗ .min — иначе изменится схема contacts,
+   default `[]`, шаблон UFormField+ContactsSelector).
+4. Admin labels: `project` «Проект», `contacts` «Контакты (справочник)».
+5. Миграция: `projectId` → type `project` в 4 проектных блоках; `contactIds` →
+   type `contacts`; перегенерация определений и редакторов канонически
+   (dataSchema не меняется ни у одного блока).
+6. Коммит загруженных пользователем превью `apps/admin/public/block-previews/*.png`.
+7. Тесты: фикстура генераторов дополняется полями project/contacts (снапшоты
+   обновить осознанно), деривативные проверки (enum, labels, exhaustive)
+   подтянутся сами; idempotency по 12 блокам после перегенерации зелёный.
