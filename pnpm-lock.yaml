@@ -322,6 +322,9 @@ importers:
       '@zhk/env':
         specifier: workspace:*
         version: link:../env
+      '@zhk/ratelimit':
+        specifier: workspace:*
+        version: link:../ratelimit
       better-auth:
         specifier: 'catalog:'
         version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
