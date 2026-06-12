@@ -11,6 +11,26 @@ function refineField(field: BlockField, ctx: z.RefinementCtx): void {
     });
   }
 
+  if (field.type === "repeater" && !field.subFields?.length) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "repeater требует хотя бы одно под-поле",
+      path: ["subFields"],
+    });
+  }
+
+  if (
+    field.minItems !== undefined &&
+    field.maxItems !== undefined &&
+    field.minItems > field.maxItems
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "minItems не может быть больше maxItems",
+      path: ["minItems"],
+    });
+  }
+
   // resolveDefaultValue эмитит JSON.stringify(default) для всех типов —
   // null компилируется только у nullable (необязательного) image.
   if (field.default === null && !(field.type === "image" && !field.required)) {

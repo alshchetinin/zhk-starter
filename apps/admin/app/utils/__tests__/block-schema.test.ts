@@ -180,6 +180,29 @@ describe("isBlockFormValid", () => {
     ).toBe(true);
   });
 
+  it("false для repeater без subFields", () => {
+    const rep: BlockField = {
+      name: "items",
+      type: "repeater",
+      label: "Элементы",
+      required: true,
+    };
+    expect(isBlockFormValid(validMeta, [rep])).toBe(false);
+    expect(isBlockFormValid(validMeta, [{ ...rep, subFields: [] }])).toBe(false);
+  });
+
+  it("false для невалидного имени поля (не camelCase)", () => {
+    expect(
+      isBlockFormValid(validMeta, [{ ...stringField, name: "Bad-Name" }]),
+    ).toBe(false);
+  });
+
+  it("false для невалидного имени блока (не kebab-case)", () => {
+    expect(
+      isBlockFormValid({ ...validMeta, name: "BadName" }, [stringField]),
+    ).toBe(false);
+  });
+
   it("false для repeater с subField без name", () => {
     const rep: BlockField = {
       name: "items",

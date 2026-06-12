@@ -67,15 +67,18 @@ export function buildBlockPayload(meta: BlockMetaForm, fields: BlockField[]) {
 
 function isFieldValid(f: BlockField): boolean {
   if (!f.name || !f.label) return false;
+  if (!/^[a-z][a-zA-Z0-9]*$/.test(f.name)) return false;
   if (f.type === "select" && !(f.options ?? []).length) return false;
-  if (f.type === "repeater" && f.subFields?.length) {
-    return f.subFields.every(isFieldValid);
+  if (f.type === "repeater") {
+    if (!(f.subFields ?? []).length) return false;
+    return f.subFields!.every(isFieldValid);
   }
   return true;
 }
 
 export function isBlockFormValid(meta: BlockMetaForm, fields: BlockField[]): boolean {
   if (!meta.name || !meta.label || !meta.description || !meta.icon) return false;
+  if (!/^[a-z][a-z0-9-]*$/.test(meta.name)) return false;
   if (!fields.length) return false;
   return fields.every(isFieldValid);
 }

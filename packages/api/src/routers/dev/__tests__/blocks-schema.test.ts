@@ -71,9 +71,59 @@ describe("fieldSchema", () => {
         label: "Поле",
         required: true,
         ...(type === "select" ? { options: ["a", "b"] } : {}),
+        ...(type === "repeater"
+          ? { subFields: [{ name: "title", type: "string", label: "Заголовок", required: true }] }
+          : {}),
       });
       expect(result.success, `тип "${type}" должен приниматься`).toBe(true);
     }
+  });
+
+  it("rejects repeater without subFields", () => {
+    for (const subFields of [undefined, []]) {
+      const result = fieldSchema.safeParse({
+        name: "items",
+        type: "repeater",
+        label: "Элементы",
+        required: true,
+        ...(subFields !== undefined ? { subFields } : {}),
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => i.message);
+        expect(messages).toContain("repeater требует хотя бы одно под-поле");
+      }
+    }
+  });
+
+  it("rejects minItems > maxItems", () => {
+    const result = fieldSchema.safeParse({
+      name: "items",
+      type: "repeater",
+      label: "Элементы",
+      required: true,
+      minItems: 5,
+      maxItems: 2,
+      subFields: [{ name: "title", type: "string", label: "Заголовок", required: true }],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain("minItems не может быть больше maxItems");
+    }
+  });
+
+  it("accepts valid repeater with subFields and min <= max", () => {
+    const result = fieldSchema.safeParse({
+      name: "items",
+      type: "repeater",
+      label: "Элементы",
+      required: true,
+      minItems: 1,
+      maxItems: 6,
+      subFields: [{ name: "title", type: "string", label: "Заголовок", required: true }],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("rejects required image field with default: null", () => {

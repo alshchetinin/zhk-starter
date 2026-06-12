@@ -139,6 +139,13 @@ function removeSubField(parent: BlockField, i: number) {
               </div>
 
               <UInput
+                v-model="field.description"
+                placeholder="Описание (подсказка в форме)"
+                size="sm"
+                class="col-span-2"
+              />
+
+              <UInput
                 v-if="field.type === 'select'"
                 :model-value="(field.options ?? []).join(', ')"
                 placeholder="опция1, опция2, опция3"
@@ -188,6 +195,22 @@ function removeSubField(parent: BlockField, i: number) {
                     <USwitch v-model="sf.required" />
                     <span class="text-xs">обязательное</span>
                   </div>
+
+                  <UInput
+                    v-model="sf.description"
+                    placeholder="Описание (подсказка в форме)"
+                    size="xs"
+                    class="col-span-2"
+                  />
+
+                  <UInput
+                    v-if="sf.type === 'select'"
+                    :model-value="(sf.options ?? []).join(', ')"
+                    placeholder="опция1, опция2, опция3"
+                    size="xs"
+                    class="col-span-2"
+                    @update:model-value="sf.options = String($event).split(',').map(s => s.trim()).filter(Boolean)"
+                  />
                 </div>
                 <UButton
                   icon="i-solar-close-circle-linear"
