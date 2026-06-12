@@ -3,13 +3,13 @@ import { db } from "@zhk/db";
 import { constructionProgress } from "@zhk/db/schema";
 import { and, count, eq } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicActiveSiteProcedure } from "../../index";
+import { publicActiveSiteProcedure, publicReadProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 import type { ContentBlock } from "../../shared/blocks";
 
 export const publicConstructionProgressRouter = {
-  list: publicActiveSiteProcedure
+  list: publicReadProcedure
     .input(
       paginationInput.extend({
         projectId: z.string(),

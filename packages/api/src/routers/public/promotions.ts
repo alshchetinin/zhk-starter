@@ -3,12 +3,12 @@ import { db } from "@zhk/db";
 import { promotions } from "@zhk/db/schema";
 import { and, eq, count } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicActiveSiteProcedure } from "../../index";
+import { publicReadProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 import { enrichContentBlocks } from "./utils";
 
 export const publicPromotionsRouter = {
-  list: publicActiveSiteProcedure
+  list: publicReadProcedure
     .input(paginationInput)
     .handler(async ({ input, context }) => {
       const { page, pageSize } = input;
@@ -31,7 +31,7 @@ export const publicPromotionsRouter = {
       return { data, total: countResult[0]!.total, page, pageSize };
     }),
 
-  getBySlug: publicActiveSiteProcedure
+  getBySlug: publicReadProcedure
     .input(z.object({ slug: z.string() }))
     .handler(async ({ input, context }) => {
       const item = await db.query.promotions.findFirst({

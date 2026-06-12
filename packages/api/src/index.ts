@@ -1,11 +1,9 @@
-import { ORPCError, os } from "@orpc/server";
-import type { Context } from "./context";
+import { ORPCError } from "@orpc/server";
 import { SITE_GATE_ERROR } from "./utils/site-gate-errors";
 import { isSiteUnlockValid } from "./utils/site-unlock";
-
-export const o = os.$context<Context>();
-
-export const publicProcedure = o;
+import { o, publicProcedure } from "./orpc-base";
+import { rateLimit } from "./middleware/rate-limit";
+export { o, publicProcedure } from "./orpc-base";
 
 const requireAuth = o.middleware(async ({ context, next }) => {
   if (!context.session?.user) {
@@ -64,3 +62,7 @@ export const adminProcedure = publicProcedure.use(requireAdmin);
 export const publicSiteProcedure = publicProcedure.use(requireSite);
 export const publicActiveSiteProcedure = publicSiteProcedure.use(requireActiveSite);
 export const devProcedure = publicProcedure.use(requireDev);
+
+export const publicReadProcedure = publicActiveSiteProcedure.use(
+  rateLimit("publicRead", { keyBy: "ip" }),
+);

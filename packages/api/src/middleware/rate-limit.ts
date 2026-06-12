@@ -6,7 +6,7 @@ import {
   resolveRateLimitConfig,
   type RateLimitScope,
 } from "@zhk/ratelimit";
-import { o } from "../index";
+import { o } from "../orpc-base";
 
 type KeyBy = "ip" | "ip+site" | "ip+extra";
 

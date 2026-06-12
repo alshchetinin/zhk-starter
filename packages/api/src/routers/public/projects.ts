@@ -3,11 +3,11 @@ import { db } from "@zhk/db";
 import { projects } from "@zhk/db/schema";
 import { count, eq, ne, and } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { publicActiveSiteProcedure } from "../../index";
+import { publicActiveSiteProcedure, publicReadProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 
 export const publicProjectsRouter = {
-  list: publicActiveSiteProcedure
+  list: publicReadProcedure
     .input(paginationInput)
     .handler(async ({ input }) => {
       const { page, pageSize } = input;

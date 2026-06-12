@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ORPCError } from "@orpc/server";
 import { publicSiteProcedure } from "../../index";
+import { rateLimit } from "../../middleware/rate-limit";
 import { SITE_GATE_ERROR } from "../../utils/site-gate-errors";
 import {
   buildUnlockSetCookie,
@@ -37,6 +38,7 @@ export const publicSiteRouter = {
   }),
 
   unlock: publicSiteProcedure
+    .use(rateLimit("siteUnlock", { keyBy: "ip+site" }))
     .input(z.object({ password: z.string().min(1) }))
     .handler(async ({ context, input }) => {
       const site = context.site;

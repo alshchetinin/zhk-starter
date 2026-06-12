@@ -2,11 +2,11 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import { mortgagePrograms, mortgageProgramProjects } from "@zhk/db/schema";
 import { and, count, eq, exists, notExists, or, sql } from "drizzle-orm";
-import { publicActiveSiteProcedure } from "../../index";
+import { publicReadProcedure } from "../../index";
 import { paginationInput, calcOffset } from "../../shared/pagination";
 
 export const publicMortgageProgramsRouter = {
-  list: publicActiveSiteProcedure
+  list: publicReadProcedure
     .input(paginationInput.extend({ projectId: z.string().optional() }))
     .handler(async ({ input, context }) => {
       const { page, pageSize, projectId } = input;

@@ -3,6 +3,7 @@ import { db } from "@zhk/db";
 import { contacts, socialLinks } from "@zhk/db/schema";
 import { and, asc, eq, inArray, isNull, or } from "drizzle-orm";
 import { publicActiveSiteProcedure } from "../../index";
+import { rateLimit } from "../../middleware/rate-limit";
 
 async function resolveSiteSocials(siteId: string) {
   const rows = await db.query.socialLinks.findMany({
@@ -52,7 +53,8 @@ export const publicContactsRouter = {
   }),
 
   getByIds: publicActiveSiteProcedure
-    .input(z.object({ ids: z.array(z.string()) }))
+    .use(rateLimit("contactsGetByIds", { keyBy: "ip" }))
+    .input(z.object({ ids: z.array(z.string()).max(100) }))
     .handler(async ({ input, context }) => {
       if (input.ids.length === 0) return [];
       return db.query.contacts.findMany({
