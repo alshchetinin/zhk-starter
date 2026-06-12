@@ -28,11 +28,35 @@ const analyticsSchema = z
   })
   .partial();
 
+const seoOrganizationSchema = z
+  .object({
+    name: z.string().optional(),
+    legalName: z.string().optional(),
+    logo: z.string().optional(),
+    contactId: z.string().optional(),
+  })
+  .partial();
+
+const seoSchema = z
+  .object({
+    titleSuffix: z.string().optional(),
+    defaultTitle: z.string().optional(),
+    defaultDescription: z.string().optional(),
+    defaultOgImage: z.string().optional(),
+    favicon: z.string().optional(),
+    indexingEnabled: z.boolean().optional(),
+    yandexVerification: z.string().optional(),
+    googleVerification: z.string().optional(),
+    organization: seoOrganizationSchema.optional(),
+  })
+  .partial();
+
 const settingsSchema = z
   .object({
     contactsHeaderIds: z.array(z.string()).optional(),
     contactsFooterIds: z.array(z.string()).optional(),
     analytics: analyticsSchema.optional(),
+    seo: seoSchema.optional(),
   })
   .partial();
 
