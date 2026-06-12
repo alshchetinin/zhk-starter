@@ -8,6 +8,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
 import { startScheduler } from "./scheduler";
+import { rateLimitCeiling } from "./middleware/rate-limit";
 
 const app = new Hono();
 
@@ -21,6 +22,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use("/*", rateLimitCeiling);
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 

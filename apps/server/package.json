@@ -15,6 +15,7 @@
     "@zhk/auth": "workspace:*",
     "@zhk/db": "workspace:*",
     "@zhk/env": "workspace:*",
+    "@zhk/ratelimit": "workspace:*",
     "@hono/node-server": "^1.13.1",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
