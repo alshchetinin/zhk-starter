@@ -811,24 +811,22 @@ git commit -m "feat(api): oRPC middleware rateLimit + buildRateLimitKey (#59)"
 import { rateLimit } from "../../middleware/rate-limit";
 ```
 
-Замени `create: publicActiveSiteProcedure` на цепочку с лимитами (бёрст + часовой, оба keyBy `ip+extra` по телефону):
+Замени `create: publicActiveSiteProcedure` на цепочку лимитеров. **КРИТИЧНО** (quality-ревью Task 6): нельзя ключевать оба лимитера по телефону — атакующий варьирует телефон и обходит per-phone счётчик. Поэтому бёрст и часовой — `keyBy: "ip+site"` (защита от ротации телефона), плюс отдельный per-phone лимитер для дедупликации повторных отправок одного номера. failMode НЕ передаём в opts (он берётся из конфига scope — см. Task 6 fix):
 
 ```ts
   create: publicActiveSiteProcedure
+    .use(rateLimit("ticketCreate", { keyBy: "ip+site" }))
+    .use(rateLimit("ticketCreateHourly", { keyBy: "ip+site" }))
     .use(rateLimit("ticketCreate", {
       keyBy: "ip+extra",
-      failMode: "closed",
-      extractExtra: (input) => (input as { phone?: string })?.phone,
-    }))
-    .use(rateLimit("ticketCreateHourly", {
-      keyBy: "ip+extra",
-      failMode: "closed",
       extractExtra: (input) => (input as { phone?: string })?.phone,
     }))
     .input(
 ```
 
 (остальной .input/.handler без изменений)
+
+Примечание: третий лимитер переиспользует scope `ticketCreate` (те же points/duration), но с ключом `ip|phone` — это отдельный счётчик в Redis (keyPrefix одинаков, ключ разный). Если хочется иной лимит для per-phone — заведи отдельный scope в config; для v1 переиспользования достаточно.
 
 - [ ] **Step 2: Проверить типы**
 
