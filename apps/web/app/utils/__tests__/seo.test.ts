@@ -41,6 +41,9 @@ describe("absolutizeUrl", () => {
     expect(absolutizeUrl(null, "https://x.ru")).toBeNull();
     expect(absolutizeUrl("", "https://x.ru")).toBeNull();
   });
+  it("строка из пробелов — null", () => {
+    expect(absolutizeUrl("   ", "https://x.ru")).toBeNull();
+  });
 });
 
 describe("canonicalUrl", () => {

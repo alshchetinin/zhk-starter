@@ -28,10 +28,11 @@ export function absolutizeUrl(
   url: string | null | undefined,
   origin: string,
 ): string | null {
-  if (!url) return null;
-  if (/^https?:\/\//.test(url)) return url;
-  if (url.startsWith("/")) return `${origin}${url}`;
-  return `${origin}/${url}`;
+  const trimmed = url?.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//.test(trimmed)) return trimmed;
+  if (trimmed.startsWith("/")) return `${origin}${trimmed}`;
+  return `${origin}/${trimmed}`;
 }
 
 export function canonicalUrl(origin: string, path: string): string {
