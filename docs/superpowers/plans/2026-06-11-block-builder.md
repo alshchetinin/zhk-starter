@@ -1676,3 +1676,22 @@ gh issue comment 57 --body "Реализация по плану docs/superpower
    ProjectStats (карточки), ProjectLocation (адрес/карта), ProjectInfrastructure
    (счётчики). Каждый превью — typed props `{ data: {...} }`.
 4. CLAUDE.md: подраздел про слой previews/ как официальный путь кастомизации.
+
+---
+
+### Task 12 (по запросу пользователя): документация для разработчиков
+
+1. **`docs/blocks.md`** — полное руководство по блочной системе (по образцу
+   docs/tracking.md): архитектура слоёв (definition/editor/renderer + previews +
+   компоненты типов полей), два пути создания (CLI и dev-билдер /dev/blocks),
+   таблица всех 13 типов полей (включая relation project/contacts и strings),
+   `field.default` и канонизация (idempotency-инвариант), превью-картинки
+   (конвенция /block-previews/{type}.png), normalize-merge и совместимость
+   контента, правила кастомизации (что генерируется и перезаписывается, где
+   живёт ручной код), тесты-инварианты, подводные камни (переименование полей,
+   смена типа, lossy editor regen).
+2. **`/dev/docs` секция «Блоки»** (apps/admin/app/pages/dev/docs/index.vue) —
+   актуализация: сигнатура defineBlock с fields, dev-билдер как основной путь,
+   типы полей (таблица генерируется из BLOCK_FIELD_TYPES + labels — не руками),
+   превью, слой previews/, кастомизация.
+3. **CLAUDE.md** — ссылка на docs/blocks.md (как у трекинга на docs/tracking.md).
