@@ -11,7 +11,7 @@ export interface UseCurrentSiteOptions {
   enabled?: MaybeRefOrGetter<boolean>;
 }
 
-export function useCurrentSite(options: UseCurrentSiteOptions = {}) {
+export function useCurrentSite(opts: UseCurrentSiteOptions = {}) {
   const { $orpc } = useNuxtApp();
   const cookie = useCookie<string | null>(SITE_COOKIE, {
     default: () => null,
@@ -21,7 +21,7 @@ export function useCurrentSite(options: UseCurrentSiteOptions = {}) {
   const sitesQuery = useQuery(
     computed(() => ({
       ...$orpc.sites.list.queryOptions(),
-      enabled: toValue(options.enabled) ?? true,
+      enabled: toValue(opts.enabled) ?? true,
     })),
   );
 
