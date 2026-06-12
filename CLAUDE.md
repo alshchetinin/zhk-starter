@@ -37,6 +37,19 @@ better-auth лимитирует sign-in (5/15мин) на том же Redis, Ho
 
 Подробности: [`docs/rate-limiting.md`](docs/rate-limiting.md).
 
+## SEO
+
+SEO-настройки сайта — `sites.settings.seo` (JSONB): дефолтные title/description/og,
+суффикс title, favicon, выключатель индексации, верификация, организация для
+schema.org. Админка — карточка «SEO» в настройках сайта. На web: `usePageSeo()`
+(мета-теги с фолбэками на дефолты сайта, canonical/noindex), `useJsonLd()` +
+билдеры в `apps/web/app/utils/json-ld.ts` (Organization, WebSite, NewsArticle,
+ApartmentComplex, BreadcrumbList), per-site `/robots.txt` и `/sitemap.xml` —
+Nitro-роуты в `apps/web/server/routes` (резолв сайта по Host). Сайт под паролем
+или неактивный автоматически noindex + Disallow.
+
+Подробности: [спек SEO-слоя](docs/superpowers/specs/2026-06-12-seo-layer-design.md).
+
 ## UI в admin: только @nuxt/ui
 
 В `apps/admin` всегда используем готовые компоненты из `@nuxt/ui` v4
