@@ -37,6 +37,17 @@ const sections = [
   { id: "collections", label: "Коллекции", icon: "i-solar-database-linear" },
   { id: "modals", label: "Модальные окна", icon: "i-solar-window-frame-linear" },
   { id: "tracking", label: "Трекинг событий", icon: "i-solar-chart-2-linear" },
+  { id: "security", label: "Безопасность", icon: "i-solar-shield-keyhole-linear" },
+];
+
+const rateLimitScopes = [
+  { scope: "authSignIn", limit: "5 / 15 мин", fail: "closed", where: "вход в админку (better-auth)" },
+  { scope: "siteUnlock", limit: "5 / 10 мин", fail: "closed", where: "пароль сайта" },
+  { scope: "ticketCreate", limit: "5 / 10 мин", fail: "closed", where: "форма заявки (бёрст)" },
+  { scope: "ticketCreateHourly", limit: "20 / час", fail: "closed", where: "форма заявки (часовой)" },
+  { scope: "contactsGetByIds", limit: "30 / мин", fail: "open", where: "выборка контактов (+ max 100 id)" },
+  { scope: "publicRead", limit: "120 / мин", fail: "open", where: "публичные списки/детали" },
+  { scope: "honoCeiling", limit: "300 / мин", fail: "open", where: "общий потолок (любой маршрут)" },
 ];
 
 const activeSection = ref("blocks");
@@ -708,6 +719,90 @@ track("form_submit", { form: "callback" });</code></pre>
             <li><code>apps/web/app/plugins/yandex-metrika.ts</code> — загрузка SDK + SPA hits</li>
             <li><code>apps/admin/app/pages/sites/[id].vue</code> — карточка настроек + таблица целей</li>
             <li><code>docs/tracking.md</code> — эта же документация в репо</li>
+          </ul>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'security'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Rate limiting</h2>
+          <p>
+            Публичные формы и критические ручки защищены от спама и брутфорса.
+            Три уровня на одном Redis: грубый <strong>per-IP потолок</strong> в Hono,
+            лимит <strong>входа</strong> в better-auth и точечный
+            <strong>oRPC-middleware</strong> на горячих процедурах. Движок —
+            пакет <code>@zhk/ratelimit</code> (rate-limiter-flexible) с
+            in-memory подстраховкой при недоступности Redis.
+          </p>
+          <p class="callout callout-info">
+            Подробное руководство для разработчика — <code>docs/rate-limiting.md</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>Текущие лимиты</h3>
+          <table>
+            <thead>
+              <tr><th>Scope</th><th>Лимит</th><th>При сбое Redis</th><th>Где</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="r in rateLimitScopes" :key="r.scope">
+                <td><code>{{ r.scope }}</code></td>
+                <td>{{ r.limit }}</td>
+                <td>{{ r.fail === "closed" ? "блокирует (429)" : "пропускает" }}</td>
+                <td>{{ r.where }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Числа — дефолты из <code>packages/ratelimit/src/config.ts</code>,
+            переопределяются через env <code>RL_*</code> без правки кода.
+            <code>RL_ENABLED=false</code> отключает все лимиты (локальная разработка).
+          </p>
+        </section>
+
+        <section>
+          <h3>Добавить лимит на процедуру</h3>
+          <p>Навесь middleware <code>.use(rateLimit(...))</code> до <code>.input</code>:</p>
+          <pre><code>import { rateLimit } from "../../middleware/rate-limit";
+
+export const myRouter = {
+  create: publicActiveSiteProcedure
+    .use(rateLimit("ticketCreate", { keyBy: "ip+site" }))
+    .input(/* ... */)
+    .handler(/* ... */),
+};</code></pre>
+          <ul>
+            <li><code>keyBy</code>: <code>"ip"</code> / <code>"ip+site"</code> / <code>"ip+extra"</code> (с <code>extractExtra</code> — напр. телефон).</li>
+            <li><code>failMode</code> НЕ передаётся — берётся из конфига scope.</li>
+            <li>Новый scope — одна запись в <code>RATE_LIMIT_DEFAULTS</code> (config.ts).</li>
+          </ul>
+          <p class="callout callout-warn">
+            <strong>fail-open / fail-closed.</strong> Чтение и формы при недоступности
+            Redis <em>пропускаются</em> (сайт работает). Вход, разблокировка сайта и
+            создание заявок <em>блокируются</em> (брутфорс важнее доступности).
+          </p>
+        </section>
+
+        <section>
+          <h3>За прокси (Traefik)</h3>
+          <p class="callout callout-warn">
+            IP клиента берётся из <code>x-forwarded-for</code>. Это безопасно
+            <strong>только</strong> если reverse-proxy (Traefik) перезаписывает
+            заголовок реальным IP. Если прокси доверяет входящему значению —
+            клиент подделает IP и обойдёт лимит. Перед прод-деплоем проверить
+            конфиг Traefik (<code>forwardedHeaders.trustedIPs</code>).
+          </p>
+        </section>
+
+        <section>
+          <h3>Где что лежит</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/ratelimit/</code> — движок (getClientIp, createLimiter, consume, config)</li>
+            <li><code>packages/api/src/middleware/rate-limit.ts</code> — oRPC middleware</li>
+            <li><code>apps/server/src/middleware/rate-limit.ts</code> — Hono потолок</li>
+            <li><code>packages/auth/src/index.ts</code> — better-auth sign-in лимит</li>
+            <li><code>packages/env/src/server.ts</code> — REDIS_URL, RL_*</li>
           </ul>
         </section>
       </article>
