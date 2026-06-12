@@ -39,6 +39,7 @@ useHead(() => {
     v-else
     class="min-h-svh flex flex-col max-w-[var(--web-site-max)] mx-auto"
   >
+    <SiteJsonLd />
     <WebHeader :nav-items="navItems" />
     <main class="flex-1 pt-[var(--web-header-height)]">
       <slot />
