@@ -75,13 +75,16 @@ export async function consume(
         resetAtMs: Date.now() + err.msBeforeNext,
       };
     }
-    // Сбой стораджа (Redis down и нет insurance) → решает failMode.
+    // Любой не-RateLimiterRes throw (включая неизвестные типы) трактуем как
+    // сбой хранилища (Redis down и нет insurance) → решает failMode. Для open-scope
+    // эта ветка — safety net: insurance (RateLimiterMemory) обычно перехватывает
+    // сбой раньше и сюда не доходит, но оставляем как защиту — не мёртвый код.
     return {
       allowed: failMode === "open",
       remaining: failMode === "open" ? 1 : 0,
       retryAfterSec: failMode === "open" ? 0 : 60,
       limit: 0,
-      resetAtMs: Date.now(),
+      resetAtMs: failMode === "open" ? Date.now() : Date.now() + 60_000,
     };
   }
 }
