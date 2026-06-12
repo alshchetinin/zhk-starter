@@ -17,8 +17,25 @@ export function getRedis(): Redis {
     enableOfflineQueue: false,
     maxRetriesPerRequest: 1,
   });
+  // ioredis эмитит error на каждую неудачную попытку переподключения — без
+  // дедупликации это спамит консоль десятками строк в секунду, когда Redis
+  // недоступен (типично для локального дева без Redis). Логируем переход
+  // connected→errored один раз, и один раз восстановление.
+  let loggedError = false;
   client.on("error", (err: Error) => {
-    console.error("[ratelimit] redis error:", err.message);
+    if (loggedError) return;
+    loggedError = true;
+    console.warn(
+      `[ratelimit] redis недоступен (${err.message || "connection error"}) — ` +
+        `лимиты деградируют (в dev открыты, в prod closed-scope → 429). ` +
+        `Поднять локально: docker compose -f packages/db/docker-compose.yml up redis -d`,
+    );
+  });
+  client.on("ready", () => {
+    if (loggedError) {
+      loggedError = false;
+      console.info("[ratelimit] redis подключён");
+    }
   });
   return client;
 }

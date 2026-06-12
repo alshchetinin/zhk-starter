@@ -6,18 +6,37 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 
-// Ленивый secondaryStorage: getRedis() вызывается внутри методов, а не на
-// уровне модуля — ioredis-клиент создаётся при первом auth-запросе, а не при
-// импорте (важно для тестов, импортирующих @zhk/auth без живого Redis).
+// Ленивый + fail-soft secondaryStorage. getRedis() вызывается внутри методов
+// (ioredis-клиент создаётся при первом auth-запросе, не при импорте — важно для
+// тестов и для дева без Redis). Ошибки Redis ГЛОТАЮТСЯ: secondaryStorage —
+// вторичный кэш (сессии всё равно лежат в БД через drizzleAdapter), а
+// better-auth rate-limiter дёргает get/set на КАЖДОМ auth-запросе и НЕ ловит
+// исключения — без try/catch недоступный Redis валит весь auth в 500
+// (нельзя залогиниться, нельзя проверить сессию). get→null, set/delete→noop
+// дают graceful degradation: auth работает без Redis, в проде Redis есть.
 const secondaryStorage = {
-  get: async (key: string) => (await getRedis().get(key)) ?? null,
+  get: async (key: string) => {
+    try {
+      return (await getRedis().get(key)) ?? null;
+    } catch {
+      return null;
+    }
+  },
   set: async (key: string, value: string, ttl?: number) => {
-    const redis = getRedis();
-    if (ttl) await redis.set(key, value, "EX", ttl);
-    else await redis.set(key, value);
+    try {
+      const redis = getRedis();
+      if (ttl) await redis.set(key, value, "EX", ttl);
+      else await redis.set(key, value);
+    } catch {
+      // Redis недоступен — пропускаем запись (fail-open для auth-кэша).
+    }
   },
   delete: async (key: string) => {
-    await getRedis().del(key);
+    try {
+      await getRedis().del(key);
+    } catch {
+      // Redis недоступен — пропускаем удаление.
+    }
   },
 };
 

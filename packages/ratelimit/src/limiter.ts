@@ -79,12 +79,19 @@ export async function consume(
     // сбой хранилища (Redis down и нет insurance) → решает failMode. Для open-scope
     // эта ветка — safety net: insurance (RateLimiterMemory) обычно перехватывает
     // сбой раньше и сюда не доходит, но оставляем как защиту — не мёртвый код.
+    //
+    // ВНЕ продакшена closed-scope тоже fail-open: локально без Redis формы и
+    // вход не должны ломаться в 429 (DX). В проде (NODE_ENV=production) closed
+    // остаётся fail-closed — брутфорс важнее доступности. RL_ENABLED=false —
+    // полный выключатель независимо от этого.
+    const allowOnStorageError =
+      failMode === "open" || process.env["NODE_ENV"] !== "production";
     return {
-      allowed: failMode === "open",
-      remaining: failMode === "open" ? 1 : 0,
-      retryAfterSec: failMode === "open" ? 0 : 60,
+      allowed: allowOnStorageError,
+      remaining: allowOnStorageError ? 1 : 0,
+      retryAfterSec: allowOnStorageError ? 0 : 60,
       limit: 0,
-      resetAtMs: failMode === "open" ? Date.now() : Date.now() + 60_000,
+      resetAtMs: allowOnStorageError ? Date.now() : Date.now() + 60_000,
     };
   }
 }

@@ -38,9 +38,27 @@ describe("consume", () => {
     expect(res.allowed).toBe(true);
   });
 
-  it("при ошибке лимитера failMode=closed → allowed:false", async () => {
+  it("при ошибке лимитера failMode=closed в проде → allowed:false", async () => {
     const broken = { consume: () => Promise.reject(new Error("redis down")) } as never;
-    const res = await consume(broken, "k", "closed");
-    expect(res.allowed).toBe(false);
+    const prev = process.env["NODE_ENV"];
+    process.env["NODE_ENV"] = "production";
+    try {
+      const res = await consume(broken, "k", "closed");
+      expect(res.allowed).toBe(false);
+    } finally {
+      process.env["NODE_ENV"] = prev;
+    }
+  });
+
+  it("при ошибке лимитера failMode=closed вне прода → allowed:true (DX)", async () => {
+    const broken = { consume: () => Promise.reject(new Error("redis down")) } as never;
+    const prev = process.env["NODE_ENV"];
+    process.env["NODE_ENV"] = "development";
+    try {
+      const res = await consume(broken, "k", "closed");
+      expect(res.allowed).toBe(true);
+    } finally {
+      process.env["NODE_ENV"] = prev;
+    }
   });
 });
