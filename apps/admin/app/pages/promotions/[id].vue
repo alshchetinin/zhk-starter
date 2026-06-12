@@ -18,6 +18,8 @@ const { data: promotion, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => promotion.value?.name) });
+
 const form = reactive({
   name: "",
   slug: "",

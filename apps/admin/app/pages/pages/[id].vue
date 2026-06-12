@@ -20,6 +20,8 @@ const { data: pageData, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => pageData.value?.title) });
+
 const form = reactive({
   title: "",
   slug: "",

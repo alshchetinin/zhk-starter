@@ -14,6 +14,14 @@ const { data: apartment, isPending } = useQuery(
   ),
 );
 
+useHead({
+  title: computed(() =>
+    apartment.value
+      ? `Квартира №${apartment.value.apartmentNumber}`
+      : undefined,
+  ),
+});
+
 const tagIds = ref<string[]>([]);
 watch(
   apartment,

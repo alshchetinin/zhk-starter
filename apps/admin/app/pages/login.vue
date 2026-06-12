@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ layout: "login" });
 
+useHead({ title: "Вход" });
+
 const { $authClient } = useNuxtApp();
 
 const email = ref("");

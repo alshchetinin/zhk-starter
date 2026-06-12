@@ -7,6 +7,8 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
+useHead({ title: "Новая страница" });
+
 const { options: projectOptions } = useProjectOptions();
 
 const form = reactive({

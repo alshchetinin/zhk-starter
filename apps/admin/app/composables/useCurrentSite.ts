@@ -1,14 +1,29 @@
 import { useQuery } from "@tanstack/vue-query";
 import { SITE_COOKIE } from "@zhk/api/shared/constants";
+import type { MaybeRefOrGetter } from "vue";
 
-export function useCurrentSite() {
+export interface UseCurrentSiteOptions {
+  /**
+   * Отключает сетевой запрос sites.list (данные читаются только из кеша).
+   * Нужно там, где composable может выполняться без авторизации
+   * (например, app.vue на /login) — иначе 401 + error-toast.
+   */
+  enabled?: MaybeRefOrGetter<boolean>;
+}
+
+export function useCurrentSite(options: UseCurrentSiteOptions = {}) {
   const { $orpc } = useNuxtApp();
   const cookie = useCookie<string | null>(SITE_COOKIE, {
     default: () => null,
     sameSite: "lax",
   });
 
-  const sitesQuery = useQuery($orpc.sites.list.queryOptions());
+  const sitesQuery = useQuery(
+    computed(() => ({
+      ...$orpc.sites.list.queryOptions(),
+      enabled: toValue(options.enabled) ?? true,
+    })),
+  );
 
   const sites = computed(() => sitesQuery.data.value ?? []);
 

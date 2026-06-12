@@ -6,6 +6,8 @@ const toast = useToast();
 const router = useRouter();
 const queryClient = useQueryClient();
 
+useHead({ title: "Новый проект" });
+
 const { data: cities } = useQuery($orpc.cities.list.queryOptions());
 
 const cityItems = computed(() =>

@@ -1,6 +1,33 @@
 <script setup lang="ts">
+import {
+  catalogItems,
+  companyItems,
+  contentItems,
+  devItems,
+  mainItems,
+  systemItems,
+} from "~/composables/useNavigation";
+
 const { isCollapsed } = useSidebar();
 const { open } = useMobileSidebar();
+
+const route = useRoute();
+
+// Полные массивы навигации (без фильтрации по правам — тайтл не секрет).
+const navTitleItems = [
+  ...mainItems,
+  ...contentItems,
+  ...catalogItems,
+  ...companyItems,
+  ...systemItems,
+  ...devItems,
+];
+
+// Авто-тайтл по навигации; страница может перекрыть его своим useHead.
+// undefined (нет матча или страница ещё грузится) → остаётся только суффикс.
+useHead({
+  title: computed(() => matchNavTitle(route.path, navTitleItems) ?? undefined),
+});
 </script>
 
 <template>

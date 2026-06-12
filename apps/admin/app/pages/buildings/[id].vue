@@ -13,6 +13,8 @@ const { data: building, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => building.value?.name) });
+
 const { data: allApartments } = useQuery(
   computed(() =>
     $orpc.apartments.listByBuilding.queryOptions({

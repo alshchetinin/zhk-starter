@@ -18,6 +18,8 @@ const { data: article, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => article.value?.title) });
+
 const form = reactive({
   title: "",
   slug: "",

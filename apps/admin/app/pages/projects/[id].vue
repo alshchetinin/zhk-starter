@@ -11,6 +11,8 @@ const { data: project, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => project.value?.name) });
+
 const statusTone: Record<
   string,
   "success" | "warning" | "error" | "muted"

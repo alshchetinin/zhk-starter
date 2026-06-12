@@ -18,6 +18,12 @@ const { data: userData, isPending } = useQuery(
   })),
 );
 
+useHead({
+  title: computed(
+    () => (userData.value as { name?: string } | undefined)?.name,
+  ),
+});
+
 const { data: sitesData } = useQuery($orpc.sites.list.queryOptions());
 
 const role = ref<"admin" | "editor">("editor");

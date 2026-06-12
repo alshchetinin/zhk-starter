@@ -6,6 +6,8 @@ const { $orpcClient } = useNuxtApp();
 const toast = useToast();
 const router = useRouter();
 
+useHead({ title: "Новый документ" });
+
 const form = reactive({
   title: "",
   slug: "",

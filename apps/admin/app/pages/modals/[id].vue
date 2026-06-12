@@ -14,6 +14,8 @@ const { data: modal, isPending } = useQuery(
   computed(() => $orpc.modals.getById.queryOptions({ input: { id: id.value } })),
 );
 
+useHead({ title: computed(() => modal.value?.title) });
+
 const form = reactive({
   title: "",
   slug: "",
