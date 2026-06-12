@@ -73,8 +73,9 @@ JSON конфиг (`BlockInfo`):
 }
 ```
 
-Типы полей: `string`, `text`, `richtext`, `number`, `boolean`, `url`,
-`image`, `images`, `strings` (массив строк), `select`, `repeater`.
+Типы полей — 13: `string`, `text`, `richtext`, `number`, `boolean`, `url`,
+`image`, `images`, `strings` (массив строк), `select`, `project` и `contacts`
+(relation, хранят id), `repeater`. Таблица с деталями — в [docs/blocks.md](docs/blocks.md).
 
 ### Dev-билдер блоков (/dev/blocks)
 
@@ -127,7 +128,10 @@ PNG-скриншот блока кладётся в `apps/admin/public/block-pre
 
 ### Удаление блока
 
-Удалить 3 файла: `blocks/{type}.ts`, admin editor, web renderer. Убрать импорт/entry из `blocks/index.ts`. Всё.
+Кнопкой в `/dev/blocks` (удаляет всё перечисленное само) или руками: 3 файла
+(`blocks/{type}.ts`, admin editor, web renderer) + превью
+`apps/admin/public/block-previews/{type}.png` (если есть), убрать импорт/entry
+из `blocks/index.ts`.
 
 ## Паттерны кода
 

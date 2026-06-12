@@ -25,7 +25,7 @@ const fieldTypeEditors: Record<BlockFieldType, string> = {
 const fieldTypeNotes: Partial<Record<BlockFieldType, string>> = {
   richtext: "HTML; на сайте — v-html + prose-web",
   url: "пустая строка валидна",
-  image: "необязательное → null вместо undefined",
+  image: "необязательное → .nullable() в Zod; default у required — null",
   select: "требует options: string[]",
   project: "relation — хранит id проекта",
   contacts: "relation — хранит id контактов (string[])",
@@ -69,8 +69,9 @@ const activeSection = ref("blocks");
         <section>
           <h2>Блоки</h2>
           <p>
-            Блок — типизированная секция контента. Хранится как JSONB в БД (поле
-            <code>blocks</code> у страниц/коллекций), редактируется в админке через
+            Блок — типизированная секция контента. Хранится как JSONB в БД (колонка
+            <code>contentBlocks</code> / <code>content_blocks</code> у страниц/коллекций),
+            редактируется в админке через
             <code>BlockDynamicZone</code>, рендерится на сайте через <code>BlockRenderer</code>.
             Source of truth — файл <code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code>
             с вызовом <code>defineBlock({ type, label, icon, description, category?, fields,
@@ -87,7 +88,7 @@ const activeSection = ref("blocks");
         </section>
 
         <section>
-          <h3>1. Dev-билдер <NuxtLink to="/dev/blocks" class="link">/dev/blocks</NuxtLink> (основной путь)</h3>
+          <h3>1. Dev-билдер <NuxtLink to="/dev/blocks" class="link">/dev/blocks</NuxtLink> (основной путь для людей)</h3>
           <p>
             Раздел «Разработка → Блоки» (только в dev-режиме): создание блока,
             <strong>редактирование схемы полей</strong> существующего и удаление —

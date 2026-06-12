@@ -31,7 +31,7 @@ const deleteMutation = useMutation({
 
 function confirmDelete(type: string, label: string) {
   const answer = window.confirm(
-    `Удалить блок "${label}" (${type})?\n\nБудут удалены 3 файла и запись из blocks/index.ts.\nЭто действие необратимо без git revert.`,
+    `Удалить блок "${label}" (${type})?\n\nБудут удалены определение, admin-редактор, web-рендерер, превью-PNG (если есть) и запись из blocks/index.ts.\nЭто действие необратимо без git revert.`,
   );
   if (answer) deleteMutation.mutate(type);
 }
