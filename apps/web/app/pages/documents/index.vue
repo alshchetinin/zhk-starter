@@ -5,6 +5,8 @@ const { orpc } = useOrpc();
 const { data, isPending, error, suspense } = useQuery(orpc.public.documents.list.queryOptions({ input: { page: 1, pageSize: 50 } }));
 
 onServerPrefetch(suspense);
+
+usePageSeo({ title: "Документы" });
 </script>
 
 <template>

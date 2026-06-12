@@ -9,6 +9,21 @@ watch(activeModalSlug, (slug) => {
 });
 
 const gate = useSiteGate();
+
+useHead(() => {
+  const seo = gate.value?.seo;
+  return {
+    meta: [
+      ...(seo?.yandexVerification
+        ? [{ name: "yandex-verification", content: seo.yandexVerification }]
+        : []),
+      ...(seo?.googleVerification
+        ? [{ name: "google-site-verification", content: seo.googleVerification }]
+        : []),
+    ],
+    link: seo?.favicon ? [{ rel: "icon", href: seo.favicon }] : [],
+  };
+});
 </script>
 
 <template>

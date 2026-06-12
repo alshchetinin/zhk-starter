@@ -7,6 +7,13 @@ const { data, isPending, error, suspense } = useQuery(orpc.public.news.getBySlug
 
 onServerPrefetch(suspense);
 
+usePageSeo({
+  title: () => data.value?.metaTitle || data.value?.title,
+  description: () => data.value?.metaDescription || data.value?.excerpt,
+  ogImage: () => data.value?.ogImage,
+  type: "article",
+});
+
 const formattedDate = computed(() => {
   if (!data.value?.publishedAt) return "";
   return new Date(data.value.publishedAt).toLocaleDateString("ru-RU");
