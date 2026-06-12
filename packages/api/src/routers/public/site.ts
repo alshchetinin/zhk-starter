@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { ORPCError } from "@orpc/server";
 import { db } from "@zhk/db";
-import { contacts, sites } from "@zhk/db/schema";
-import { and, eq } from "drizzle-orm";
+import { contacts, news, pages, projects, sites } from "@zhk/db/schema";
+import { and, eq, ne } from "drizzle-orm";
 import { publicSiteProcedure } from "../../index";
 import { rateLimit } from "../../middleware/rate-limit";
 import { isSiteIndexable, type PublicSiteSeo } from "../../shared/seo";
@@ -82,6 +82,44 @@ export const publicSiteRouter = {
       seo: await buildPublicSeo(site),
     };
   }),
+
+  /**
+   * Данные для sitemap.xml и robots.txt. Намеренно НЕ active-gated:
+   * закрытый сайт должен отвечать { indexable: false }, а не 403.
+   * Фильтры сущностей зеркалят публичные list-процедуры.
+   */
+  sitemap: publicSiteProcedure
+    .use(rateLimit("publicRead", { keyBy: "ip" }))
+    .handler(async ({ context }) => {
+      const site = context.site;
+      if (!site) throw new ORPCError("NOT_FOUND");
+
+      const indexable = isSiteIndexable({
+        isActive: site.isActive,
+        accessPassword: site.accessPassword ?? null,
+        indexingEnabled: site.settings?.seo?.indexingEnabled,
+      });
+      if (!indexable) {
+        return { indexable: false, news: [], pages: [], projects: [] };
+      }
+
+      const [newsRows, pageRows, projectRows] = await Promise.all([
+        db.query.news.findMany({
+          where: and(eq(news.siteId, site.id), eq(news.status, "published")),
+          columns: { slug: true, updatedAt: true },
+        }),
+        db.query.pages.findMany({
+          where: and(eq(pages.siteId, site.id), eq(pages.status, "published")),
+          columns: { slug: true, updatedAt: true },
+        }),
+        db.query.projects.findMany({
+          where: ne(projects.status, "hidden"),
+          columns: { id: true, updatedAt: true },
+        }),
+      ]);
+
+      return { indexable: true, news: newsRows, pages: pageRows, projects: projectRows };
+    }),
 
   unlock: publicSiteProcedure
     .use(rateLimit("siteUnlock", { keyBy: "ip+site" }))
