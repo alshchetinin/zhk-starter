@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
 
-const model = defineModel<string[]>({ required: true });
+// optional relation: канонический шаблон генерирует поле как `field?: string[]`
+const model = defineModel<string[] | undefined>();
 const { $orpc } = useNuxtApp();
 
-const { data: contacts } = useQuery($orpc.contacts.list.queryOptions());
+const { data: contacts, isPending } = useQuery($orpc.contacts.list.queryOptions());
 
 const items = computed(() =>
   (contacts.value ?? []).map((c) => ({ label: c.label, value: c.id })),
@@ -12,9 +13,11 @@ const items = computed(() =>
 </script>
 
 <template>
+  <!-- не v-model: из-за нормализации `model ?? []` биндинг несимметричен -->
   <USelectMenu
-    :model-value="model"
+    :model-value="model ?? []"
     :items="items"
+    :loading="isPending"
     multiple
     value-key="value"
     placeholder="Выбрать контакты"
