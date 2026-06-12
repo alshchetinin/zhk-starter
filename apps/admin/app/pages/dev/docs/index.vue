@@ -1,5 +1,36 @@
 <script setup lang="ts">
 import { TRACKING_EVENT_LIST } from "@zhk/api/shared/tracking";
+import type { BlockFieldType } from "@zhk/api/shared/blocks";
+import { blockFieldTypes } from "~/utils/block-schema";
+
+// Таблица типов полей собирается из BLOCK_FIELD_TYPES (через blockFieldTypes,
+// там же русские labels). Record по всем типам — TS заставит дополнить
+// примечания при добавлении нового типа.
+const fieldTypeEditors: Record<BlockFieldType, string> = {
+  string: "UInput",
+  text: "UTextarea",
+  richtext: "UEditor",
+  number: "UInput type=number",
+  boolean: "USwitch",
+  url: "UInput type=url",
+  image: "ImageUpload",
+  images: "GalleryUpload",
+  strings: "TagInput",
+  select: "USelect",
+  project: "ProjectSelector",
+  contacts: "ContactsSelector",
+  repeater: "RepeaterField",
+};
+
+const fieldTypeNotes: Partial<Record<BlockFieldType, string>> = {
+  richtext: "HTML; на сайте — v-html + prose-web",
+  url: "пустая строка валидна",
+  image: "необязательное → null вместо undefined",
+  select: "требует options: string[]",
+  project: "relation — хранит id проекта",
+  contacts: "relation — хранит id контактов (string[])",
+  repeater: "требует subFields[]; minItems / maxItems; вложенный repeater запрещён",
+};
 
 const sections = [
   { id: "blocks", label: "Блоки", icon: "i-solar-layers-minimalistic-linear" },
@@ -40,40 +71,55 @@ const activeSection = ref("blocks");
           <p>
             Блок — типизированная секция контента. Хранится как JSONB в БД (поле
             <code>blocks</code> у страниц/коллекций), редактируется в админке через
-            <code>BlockDynamicZone</code>, рендерится на сайте одноимённым компонентом.
+            <code>BlockDynamicZone</code>, рендерится на сайте через <code>BlockRenderer</code>.
             Source of truth — файл <code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code>
-            с вызовом <code>defineBlock({ type, label, icon, description, dataSchema, defaultData })</code>:
-            оттуда тянутся Zod-схема, метаданные для picker и default-значения.
+            с вызовом <code>defineBlock({ type, label, icon, description, category?, fields,
+            dataSchema, defaultData })</code>. Декларативный <code>fields: BlockField[]</code> —
+            первичен; <code>dataSchema</code> (Zod) и <code>defaultData</code> — производные,
+            генератор эмитит их детерминированно.
           </p>
           <p class="callout callout-info">
-            <strong>Не правь руками</strong> ни реестр <code>blocks/index.ts</code>, ни default data,
-            ни авто-регистрацию в admin/web. Всё собирается генератором и
-            <code>import.meta.glob</code>.
+            <strong>Не правь руками</strong> ни определения блоков, ни admin-редакторы,
+            ни реестр <code>blocks/index.ts</code> — это генерируемые артефакты,
+            перезаписываются при сохранении схемы. Авторегистрация editor/renderer/preview —
+            через <code>import.meta.glob</code>. Полное руководство — <code>docs/blocks.md</code> в репо.
           </p>
         </section>
 
         <section>
-          <h3>1. Создать блок (интерактивно)</h3>
+          <h3>1. Dev-билдер <NuxtLink to="/dev/blocks" class="link">/dev/blocks</NuxtLink> (основной путь)</h3>
           <p>
-            Запусти мастер из корня монорепо:
+            Раздел «Разработка → Блоки» (только в dev-режиме): создание блока,
+            <strong>редактирование схемы полей</strong> существующего и удаление —
+            как content-type builder в Strapi. Изменения пишутся прямо в исходники,
+            Vite HMR подхватывает без перезапуска.
           </p>
-          <pre><code>pnpm generate:block</code></pre>
-          <p>Мастер последовательно спросит:</p>
+          <p>Что происходит при сохранении схемы:</p>
           <ul>
-            <li><strong>Имя</strong> в kebab-case, например <code>hero-banner</code>;</li>
-            <li><strong>Label</strong> (видно в picker блоков), напр. «Hero-баннер»;</li>
-            <li><strong>Описание</strong> — короткая подсказка для контент-менеджера;</li>
-            <li><strong>Иконка</strong> в формате <code>i-tabler-*</code>;</li>
-            <li><strong>Поля</strong> — циклом, по каждому: имя, тип, label, обязательность.</li>
+            <li>определение <code>blocks/&lt;type&gt;.ts</code> перезаписывается целиком канонической эмиссией;</li>
+            <li>admin-редактор <code>editors/&lt;Pascal&gt;Block.vue</code> перегенерируется — ручные правки в нём потеряются (восстановление через git);</li>
+            <li>web-рендерер <strong>не трогается</strong> — вёрстку под новые поля добавляй руками.</li>
           </ul>
+          <p>
+            Удаление убирает 4 файла (определение, editor, renderer, превью-PNG) и запись
+            из <code>blocks/index.ts</code>. Данные в БД не трогаются — на сайте такие блоки
+            рендерятся <code>FallbackBlock</code>.
+          </p>
+          <p class="callout callout-warn">
+            Билдер пишет в рабочую копию git — изменения видны в <code>git diff</code>,
+            откат только через git.
+          </p>
         </section>
 
         <section>
-          <h3>2. Создать блок через JSON-конфиг</h3>
+          <h3>2. CLI-генератор (альтернатива, для AI)</h3>
           <p>
-            Удобно, когда поля известны заранее (например, после анализа PNG-прототипа).
-            Конфиг кладётся в <code>design/blocks/&lt;name&gt;.json</code>:
+            Только создание (упадёт, если блок существует). Использует те же эмиттеры,
+            что и билдер, — результат байт-в-байт одинаковый. Конфиг кладётся
+            в <code>design/blocks/&lt;name&gt;.json</code>:
           </p>
+          <pre><code>pnpm generate:block                                       # интерактивный мастер
+pnpm generate:block --config design/blocks/feature-grid.json</code></pre>
           <pre><code>{
   "name": "feature-grid",
   "label": "Сетка преимуществ",
@@ -81,93 +127,111 @@ const activeSection = ref("blocks");
   "icon": "i-solar-widget-linear",
   "fields": [
     { "name": "title", "type": "string", "label": "Заголовок", "required": true },
-    { "name": "subtitle", "type": "text", "label": "Подзаголовок", "required": false },
+    { "name": "showAll", "type": "boolean", "label": "Показывать все", "required": true, "default": true },
     {
       "name": "items", "type": "repeater", "label": "Карточки", "required": true,
       "minItems": 3, "maxItems": 6,
       "subFields": [
-        { "name": "icon", "type": "string", "label": "Иконка lucide", "required": true },
         { "name": "title", "type": "string", "label": "Заголовок", "required": true },
-        { "name": "text", "type": "text", "label": "Описание", "required": true }
+        { "name": "image", "type": "image", "label": "Картинка", "required": false }
       ]
     }
   ]
 }</code></pre>
-          <p>Запуск:</p>
-          <pre><code>pnpm generate:block --config design/blocks/feature-grid.json</code></pre>
+          <p>
+            <code>default</code> — значение в <code>defaultData</code>, если канонический
+            default типа не подходит (например, boolean, включённый по умолчанию).
+            В UI билдера не редактируется, но переживает round-trip.
+          </p>
         </section>
 
         <section>
           <h3>3. Типы полей</h3>
+          <p>Таблица собирается из реестра <code>BLOCK_FIELD_TYPES</code> — новый тип появится здесь автоматически:</p>
           <table>
             <thead>
-              <tr><th>Тип</th><th>Описание</th><th>Доп. параметры</th></tr>
+              <tr><th>Тип</th><th>Редактор</th><th>Примечания</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>string</code></td><td>Однострочный текст (UInput)</td><td>—</td></tr>
-              <tr><td><code>text</code></td><td>Многострочный (UTextarea)</td><td>—</td></tr>
-              <tr><td><code>richtext</code></td><td>Форматированный (UEditor)</td><td>—</td></tr>
-              <tr><td><code>number</code></td><td>Число</td><td>—</td></tr>
-              <tr><td><code>boolean</code></td><td>Переключатель (USwitch)</td><td>—</td></tr>
-              <tr><td><code>url</code></td><td>Ссылка</td><td>—</td></tr>
-              <tr><td><code>image</code></td><td>Один файл (ImageUpload)</td><td>—</td></tr>
-              <tr><td><code>images</code></td><td>Галерея (GalleryUpload)</td><td>—</td></tr>
-              <tr><td><code>select</code></td><td>Выбор из списка</td><td><code>options: string[]</code></td></tr>
-              <tr><td><code>repeater</code></td><td>Массив повторяющихся групп</td><td><code>subFields[]</code>, <code>minItems</code>, <code>maxItems</code></td></tr>
+              <tr v-for="t in blockFieldTypes" :key="t.value">
+                <td>
+                  <code>{{ t.value }}</code>
+                  <div class="text-(--ui-text-dimmed) text-xs">{{ t.label }}</div>
+                </td>
+                <td><code>{{ fieldTypeEditors[t.value] }}</code></td>
+                <td>{{ fieldTypeNotes[t.value] ?? "—" }}</td>
+              </tr>
             </tbody>
           </table>
         </section>
 
         <section>
-          <h3>4. Что генерируется</h3>
+          <h3>4. Что генерируется, что руками</h3>
           <ul class="font-mono text-xs">
-            <li><code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code> — <code>defineBlock(...)</code> с Zod-схемой и default data</li>
-            <li><code>apps/admin/app/components/blocks/editors/&lt;Pascal&gt;Block.vue</code> — редактор</li>
-            <li><code>apps/web/app/components/blocks/renderers/&lt;Pascal&gt;Block.vue</code> — рендерер (stub)</li>
+            <li><code>packages/api/src/shared/blocks/&lt;type&gt;.ts</code> — определение (генерируется, перезаписывается)</li>
+            <li><code>apps/admin/.../blocks/editors/&lt;Pascal&gt;Block.vue</code> — редактор (генерируется, перезаписывается)</li>
+            <li><code>apps/web/.../blocks/renderers/&lt;Pascal&gt;Block.vue</code> — рендерер (stub при создании, дальше только руками)</li>
+            <li><code>apps/admin/.../blocks/previews/&lt;Pascal&gt;BlockPreview.vue</code> — live-превью (только руками, опционально)</li>
+            <li><code>apps/admin/public/block-previews/&lt;type&gt;.png</code> — превью в пикере (загружается, коммитится)</li>
           </ul>
           <p>
-            Регистрация в <code>packages/api/src/shared/blocks/index.ts</code> делается генератором.
-            Editor и renderer подхватываются автоматически через <code>import.meta.glob</code>
-            по соглашению об именах (<code>&lt;PascalCase&gt;Block.vue</code> → тип <code>&lt;kebab-case&gt;</code>).
+            Регистрация в <code>blocks/index.ts</code> делается генератором. Editor, renderer
+            и preview подхватываются через <code>import.meta.glob</code> по соглашению об именах
+            (<code>&lt;PascalCase&gt;Block.vue</code> → тип <code>&lt;kebab-case&gt;</code>).
+            Idempotency-тест держит файлы определений байт-в-байт равными канонической
+            эмиссии — ручные правки в них уронят <code>pnpm test</code>.
           </p>
         </section>
 
         <section>
-          <h3>5. Доработать web-рендерер</h3>
-          <p>
-            Генератор оставляет stub <code v-pre>&lt;pre&gt;{{ $props }}&lt;/pre&gt;</code>.
-            Замени на вёрстку по прототипу. Памятка по соглашениям apps/web:
+          <h3>5. Кастомизация</h3>
+          <p class="callout callout-warn">
+            <strong>Editor-SFC руками не дорабатываем</strong> — сохранение схемы из
+            билдера перезапишет его целиком. Кастомный код живёт в слоях, которые
+            генератор не трогает:
           </p>
           <ul>
-            <li>обёртка: <code>&lt;div class="section"&gt;&lt;div class="container-web"&gt;…&lt;/div&gt;&lt;/div&gt;</code>;</li>
-            <li>цвета и фоны через CSS-токены: <code>var(--web-text-primary)</code>, <code>var(--web-accent)</code>, <code>var(--web-bg-muted)</code>, <code>var(--web-border)</code>;</li>
-            <li>иконки — <code>&lt;Icon name="lucide:..."/&gt;</code>;</li>
-            <li>richtext — <code>v-html</code> + <code>class="prose-web"</code>;</li>
-            <li>ссылки из полей блока пропускай через <code>useActionLink(href)</code>, чтобы поддержать <code>modal:&lt;slug&gt;</code>;</li>
-            <li>анимации — <code>useMotionPresets()</code> (<code>fadeUp</code>, <code>staggerContainer</code> и т.д.) + <code>&lt;Motion as="div" :while-in-view="…" :in-view-options="{ once: true }"&gt;</code>.</li>
+            <li><strong>Компоненты типов полей</strong> — <code>ProjectSelector</code>,
+              <code>ContactsSelector</code>, <code>TagInput</code> и т.п. Нестандартный инпут =
+              новый тип поля: <code>BLOCK_FIELD_TYPES</code> (_core.ts) + entry в
+              <code>scripts/generate-block/field-types.ts</code> + label в
+              <code>~/utils/block-schema.ts</code> + сам компонент;</li>
+            <li><strong>Live-превью</strong> — <code>blocks/previews/&lt;Pascal&gt;BlockPreview.vue</code>:
+              авторегистрируется по имени, рендерится под формой редактора, получает
+              нормализованные данные через prop <code>data</code>. Для блоков, чей вид
+              зависит от внешних данных (project-блоки);</li>
+            <li><strong>Web-рендерер</strong> — всегда ручной. Соглашения: обёртка
+              <code>&lt;div class="section"&gt;&lt;div class="container-web"&gt;</code>, CSS-токены
+              <code>var(--web-*)</code>, иконки <code>lucide:*</code>, richtext через
+              <code>v-html</code> + <code>prose-web</code>, ссылки через <code>useActionLink</code>,
+              анимации через <code>useMotionPresets()</code>.</li>
           </ul>
         </section>
 
         <section>
-          <h3>6. Workflow PNG → блок</h3>
-          <ol>
-            <li>Положи PNG-прототип в <code>design/blocks/&lt;name&gt;.png</code>;</li>
-            <li>AI читает картинку и предлагает структуру полей (тип, label, repeater);</li>
-            <li>после подтверждения сохраняется <code>design/blocks/&lt;name&gt;.json</code>;</li>
-            <li>AI запускает <code>pnpm generate:block --config design/blocks/&lt;name&gt;.json</code>;</li>
-            <li>AI заменяет stub renderer вёрсткой по прототипу.</li>
-          </ol>
+          <h3>6. Превью блока в пикере</h3>
+          <p>
+            PNG-скриншот по конвенции <code>apps/admin/public/block-previews/&lt;type&gt;.png</code> —
+            показывается в пикере «Добавить блок» и в списке <code>/dev/blocks</code>;
+            если файла нет — fallback на иконку. Загрузка на странице
+            <code>/dev/blocks/&lt;type&gt;</code> (только PNG, до ~3 МБ) или просто положить
+            файл руками. <strong>Коммитится в git</strong> — это часть исходников.
+          </p>
         </section>
 
         <section>
-          <h3>7. Удалить блок</h3>
+          <h3>7. Совместимость контента</h3>
           <p>
-            Удали три файла блока (<code>shared/blocks/&lt;type&gt;.ts</code>, admin editor, web renderer)
-            и убери импорт+entry из массива <code>allBlocks</code> в
-            <code>packages/api/src/shared/blocks/index.ts</code>. Больше ничего трогать не нужно —
-            existing записи в БД с этим <code>type</code> просто перестанут рендериться (можно
-            предусмотреть миграцию, если они есть в проде).
+            Данные в БД не мигрируются. При загрузке (и в админке, и на сайте) data блока
+            мержится с <code>defaultData</code> через <code>normalizeBlockData</code> —
+            новые поля получают default. Мерж поверхностный: элементы repeater
+            не нормализуются — к новым subFields в старых элементах обращайся опционально.
           </p>
+          <ul>
+            <li><strong>Переименование поля</strong> = удаление + добавление: данные страниц останутся под старым ключом;</li>
+            <li><strong>Смена типа</strong> — данные не конвертируются, рендерер должен быть готов;</li>
+            <li><strong>Required-поле</strong> у старого контента получит пустой default — Zod потребует заполнить при следующем сохранении страницы.</li>
+          </ul>
         </section>
       </article>
 
