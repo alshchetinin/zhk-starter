@@ -8,7 +8,7 @@ type SiteStatus = {
   status: "active" | "inactive" | "locked";
   requiresPassword: boolean;
   analytics: SiteAnalyticsSettings | null;
-  seo: PublicSiteSeo | null;
+  seo: PublicSiteSeo;
 };
 
 export function useSiteGate() {
