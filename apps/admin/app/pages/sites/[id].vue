@@ -18,6 +18,8 @@ const { data, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => data.value?.name) });
+
 const { data: siteContacts } = useQuery(
   computed(() =>
     $orpc.contacts.listBySite.queryOptions({ input: { siteId: id.value } }),

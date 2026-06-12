@@ -9,6 +9,12 @@ const { data: item, isPending } = useQuery(
   computed(() => $orpc.parking.getById.queryOptions({ input: { id: id.value } })),
 );
 
+useHead({
+  title: computed(() =>
+    item.value ? `Паркинг ${item.value.name ?? ""}`.trim() : undefined,
+  ),
+});
+
 function formatPrice(price: string | number | null) {
   if (!price) return "—";
   return Number(price).toLocaleString("ru-RU");

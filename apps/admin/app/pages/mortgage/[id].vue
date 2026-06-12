@@ -14,6 +14,8 @@ const { data: program, isPending } = useQuery(
     $orpc.mortgagePrograms.getById.queryOptions({ input: { id: id.value } }),
   ),
 );
+
+useHead({ title: computed(() => program.value?.name) });
 const { data: banksData } = useQuery(
   $orpc.banks.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );

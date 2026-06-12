@@ -15,6 +15,12 @@ const { data: ticket, isPending } = useQuery(
   ),
 );
 
+useHead({
+  title: computed(() =>
+    ticket.value ? `Заявка ${ticket.value.phone}` : undefined,
+  ),
+});
+
 const deleteMutation = useMutation({
   mutationFn: () => $orpcClient.tickets.delete({ id: id.value }),
   onSuccess: () => {

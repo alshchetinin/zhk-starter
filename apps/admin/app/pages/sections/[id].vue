@@ -14,6 +14,8 @@ const { data: section, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => section.value?.name) });
+
 const { data: apartmentsCount } = useQuery(
   computed(() => ({
     ...$orpc.apartments.list.queryOptions({

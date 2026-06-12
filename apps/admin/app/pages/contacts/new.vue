@@ -7,6 +7,8 @@ const toast = useToast();
 const router = useRouter();
 const queryClient = useQueryClient();
 
+useHead({ title: "Новый контакт" });
+
 const form = ref<ContactFormValue>({
   label: "",
   phone: "",

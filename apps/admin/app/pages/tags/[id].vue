@@ -13,6 +13,8 @@ const { data: tag, isPending } = useQuery(
   computed(() => $orpc.tags.getById.queryOptions({ input: { id: tagId.value } })),
 );
 
+useHead({ title: computed(() => tag.value?.name) });
+
 const form = reactive({
   name: "",
   description: "",

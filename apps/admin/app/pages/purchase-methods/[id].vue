@@ -14,6 +14,8 @@ const { data: method, isPending } = useQuery(
     $orpc.purchaseMethods.getById.queryOptions({ input: { id: id.value } }),
   ),
 );
+
+useHead({ title: computed(() => method.value?.title) });
 const { data: projectsData } = useQuery(
   $orpc.projects.list.queryOptions({ input: { page: 1, pageSize: 100 } }),
 );

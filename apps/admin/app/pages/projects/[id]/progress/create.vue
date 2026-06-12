@@ -9,6 +9,8 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const queryClient = useQueryClient();
 
+useHead({ title: "Новая запись" });
+
 const projectId = computed(() => route.params.id as string);
 
 // Load buildings for select

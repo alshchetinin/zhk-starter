@@ -12,6 +12,8 @@ const { data: layout, isPending } = useQuery(
   ),
 );
 
+useHead({ title: computed(() => layout.value?.name) });
+
 const { data: apartmentsData, isPending: isApartmentsPending } = useQuery(
   computed(() =>
     $orpc.apartments.listByLayout.queryOptions({ input: { layoutId: id.value } }),

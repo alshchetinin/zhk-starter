@@ -13,6 +13,8 @@ const { data: bank, isPending } = useQuery(
   computed(() => $orpc.banks.getById.queryOptions({ input: { id: id.value } })),
 );
 
+useHead({ title: computed(() => bank.value?.name) });
+
 const form = reactive({
   name: "",
   logo: null as string | null,

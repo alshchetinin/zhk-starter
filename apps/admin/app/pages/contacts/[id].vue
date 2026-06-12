@@ -14,6 +14,8 @@ const { data, isPending } = useQuery(
   computed(() => $orpc.contacts.getById.queryOptions({ input: { id: id.value } })),
 );
 
+useHead({ title: computed(() => data.value?.label) });
+
 const form = ref<ContactFormValue>({
   label: "",
   phone: "",

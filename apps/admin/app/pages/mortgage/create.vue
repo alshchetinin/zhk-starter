@@ -5,6 +5,8 @@ const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
 const router = useRouter();
 
+useHead({ title: "Новая ипотечная программа" });
+
 const form = reactive({
   name: "",
   description: "",

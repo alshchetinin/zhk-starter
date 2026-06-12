@@ -8,6 +8,8 @@ const queryClient = useQueryClient();
 const route = useRoute();
 const router = useRouter();
 
+useHead({ title: "Новая секция" });
+
 const buildingId = computed(() => (route.query.buildingId as string) || "");
 const initialSectionId = computed(() => (route.query.sectionId as string) || "");
 

@@ -6,6 +6,8 @@ const toast = useToast();
 const router = useRouter();
 const queryClient = useQueryClient();
 
+useHead({ title: "Новый тег" });
+
 const form = reactive({
   name: "",
   description: "",
