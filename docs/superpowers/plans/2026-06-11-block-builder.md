@@ -1654,3 +1654,25 @@ gh issue comment 57 --body "Реализация по плану docs/superpower
 7. Тесты: фикстура генераторов дополняется полями project/contacts (снапшоты
    обновить осознанно), деривативные проверки (enum, labels, exhaustive)
    подтянутся сами; idempotency по 12 блокам после перегенерации зелёный.
+
+---
+
+### Task 11 (по запросу пользователя): слой live-превью `blocks/previews/`
+
+**Мотивация:** канонизация редакторов (Task 10) удалила рукописные live-превью
+из 4 проектных блоков. Возврат — отдельным слоем, который генератор не трогает
+по построению; это же — официальный путь для кастомных доработок редакторов.
+
+**Объём:**
+
+1. `apps/admin/app/components/blocks/previews/index.ts` — реестр через
+   `import.meta.glob("./*BlockPreview.vue")`, зеркально `editors/index.ts`
+   (имя файла `{PascalCase}BlockPreview.vue` → kebab-case тип блока).
+2. `BlockDynamicZone.vue` — под editor-компонентом рендерится
+   `<component :is="blockPreviewComponents[block.type]" :data="normalizeBlockData(...)" />`,
+   только если превью-компонент существует.
+3. Восстановление 4 превью из git history (исходник — версии редакторов на
+   f084da5): ProjectGallery (сетка миниатюр галереи через useProjectData),
+   ProjectStats (карточки), ProjectLocation (адрес/карта), ProjectInfrastructure
+   (счётчики). Каждый превью — typed props `{ data: {...} }`.
+4. CLAUDE.md: подраздел про слой previews/ как официальный путь кастомизации.
