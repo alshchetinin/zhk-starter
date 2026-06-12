@@ -19,6 +19,24 @@ Per-site Яндекс.Метрика + универсальный bus событ
 
 Подробности и инструкции по добавлению событий/провайдеров: [`docs/tracking.md`](docs/tracking.md).
 
+## Rate limiting
+
+Горячие ручки защищены от перебора/флуда. Точечный лимит на процедуру —
+`.use(rateLimit(scope, { keyBy }))` (oRPC middleware в
+`packages/api/src/middleware/rate-limit.ts`). Движок — `@zhk/ratelimit` на
+Redis (`getClientIp`, `createLimiter`, `consume`); scopes и дефолты —
+`packages/ratelimit/src/config.ts`. `failMode` берётся из конфига scope, не из
+opts: **fail-open для чтения** (`publicRead`, `contacts`, Hono ceiling — при
+сбое Redis пропускаем, есть in-memory insurance), **fail-closed для auth и
+форм** (`siteUnlock`, `ticketCreate` — при сбое отказываем). Дополнительно:
+better-auth лимитирует sign-in (5/15мин) на том же Redis, Hono — грубый per-IP
+потолок. env: `REDIS_URL`, `RL_*` оверрайды, `RL_ENABLED` (выключатель).
+
+> Прод: схема ключей требует, чтобы Traefik **перезаписывал** `x-forwarded-for`
+> реальным IP (иначе клиент спуфит IP и обходит лимит).
+
+Подробности: [`docs/rate-limiting.md`](docs/rate-limiting.md).
+
 ## UI в admin: только @nuxt/ui
 
 В `apps/admin` всегда используем готовые компоненты из `@nuxt/ui` v4
