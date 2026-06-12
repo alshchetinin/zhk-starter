@@ -6,7 +6,7 @@ import type { H3Event } from "h3";
  * Любая ошибка → null: robots/sitemap деградируют до «не индексировать».
  */
 export async function callPublicRpc<T>(event: H3Event, path: string): Promise<T | null> {
-  const host = getRequestHeader(event, "host") ?? "";
+  const host = getRequestURL(event, { xForwardedHost: true }).host;
   const config = useRuntimeConfig(event);
 
   try {
