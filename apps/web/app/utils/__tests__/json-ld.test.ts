@@ -90,6 +90,7 @@ describe("parseCoordinates", () => {
     expect(parseCoordinates("abc")).toBeNull();
     expect(parseCoordinates(null)).toBeNull();
     expect(parseCoordinates("55.75")).toBeNull();
+    expect(parseCoordinates("55.75,abc")).toBeNull();
   });
 });
 
