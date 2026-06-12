@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import { tickets, ticketTypeEnum } from "@zhk/db/schema";
 import { publicActiveSiteProcedure } from "../../index";
+import { rateLimit } from "../../middleware/rate-limit";
 
 async function sendTelegramNotification(
   botToken: string,
@@ -55,6 +56,12 @@ async function sendTelegramNotification(
 
 export const publicTicketsRouter = {
   create: publicActiveSiteProcedure
+    .use(rateLimit("ticketCreate", { keyBy: "ip+site" }))
+    .use(rateLimit("ticketCreateHourly", { keyBy: "ip+site" }))
+    .use(rateLimit("ticketCreate", {
+      keyBy: "ip+extra",
+      extractExtra: (input) => (input as { phone?: string })?.phone,
+    }))
     .input(
       z.object({
         name: z.string().optional(),

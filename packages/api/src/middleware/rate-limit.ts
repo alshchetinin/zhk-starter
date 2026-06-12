@@ -66,7 +66,7 @@ export function rateLimit(scope: RateLimitScope, opts: RateLimitOpts = {}) {
   // Context (os.$context<Context>()) уже несёт clientIp/siteId/responseHeaders —
   // oRPC прокидывает его через цепочку middleware без сужения, каст не нужен.
   return o.middleware(async ({ context, next }, input) => {
-    if (!env.RL_ENABLED) return next({ context });
+    if (!env.RL_ENABLED) return next();
 
     const extra = opts.extractExtra ? opts.extractExtra(input) : undefined;
     const key = buildRateLimitKey(keyBy, context, extra);
@@ -88,6 +88,6 @@ export function rateLimit(scope: RateLimitScope, opts: RateLimitOpts = {}) {
       });
     }
 
-    return next({ context });
+    return next();
   });
 }
