@@ -291,6 +291,9 @@ importers:
       '@zhk/profitbase':
         specifier: workspace:*
         version: link:../profitbase
+      '@zhk/ratelimit':
+        specifier: workspace:*
+        version: link:../ratelimit
       dotenv:
         specifier: 'catalog:'
         version: 17.3.1

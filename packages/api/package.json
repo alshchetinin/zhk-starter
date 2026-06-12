@@ -19,6 +19,7 @@
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@zhk/auth": "workspace:*",
+    "@zhk/ratelimit": "workspace:*",
     "@zhk/db": "workspace:*",
     "@zhk/env": "workspace:*",
     "@zhk/import": "workspace:*",

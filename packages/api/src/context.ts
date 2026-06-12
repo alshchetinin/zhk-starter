@@ -1,6 +1,7 @@
 import type { Context as HonoContext } from "hono";
 import { auth } from "@zhk/auth";
 import { db } from "@zhk/db";
+import { getClientIp } from "@zhk/ratelimit";
 import { sites } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { resolveSiteFromHost } from "./utils/resolve-site";
@@ -38,6 +39,7 @@ export async function createContext({ context }: CreateContextOptions) {
 
   const site = await resolveSite(context);
   const cookieHeader = context.req.header("cookie") ?? "";
+  const clientIp = getClientIp(context.req.raw.headers);
   const responseHeaders = new Headers();
 
   return {
@@ -45,6 +47,7 @@ export async function createContext({ context }: CreateContextOptions) {
     siteId: site?.id ?? null,
     site,
     cookieHeader,
+    clientIp,
     responseHeaders,
   };
 }
