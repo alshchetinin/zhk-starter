@@ -166,6 +166,9 @@ importers:
       '@zhk/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@zhk/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
       '@zhk/ratelimit':
         specifier: workspace:*
         version: link:../../packages/ratelimit
@@ -178,6 +181,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+      evlog:
+        specifier: ^2.19.1
+        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       hono:
         specifier: 'catalog:'
         version: 4.12.3
@@ -294,6 +300,9 @@ importers:
       '@zhk/macro':
         specifier: workspace:*
         version: link:../macro
+      '@zhk/observability':
+        specifier: workspace:*
+        version: link:../observability
       '@zhk/profitbase':
         specifier: workspace:*
         version: link:../profitbase
@@ -306,6 +315,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+      evlog:
+        specifier: ^2.19.1
+        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -443,7 +455,7 @@ importers:
         version: link:../env
       evlog:
         specifier: ^2.19.1
-        version: 2.19.1(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
     devDependencies:
       '@zhk/config':
         specifier: workspace:*
@@ -10593,8 +10605,9 @@ snapshots:
 
   events@3.3.0: {}
 
-  evlog@2.19.1(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  evlog@2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     optionalDependencies:
+      '@orpc/server': 1.13.5(crossws@0.3.5)(ws@8.19.0)
       hono: 4.12.3
       ofetch: 1.5.1
       vite: 7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)

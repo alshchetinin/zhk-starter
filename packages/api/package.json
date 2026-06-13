@@ -19,14 +19,16 @@
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@zhk/auth": "workspace:*",
-    "@zhk/ratelimit": "workspace:*",
     "@zhk/db": "workspace:*",
     "@zhk/env": "workspace:*",
     "@zhk/import": "workspace:*",
     "@zhk/macro": "workspace:*",
+    "@zhk/observability": "workspace:*",
     "@zhk/profitbase": "workspace:*",
+    "@zhk/ratelimit": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
+    "evlog": "^2.19.1",
     "zod": "catalog:"
   },
   "devDependencies": {
