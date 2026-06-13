@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { pages, pageStatusEnum } from "@zhk/db/schema";
-import { and, count, eq, ilike } from "drizzle-orm";
+import { and, count, eq, ilike, isNull } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
@@ -21,7 +21,8 @@ export const pagesRouter = {
       const conditions = [eq(pages.siteId, context.siteId)];
       if (status) conditions.push(eq(pages.status, status));
       if (search) conditions.push(ilike(pages.title, `%${search}%`));
-      if (categoryId) conditions.push(eq(pages.categoryId, categoryId));
+      if (categoryId === "_none") conditions.push(isNull(pages.categoryId));
+      else if (categoryId) conditions.push(eq(pages.categoryId, categoryId));
       const where = and(...conditions);
 
       const [data, countResult] = await Promise.all([

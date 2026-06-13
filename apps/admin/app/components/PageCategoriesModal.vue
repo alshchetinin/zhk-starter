@@ -23,16 +23,41 @@ const createMut = useMutation({
     newTitle.value = "";
     invalidate();
   },
+  onError: () => {
+    toast.add({ title: "Не удалось создать категорию", color: "error" });
+  },
 });
 
 const renameMut = useMutation({
   mutationFn: (v: { id: string; title: string }) => $orpcClient.pageCategories.update(v),
   onSuccess: invalidate,
+  onError: () => {
+    toast.add({ title: "Не удалось переименовать категорию", color: "error" });
+  },
 });
 
 const reorderMut = useMutation({
   mutationFn: (ids: string[]) => $orpcClient.pageCategories.reorder({ ids }),
-  onSuccess: invalidate,
+  // Optimistic: reorder the cached list immediately so rapid arrow clicks
+  // compound instead of each operating on the same stale server order.
+  onMutate: async (ids) => {
+    const key = $orpc.pageCategories.list.queryKey();
+    await queryClient.cancelQueries({ queryKey: key });
+    const prev = queryClient.getQueryData<typeof categories.value>(key);
+    if (prev) {
+      const byId = new Map(prev.map((c) => [c.id, c]));
+      queryClient.setQueryData(
+        key,
+        ids.map((id, i) => ({ ...byId.get(id)!, sortOrder: i })),
+      );
+    }
+    return { prev, key };
+  },
+  onError: (_e, _ids, ctx) => {
+    if (ctx?.prev) queryClient.setQueryData(ctx.key, ctx.prev);
+    toast.add({ title: "Не удалось изменить порядок", color: "error" });
+  },
+  onSettled: invalidate,
 });
 
 const deleteMut = useMutation({
@@ -41,6 +66,9 @@ const deleteMut = useMutation({
     toast.add({ title: "Категория удалена", color: "success" });
     toDelete.value = null;
     invalidate();
+  },
+  onError: () => {
+    toast.add({ title: "Не удалось удалить категорию", color: "error" });
   },
 });
 

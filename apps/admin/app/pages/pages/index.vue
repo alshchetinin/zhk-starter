@@ -18,6 +18,7 @@ const { data: categoriesData } = useQuery(
 );
 const categoryFilterItems = computed(() => [
   { label: "Все категории", value: "" },
+  { label: "Без категории", value: "_none" },
   ...(categoriesData.value?.map((c) => ({ label: c.title, value: c.id })) ?? []),
 ]);
 
