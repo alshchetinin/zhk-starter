@@ -33,6 +33,7 @@ import { devRouter } from "./dev/index";
 import { modalsRouter } from "./modals";
 import { mediaRouter } from "./media";
 import { tagsRouter } from "./tags";
+import { pageCategoriesRouter } from "./page-categories";
 
 export const appRouter = {
   healthCheck: publicProcedure.handler(() => {
@@ -53,6 +54,7 @@ export const appRouter = {
   cities: citiesRouter,
   news: newsRouter,
   pages: pagesRouter,
+  pageCategories: pageCategoriesRouter,
   documents: documentsRouter,
   promotions: promotionsRouter,
   banks: banksRouter,

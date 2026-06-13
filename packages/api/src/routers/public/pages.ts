@@ -21,7 +21,6 @@ export const publicPagesRouter = {
         db.query.pages.findMany({
           where,
           columns: { contentBlocks: false },
-          with: { project: { columns: { id: true, name: true } } },
           limit: pageSize,
           offset: calcOffset(page, pageSize),
           orderBy: (p, { desc }) => [desc(p.createdAt)],
@@ -41,7 +40,6 @@ export const publicPagesRouter = {
           eq(pages.slug, input.slug),
           eq(pages.status, "published"),
         ),
-        with: { project: { columns: { id: true, name: true } } },
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Page not found" });
