@@ -7,6 +7,12 @@ const { data, isPending, error, suspense } = useQuery(
 );
 
 onServerPrefetch(suspense);
+
+usePageSeo({
+  title: () => data.value?.metaTitle,
+  description: () => data.value?.metaDescription,
+  ogImage: () => data.value?.ogImage,
+});
 </script>
 
 <template>

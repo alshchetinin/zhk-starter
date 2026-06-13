@@ -6,6 +6,34 @@ const { orpc } = useOrpc();
 const { data, isPending, error, suspense } = useQuery(orpc.public.projects.getById.queryOptions({ input: { id: route.params.id as string } }));
 
 onServerPrefetch(suspense);
+
+usePageSeo({
+  title: () => data.value?.name,
+  ogImage: () => data.value?.imageUrl,
+});
+
+const url = useRequestURL();
+
+useJsonLd(() => {
+  if (!data.value) return null;
+  return buildApartmentComplexJsonLd({
+    name: data.value.name,
+    url: `${url.origin}${route.path}`,
+    address: data.value.address,
+    coordinates: data.value.coordinates,
+    images: [data.value.imageUrl, ...(data.value.gallery ?? [])],
+  });
+});
+
+useJsonLd(() =>
+  data.value
+    ? buildBreadcrumbJsonLd([
+        { name: "Главная", url: `${url.origin}/` },
+        { name: "Проекты", url: `${url.origin}/projects` },
+        { name: data.value.name, url: `${url.origin}${route.path}` },
+      ])
+    : null,
+);
 </script>
 
 <template>

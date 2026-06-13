@@ -3,6 +3,7 @@ import type { ContentBlock } from "@zhk/api/shared/blocks";
 import { PREVIEW_MESSAGE } from "@zhk/api/shared/constants";
 
 definePageMeta({ layout: "default" });
+useSeoMeta({ robots: "noindex, nofollow" });
 
 const config = useRuntimeConfig();
 const blocks = ref<ContentBlock[]>([]);

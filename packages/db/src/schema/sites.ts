@@ -14,10 +14,32 @@ export interface SiteAnalyticsSettings {
   yandexMetrika?: YandexMetrikaSettings;
 }
 
+export interface SiteSeoOrganizationSettings {
+  name?: string;
+  legalName?: string;
+  logo?: string;
+  /** Контакт-источник телефона/адреса; не задан → первый контакт футера */
+  contactId?: string;
+}
+
+export interface SiteSeoSettings {
+  titleSuffix?: string;
+  defaultTitle?: string;
+  defaultDescription?: string;
+  defaultOgImage?: string;
+  favicon?: string;
+  /** undefined → индексация включена */
+  indexingEnabled?: boolean;
+  yandexVerification?: string;
+  googleVerification?: string;
+  organization?: SiteSeoOrganizationSettings;
+}
+
 export interface SiteSettings {
   contactsHeaderIds?: string[];
   contactsFooterIds?: string[];
   analytics?: SiteAnalyticsSettings;
+  seo?: SiteSeoSettings;
 }
 
 export const sites = pgTable("sites", {
