@@ -173,6 +173,29 @@ const menuItems = computed(() => [
               <UIcon :name="item.icon" class="size-3.5 shrink-0 opacity-70" />
               <span>{{ item.label }}</span>
             </button>
+            <template v-if="isAdmin">
+              <div class="my-1 ml-2 border-t border-(--ui-border)" />
+              <NuxtLink
+                :to="`/sites/${site.id}/seo`"
+                class="flex items-center gap-2 px-2 py-1 rounded-md w-full text-left text-[12.5px] transition-colors"
+                :class="isActive(`/sites/${site.id}/seo`)
+                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
+              >
+                <UIcon name="i-solar-magnifer-zoom-in-linear" class="size-3.5 shrink-0 opacity-70" />
+                <span>SEO</span>
+              </NuxtLink>
+              <NuxtLink
+                :to="`/sites/${site.id}/settings`"
+                class="flex items-center gap-2 px-2 py-1 rounded-md w-full text-left text-[12.5px] transition-colors"
+                :class="isActive(`/sites/${site.id}/settings`)
+                  ? 'bg-(--ui-bg-elevated) text-(--ui-text-highlighted) font-medium'
+                  : 'text-(--ui-text-muted) hover:bg-(--ui-bg-elevated) hover:text-(--ui-text-highlighted)'"
+              >
+                <UIcon name="i-solar-settings-linear" class="size-3.5 shrink-0 opacity-70" />
+                <span>Настройки</span>
+              </NuxtLink>
+            </template>
           </nav>
         </template>
       </div>
