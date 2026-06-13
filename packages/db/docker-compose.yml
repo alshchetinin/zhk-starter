@@ -26,5 +26,18 @@ services:
     command: redis-server --save "" --appendonly no
     restart: unless-stopped
 
+  imgproxy:
+    image: ghcr.io/imgproxy/imgproxy:latest
+    container_name: zhk-starter-imgproxy
+    ports:
+      - "8088:8080"
+    environment:
+      IMGPROXY_ALLOWED_SOURCES: "https://s3.twcstorage.ru/37651e87-bureau/"
+      IMGPROXY_AUTO_WEBP: "true"
+      IMGPROXY_AUTO_AVIF: "true"
+      IMGPROXY_MAX_SRC_RESOLUTION: "50"
+      IMGPROXY_TTL: "2592000"
+    restart: unless-stopped
+
 volumes:
   zhk_postgres_data:
