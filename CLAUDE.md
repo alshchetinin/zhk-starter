@@ -37,6 +37,17 @@ better-auth лимитирует sign-in (5/15мин) на том же Redis, Ho
 
 Подробности: [`docs/rate-limiting.md`](docs/rate-limiting.md).
 
+## Наблюдаемость
+
+Ошибки и структурные логи — на `evlog` (`packages/observability`). Server даёт
+wide events на запрос (Better Auth-идентификация, PII-редакция, `app.onError`),
+доменные ошибки — каталог `appErrors` (`why`/`fix`/`link`, AI-читаемые; источник
+— `packages/observability/src/errors.ts`, предпочитать вместо «голого» `ORPCError`).
+Admin/web ловят клиентские ошибки и через evlog-transport шлют на сервер. Дрейн в
+GlitchTip включается env-переменной `GLITCHTIP_DSN` (пусто → только console; DSN в
+браузер не попадает). Подробности и runbook локального GlitchTip:
+[`docs/observability.md`](docs/observability.md).
+
 ## SEO
 
 SEO-настройки сайта — `sites.settings.seo` (JSONB): дефолтные title/description/og,
