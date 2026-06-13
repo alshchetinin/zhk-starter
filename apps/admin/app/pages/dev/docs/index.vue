@@ -523,7 +523,7 @@ watch(activeModalSlug, (slug) =&gt; {
         <section>
           <h2>Трекинг событий и аналитика</h2>
           <p>
-            Per-site Яндекс.Метрика подключается в админке (<code>/sites/[id]</code> →
+            Per-site Яндекс.Метрика подключается в админке (<code>/sites/[id]/settings</code> →
             карточка «Яндекс.Метрика»). В коде есть универсальный bus
             <code>useTracking()</code>, через который любой компонент сайта
             стреляет бизнес-событиями. Bus прозрачно рассылает их во все
@@ -593,7 +593,7 @@ track("form_submit", { form: "callback" });</code></pre>
           <p>Что произойдёт автоматически:</p>
           <ul>
             <li>В <code>track()</code> появится новый ключ с автокомплитом и type-check;</li>
-            <li>В админке <code>/sites/[id]</code> в таблице целей появится строка в нужной категории;</li>
+            <li>В админке <code>/sites/[id]/settings</code> в таблице целей появится строка в нужной категории;</li>
             <li>В этой документации — тоже (страница сама собирается из реестра);</li>
             <li>В dev-консоли вызов будет печататься с заголовком из <code>title</code>.</li>
           </ul>
@@ -659,7 +659,7 @@ track("form_submit", { form: "callback" });</code></pre>
             </li>
             <li>
               <strong>Добавить карточку настроек</strong> в
-              <code>apps/admin/app/pages/sites/[id].vue</code> рядом с
+              <code>apps/admin/app/pages/sites/[id]/settings.vue</code> рядом с
               карточкой Метрики.
             </li>
           </ol>
@@ -717,7 +717,7 @@ track("form_submit", { form: "callback" });</code></pre>
             <li><code>apps/web/app/composables/useTracking.ts</code> — bus</li>
             <li><code>apps/web/app/utils/tracking-providers.ts</code> — провайдеры</li>
             <li><code>apps/web/app/plugins/yandex-metrika.ts</code> — загрузка SDK + SPA hits</li>
-            <li><code>apps/admin/app/pages/sites/[id].vue</code> — карточка настроек + таблица целей</li>
+            <li><code>apps/admin/app/pages/sites/[id]/settings.vue</code> — карточка настроек + таблица целей</li>
             <li><code>docs/tracking.md</code> — эта же документация в репо</li>
           </ul>
         </section>
