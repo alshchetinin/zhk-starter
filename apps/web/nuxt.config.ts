@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: { port: 3001, host: "0.0.0.0" },
 
-  modules: ["reka-ui/nuxt", "@nuxt/fonts", "@nuxt/icon", "@nuxt/image", "@vueuse/nuxt", "motion-v/nuxt", "evlog/nuxt"],
+  modules: ["reka-ui/nuxt", "@nuxt/fonts", "@nuxt/icon", "@nuxt/image", "@vueuse/nuxt", "motion-v/nuxt"],
 
   css: ["~/assets/css/main.css"],
 
@@ -65,10 +65,4 @@ export default defineNuxtConfig({
   },
 
   ssr: true,
-
-  evlog: {
-    env: { service: "zhk-web" },
-    // клиентские ошибки уходят на сервер (Nitro), DSN в браузер не попадает
-    transport: { enabled: true, endpoint: "/api/_evlog/ingest" },
-  },
 });

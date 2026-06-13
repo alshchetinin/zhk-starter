@@ -8,9 +8,9 @@
     "./errors": "./src/errors.ts"
   },
   "dependencies": {
+    "@orpc/server": "catalog:",
     "@sentry/node": "^10.57.0",
-    "@zhk/env": "workspace:*",
-    "evlog": "^2.19.1"
+    "@zhk/env": "workspace:*"
   },
   "devDependencies": {
     "@zhk/config": "workspace:*",

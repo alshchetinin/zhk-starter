@@ -1,13 +1,9 @@
 export { initObservability } from "./config";
 export { appErrors } from "./errors";
-export { createError, parseError, log, useLogger } from "evlog";
 export {
   initSentry,
-  createObservabilityDrain,
-  captureUnexpectedIssue,
+  captureUnexpected,
   isUnexpectedError,
-  extractNormalizedError,
-  buildIssueEnrichment,
-  type NormalizedError,
-  type IssueEnrichment,
+  extractErrorDetails,
+  type CaptureContext,
 } from "./sentry";

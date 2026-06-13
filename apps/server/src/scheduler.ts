@@ -2,7 +2,6 @@ import { db } from "@zhk/db";
 import { integrations, syncLogs } from "@zhk/db/schema";
 import { and, eq, isNotNull, lte, or, isNull, sql } from "drizzle-orm";
 import { runIntegrationSync } from "@zhk/api/services/sync";
-import { log } from "@zhk/observability";
 
 const TICK_INTERVAL_MS = 60_000;
 const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
@@ -16,12 +15,10 @@ export function startScheduler() {
   if (timer) return;
   console.log("[scheduler] started (tick every 60s, cleanup every 1h)");
   timer = setInterval(() => {
-    void tick().catch((err) => log.error({ scope: "scheduler", action: "tick", error: err }));
+    void tick().catch((err) => console.error("[scheduler] tick:", err));
   }, TICK_INTERVAL_MS);
   cleanupTimer = setInterval(() => {
-    void cleanupOldLogs().catch((err) =>
-      log.error({ scope: "scheduler", action: "cleanup", error: err }),
-    );
+    void cleanupOldLogs().catch((err) => console.error("[scheduler] cleanup:", err));
   }, CLEANUP_INTERVAL_MS);
   void resetStuckSyncs();
   void tick();
@@ -118,7 +115,7 @@ async function tick() {
     runningCount++;
     void runIntegrationSync(integration, { trigger: "scheduled" })
       .catch((err) =>
-        log.error({ scope: "scheduler", action: "sync", integrationId: integration.id, error: err }),
+        console.error(`[scheduler] sync ${integration.id}:`, err),
       )
       .finally(() => {
         runningCount--;

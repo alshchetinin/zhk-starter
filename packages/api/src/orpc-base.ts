@@ -1,21 +1,26 @@
 import { os } from "@orpc/server";
-import { evlog, type EvlogOrpcContext } from "evlog/orpc";
-import { identifyUser } from "evlog/better-auth";
+import { captureUnexpected } from "@zhk/observability";
 import type { Context } from "./context";
 
-// Базовый builder. Контекст расширен EvlogOrpcContext (даёт типизированный
-// context.log), но сам evlog()/identify навешиваем на publicProcedure, а не на
-// builder — иначе o становится BuilderWithMiddlewares и теряет .middleware(),
-// которым пользуются requireAuth/requireSite/rateLimit и др. middleware.
-export const o = os.$context<Context & EvlogOrpcContext>();
+// Базовый builder. Оставляем `o` чистым Builder'ом (без .use на нём), иначе он
+// становится BuilderWithMiddlewares и теряет .middleware(), которым пользуются
+// requireAuth/requireSite/rateLimit и др. middleware в index.ts/rate-limit.ts.
+export const o = os.$context<Context>();
 
-// Идентификация юзера на wide event из уже резолвнутой сессии.
-const identify = o.middleware(async ({ context, next }) => {
-  if (context.session) identifyUser(context.log, context.session);
-  return next();
+// Ловит ошибки процедур → шлёт НЕОЖИДАННЫЕ (5xx / не-ORPCError) в Sentry Issues
+// с тегами operation/siteId, потом пробрасывает дальше (ответ клиенту не меняется).
+const sentryCapture = o.middleware(async ({ context, next, path }) => {
+  try {
+    return await next();
+  } catch (err) {
+    captureUnexpected(err, {
+      operation: Array.isArray(path) ? path.join(".") : String(path),
+      siteId: context.siteId ?? undefined,
+      userId: context.session?.user?.id,
+    });
+    throw err;
+  }
 });
 
-// publicProcedure: evlog() даёт context.log в процедурах, тегирует wide event
-// именем операции и мостит structured errors в ORPCError; identify добавляет
-// идентификацию юзера на wide event.
-export const publicProcedure = o.use(evlog()).use(identify);
+// publicProcedure несёт sentryCapture; остальные процедуры строятся от него.
+export const publicProcedure = o.use(sentryCapture);

@@ -1,4 +1,4 @@
-# Локальный GlitchTip для проверки дрейна evlog→GlitchTip.
+# Локальный GlitchTip для проверки отправки ошибок (@sentry/node → Issues).
 # НЕ часть docker-compose проекта — поднимается отдельно, рядом.
 #
 #   docker compose -f docs/observability/glitchtip.compose.yml up -d
