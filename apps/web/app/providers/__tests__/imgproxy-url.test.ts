@@ -29,6 +29,11 @@ describe("buildImgproxyUrl", () => {
     expect(url).toContain("/unsafe/rs:fit:400:300/");
   });
 
+  it("только height → width=0 в resize", () => {
+    const url = buildImgproxyUrl(SRC, { height: 300 }, BASE);
+    expect(url).toBe(`${BASE}/unsafe/rs:fill:0:300/${base64Url(SRC)}`);
+  });
+
   it("без размеров — только источник", () => {
     expect(buildImgproxyUrl(SRC, {}, BASE)).toBe(`${BASE}/unsafe/${base64Url(SRC)}`);
   });
