@@ -6,15 +6,24 @@ self-hosted **GlitchTip** (дашборд ошибок + алёрты). Спек
 [`superpowers/specs/2026-06-13-observability-evlog-glitchtip-design.md`](superpowers/specs/2026-06-13-observability-evlog-glitchtip-design.md),
 [`superpowers/plans/2026-06-13-observability-evlog.md`](superpowers/plans/2026-06-13-observability-evlog.md).
 
-## Решение по дрейну evlog→GlitchTip (спайк)
+## Решение по дрейну evlog→GlitchTip (спайк — выполнен 2026-06-13)
 
-> **СТАТУС: ожидает прогона спайка.** Чтобы подтвердить, что дрейн `evlog/sentry` долетает в
-> GlitchTip как issue, нужно поднять локальный GlitchTip (см. ниже), задать `GLITCHTIP_DSN` и
-> бросить тестовую ошибку. До этого момента работает путь A по умолчанию (console + env-gated
-> дрейн), который безопасен и без GlitchTip.
->
-> После прогона записать сюда: `Результат: <ДОЛЕТАЕТ | НЕ ДОЛЕТАЕТ>` и
-> `Путь: <A: только evlog-дрейн | B: фолбэк @sentry/node для issues>`.
+Проверено против реального GlitchTip v6.1.8. **GlitchTip принимает оба формата Sentry-протокола,
+в разные разделы:**
+
+- **`log`-type** (то, что шлёт нативный `evlog/sentry`-дрейн) → раздел **Logs**. Работает:
+  wide events со всем структурным контекстом (`why`/`fix`, юзер, operation) видны и ищутся в Logs.
+- **`event`-type** (то, что шлёт `@sentry/node`) → раздел **Issues** (группировка, алёрты,
+  resolve/ignore — классический error-tracking).
+
+**Итог: оба пути, дополняют друг друга.**
+- **Путь A (evlog-дрейн → Logs)** — реализован, кормит GlitchTip Logs всеми событиями.
+- **Путь B (`@sentry/node` → Issues)** — добавлен поверх: неожиданные ошибки (5xx/uncaught)
+  идут в Issues с перенесёнными `code`/`why`/`fix`/`operation`/`userId`. Ожидаемые доменные
+  4xx (NOT_FOUND/401/429) в Issues НЕ шлются (чтобы не спамить) — они остаются в Logs.
+
+DSN остаётся server-side в обоих путях (браузерного Sentry-SDK нет; клиентские ошибки идут через
+evlog-transport на сервер и уже там превращаются в Issues).
 
 ## Архитектура
 
