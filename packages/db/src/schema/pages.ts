@@ -3,7 +3,7 @@ import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { pageStatusEnum } from "./_enums";
 import type { ContentBlock } from "./_shared";
 import { sites } from "./sites";
-import { projects } from "./projects";
+import { pageCategories } from "./page-categories";
 
 export const pages = pgTable("pages", {
   id: text("id")
@@ -19,7 +19,7 @@ export const pages = pgTable("pages", {
   contentBlocks: jsonb("content_blocks").$type<ContentBlock[]>().default([]),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
-  projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
+  categoryId: text("category_id").references(() => pageCategories.id, { onDelete: "set null" }),
   ogImage: text("og_image"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -35,8 +35,8 @@ export const pagesRelations = relations(pages, ({ one }) => ({
     fields: [pages.siteId],
     references: [sites.id],
   }),
-  project: one(projects, {
-    fields: [pages.projectId],
-    references: [projects.id],
+  category: one(pageCategories, {
+    fields: [pages.categoryId],
+    references: [pageCategories.id],
   }),
 }));
