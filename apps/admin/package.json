@@ -13,6 +13,7 @@
     "@nuxt/ui": "^4.5.0",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "^1.12.2",
+    "@sentry/nuxt": "^10.57.0",
     "@tanstack/query-async-storage-persister": "^5.100.0",
     "@tanstack/query-persist-client-core": "^5.100.0",
     "@tanstack/vue-query": "^5.100.0",

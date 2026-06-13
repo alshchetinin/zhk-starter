@@ -1,0 +1,52 @@
+# Локальный GlitchTip для проверки отправки ошибок (@sentry/node → Issues).
+# НЕ часть docker-compose проекта — поднимается отдельно, рядом.
+#
+#   docker compose -f docs/observability/glitchtip.compose.yml up -d
+#   # ~30-60с на миграции, затем открыть http://localhost:8000
+#   # зарегистрировать локального юзера (первый = админ), создать Organization + Project
+#   # (платформа Node/JavaScript), скопировать DSN проекта → в .env как GLITCHTIP_DSN
+#
+#   docker compose -f docs/observability/glitchtip.compose.yml down        # остановить
+#   docker compose -f docs/observability/glitchtip.compose.yml down -v     # + удалить данные
+
+x-environment: &env
+  SECRET_KEY: change-me-dev-only-secret-key-please
+  DATABASE_URL: postgres://postgres:postgres@gt-postgres:5432/postgres
+  REDIS_URL: redis://gt-redis:6379/0
+  GLITCHTIP_DOMAIN: http://localhost:8000
+  DEFAULT_FROM_EMAIL: glitchtip@localhost
+  CELERY_WORKER_AUTOSCALE: "1,2"
+  ENABLE_OPEN_USER_REGISTRATION: "true"
+
+services:
+  gt-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - gt-pg:/var/lib/postgresql/data
+
+  gt-redis:
+    image: redis:7-alpine
+
+  gt-web:
+    image: glitchtip/glitchtip:latest
+    depends_on: [gt-postgres, gt-redis]
+    ports:
+      - "8000:8000"   # GlitchTip v6 (granian) слушает внутри 8000
+    environment: *env
+
+  gt-worker:
+    image: glitchtip/glitchtip:latest
+    command: ./bin/run-celery-with-beat.sh
+    depends_on: [gt-postgres, gt-redis]
+    environment: *env
+
+  gt-migrate:
+    image: glitchtip/glitchtip:latest
+    command: ./bin/run-migrate.sh
+    depends_on: [gt-postgres, gt-redis]
+    environment: *env
+
+volumes:
+  gt-pg:

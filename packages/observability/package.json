@@ -1,0 +1,19 @@
+{
+  "name": "@zhk/observability",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./errors": "./src/errors.ts"
+  },
+  "dependencies": {
+    "@orpc/server": "catalog:",
+    "@sentry/node": "^10.57.0",
+    "@zhk/env": "workspace:*"
+  },
+  "devDependencies": {
+    "@zhk/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

@@ -15,12 +15,10 @@ export function startScheduler() {
   if (timer) return;
   console.log("[scheduler] started (tick every 60s, cleanup every 1h)");
   timer = setInterval(() => {
-    void tick().catch((err) => console.error("[scheduler] tick error:", err));
+    void tick().catch((err) => console.error("[scheduler] tick:", err));
   }, TICK_INTERVAL_MS);
   cleanupTimer = setInterval(() => {
-    void cleanupOldLogs().catch((err) =>
-      console.error("[scheduler] cleanup error:", err),
-    );
+    void cleanupOldLogs().catch((err) => console.error("[scheduler] cleanup:", err));
   }, CLEANUP_INTERVAL_MS);
   void resetStuckSyncs();
   void tick();
@@ -117,7 +115,7 @@ async function tick() {
     runningCount++;
     void runIntegrationSync(integration, { trigger: "scheduled" })
       .catch((err) =>
-        console.error(`[scheduler] sync ${integration.id} failed:`, err),
+        console.error(`[scheduler] sync ${integration.id}:`, err),
       )
       .finally(() => {
         runningCount--;

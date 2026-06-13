@@ -2,6 +2,8 @@ import { createContext } from "@zhk/api/context";
 import { appRouter } from "@zhk/api/routers/index";
 import { auth } from "@zhk/auth";
 import { env } from "@zhk/env/server";
+import { initObservability, captureUnexpected } from "@zhk/observability";
+import { ORPCError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -10,9 +12,13 @@ import { serve } from "@hono/node-server";
 import { startScheduler } from "./scheduler";
 import { rateLimitCeiling } from "./middleware/rate-limit";
 
+// Инициализируем Sentry до создания приложения (idempotent, no-op без DSN).
+initObservability("zhk-server");
+
 const app = new Hono();
 
 app.use(logger());
+
 app.use(
   "/*",
   cors({
@@ -34,13 +40,13 @@ app.use("/*", async (c, next) => {
 
   const rpcResult = await rpcHandler.handle(c.req.raw, {
     prefix: "/rpc",
-    context: context,
+    context,
   });
 
   if (rpcResult.matched) {
     const merged = new Headers(rpcResult.response.headers);
     context.responseHeaders.forEach((value, key) => merged.append(key, value));
-    return c.newResponse(rpcResult.response.body, {
+    return new Response(rpcResult.response.body, {
       status: rpcResult.response.status,
       headers: merged,
     });
@@ -50,6 +56,16 @@ app.use("/*", async (c, next) => {
 });
 
 app.get("/", (c) => c.text("OK"));
+
+// Hono-level / необработанные ошибки (oRPC-процедуры обрабатывает RPCHandler и
+// возвращает ответом — они сюда не доходят, их ловит sentryCapture middleware).
+// captureUnexpected сам фильтрует: шлёт только 5xx / не-ORPCError.
+app.onError((error, c) => {
+  captureUnexpected(error, {});
+  const status = error instanceof ORPCError ? error.status : 500;
+  const message = error instanceof ORPCError ? error.message : "Internal Server Error";
+  return c.json({ message }, status as 500);
+});
 
 const port = 3000;
 console.log(`Server running on http://localhost:${port}`);

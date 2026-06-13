@@ -37,6 +37,20 @@ better-auth лимитирует sign-in (5/15мин) на том же Redis, Ho
 
 Подробности: [`docs/rate-limiting.md`](docs/rate-limiting.md).
 
+## Наблюдаемость
+
+Error-tracking на `@sentry/node` → **GlitchTip Issues** (`packages/observability`,
+evlog убран из-за multi-copy fragility pnpm). В Issues шлются ТОЛЬКО неожиданные
+ошибки: `ORPCError` со статусом >= 500 ИЛИ любой не-`ORPCError` throw; ожидаемые
+4xx (NOT_FOUND/UNAUTHORIZED/...) пропускаются. Server — oRPC-middleware `sentryCapture`
+(`packages/api/src/orpc-base.ts`, теги `operation`/`siteId`/`userId`) + `app.onError`;
+admin — модуль `@sentry/nuxt` (client+server config); web — Nitro `error`-хук
+(`apps/web/server/plugins/sentry.ts`, только серверные/SSR ошибки, без браузерного SDK).
+Доменные ошибки — каталог `appErrors` (`code`/`why`/`fix` в `ORPCError.data`, AI-читаемые;
+источник — `packages/observability/src/errors.ts`, предпочитать вместо «голого» `ORPCError`).
+Включается env-переменной `GLITCHTIP_DSN` (пусто → no-op, только console). Подробности
+и runbook локального GlitchTip: [`docs/observability.md`](docs/observability.md).
+
 ## SEO
 
 SEO-настройки сайта — `sites.settings.seo` (JSONB): дефолтные title/description/og,
