@@ -19,6 +19,7 @@ export const env = createEnv({
       .enum(["development", "production", "test"])
       .default("development"),
     REDIS_URL: z.string().url().default("redis://localhost:6379"),
+    GLITCHTIP_DSN: z.string().optional(),
     RL_AUTH_SIGNIN_POINTS: z.coerce.number().int().positive().optional(),
     RL_AUTH_SIGNIN_DURATION: z.coerce.number().int().positive().optional(),
     RL_SITE_UNLOCK_POINTS: z.coerce.number().int().positive().optional(),
