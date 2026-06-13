@@ -9,8 +9,7 @@
   },
   "dependencies": {
     "@zhk/env": "workspace:*",
-    "evlog": "^2.19.1",
-    "zod": "catalog:"
+    "evlog": "^2.19.1"
   },
   "devDependencies": {
     "@zhk/config": "workspace:*",

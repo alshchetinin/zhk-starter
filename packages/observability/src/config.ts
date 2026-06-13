@@ -16,7 +16,9 @@ export function initObservability(service: string) {
       environment: process.env.NODE_ENV ?? "development",
     },
     redact: {
-      paths: ["password", "accessPassword", "*_token", "phone", "leadEmail"],
+      // Поля-секреты/PII по имени (полная редакция). Значения email/phone/JWT и т.п.
+      // дополнительно частично маскируются встроенными паттернами evlog по умолчанию.
+      paths: ["password", "accessPassword", "*_token", "phone"],
     },
     drain: dsn ? createSentryDrain({ dsn }) : undefined,
   });
