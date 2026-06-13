@@ -13,6 +13,7 @@
     "@nuxt/image": "^1",
     "@orpc/client": "catalog:",
     "@orpc/tanstack-query": "^1.12.2",
+    "@sentry/node": "^10.57.0",
     "@tanstack/vue-query": "^5.90.2",
     "@zhk/api": "workspace:*",
     "@zhk/env": "workspace:*",

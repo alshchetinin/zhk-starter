@@ -74,19 +74,22 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.8
-        version: 4.1.8(@types/node@22.19.13)(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.13)(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   apps/admin:
     dependencies:
       '@nuxt/ui':
         specifier: ^4.5.0
-        version: 4.5.0(@tiptap/extensions@3.20.0(@tiptap/core@3.20.0(@tiptap/pm@3.20.0))(@tiptap/pm@3.20.0))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(embla-carousel@8.6.0)(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(tailwindcss@4.2.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
+        version: 4.5.0(@tiptap/extensions@3.20.0(@tiptap/core@3.20.0(@tiptap/pm@3.20.0))(@tiptap/pm@3.20.0))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(embla-carousel@8.6.0)(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(tailwindcss@4.2.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)
       '@orpc/client':
         specifier: 'catalog:'
-        version: 1.13.5
+        version: 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/tanstack-query':
         specifier: ^1.12.2
-        version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.100.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(@orpc/client@1.13.5(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.0)
+      '@sentry/node':
+        specifier: ^10.57.0
+        version: 10.57.0
       '@tanstack/query-async-storage-persister':
         specifier: ^5.100.0
         version: 5.100.0
@@ -107,7 +110,7 @@ importers:
         version: link:../../packages/observability
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
+        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
       evlog:
         specifier: ^2.19.1
         version: 2.19.1(@nuxt/kit@4.3.1(magicast@0.5.2))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
@@ -116,7 +119,7 @@ importers:
         version: 6.2.2
       nuxt:
         specifier: 'catalog:'
-        version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
+        version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
       tailwindcss:
         specifier: ^4
         version: 4.2.1
@@ -138,7 +141,7 @@ importers:
         version: 7.7.9
       '@vueuse/nuxt':
         specifier: ^14.2.1
-        version: 14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
+        version: 14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
       '@zhk/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -153,13 +156,16 @@ importers:
         version: 1.19.9(hono@4.12.3)
       '@orpc/openapi':
         specifier: 'catalog:'
-        version: 1.13.5(crossws@0.3.5)(ws@8.19.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
       '@orpc/server':
         specifier: 'catalog:'
-        version: 1.13.5(crossws@0.3.5)(ws@8.19.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
       '@orpc/zod':
         specifier: 'catalog:'
-        version: 1.13.5(@orpc/contract@1.13.5)(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.13.5(@opentelemetry/api@1.9.1))(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)
+      '@sentry/node':
+        specifier: ^10.57.0
+        version: 10.57.0
       '@zhk/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -180,16 +186,16 @@ importers:
         version: link:../../packages/ratelimit
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
+        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
       dotenv:
         specifier: 'catalog:'
         version: 17.3.1
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
       evlog:
         specifier: ^2.19.1
-        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 2.19.1(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       hono:
         specifier: 'catalog:'
         version: 4.12.3
@@ -214,13 +220,16 @@ importers:
     dependencies:
       '@nuxt/image':
         specifier: ^1
-        version: 1.11.0(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)
+        version: 1.11.0(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)
       '@orpc/client':
         specifier: 'catalog:'
-        version: 1.13.5
+        version: 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/tanstack-query':
         specifier: ^1.12.2
-        version: 1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.100.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(@orpc/client@1.13.5(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.0)
+      '@sentry/node':
+        specifier: ^10.57.0
+        version: 10.57.0
       '@tanstack/vue-query':
         specifier: ^5.90.2
         version: 5.92.9(vue@3.5.29(typescript@5.9.3))
@@ -244,7 +253,7 @@ importers:
         version: 2.0.0(@vueuse/core@14.2.1(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))
       nuxt:
         specifier: 'catalog:'
-        version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
+        version: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
       reka-ui:
         specifier: ^2.2.0
         version: 2.8.2(vue@3.5.29(typescript@5.9.3))
@@ -260,7 +269,7 @@ importers:
         version: 1.2.95
       '@nuxt/fonts':
         specifier: ^0
-        version: 0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@nuxt/icon':
         specifier: ^1
         version: 1.15.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
@@ -269,7 +278,7 @@ importers:
         version: 4.2.1(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@vueuse/nuxt':
         specifier: ^14
-        version: 14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
+        version: 14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
       '@zhk/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -287,16 +296,16 @@ importers:
         version: 3.1000.0
       '@orpc/client':
         specifier: 'catalog:'
-        version: 1.13.5
+        version: 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/openapi':
         specifier: 'catalog:'
-        version: 1.13.5(crossws@0.3.5)(ws@8.19.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
       '@orpc/server':
         specifier: 'catalog:'
-        version: 1.13.5(crossws@0.3.5)(ws@8.19.0)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
       '@orpc/zod':
         specifier: 'catalog:'
-        version: 1.13.5(@orpc/contract@1.13.5)(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)
+        version: 1.13.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.13.5(@opentelemetry/api@1.9.1))(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)
       '@zhk/auth':
         specifier: workspace:*
         version: link:../auth
@@ -326,10 +335,10 @@ importers:
         version: 17.3.1
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
       evlog:
         specifier: ^2.19.1
-        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 2.19.1(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -354,7 +363,7 @@ importers:
         version: link:../env
       better-auth:
         specifier: 'catalog:'
-        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
+        version: 1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3))
       dotenv:
         specifier: 'catalog:'
         version: 17.3.1
@@ -385,7 +394,7 @@ importers:
         version: 17.3.1
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
       pg:
         specifier: ^8.17.1
         version: 8.19.0
@@ -438,7 +447,7 @@ importers:
         version: link:../macro
       drizzle-orm:
         specifier: 'catalog:'
-        version: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+        version: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
     devDependencies:
       '@zhk/config':
         specifier: workspace:*
@@ -462,12 +471,15 @@ importers:
 
   packages/observability:
     dependencies:
+      '@sentry/node':
+        specifier: ^10.57.0
+        version: 10.57.0
       '@zhk/env':
         specifier: workspace:*
         version: link:../env
       evlog:
         specifier: ^2.19.1
-        version: 2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 2.19.1(@nuxt/kit@4.3.1(magicast@0.5.2))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
     devDependencies:
       '@zhk/config':
         specifier: workspace:*
@@ -1564,6 +1576,42 @@ packages:
   '@nuxtjs/color-mode@3.5.2':
     resolution: {integrity: sha512-cC6RfgZh3guHBMLLjrBB2Uti5eUoGM9KyauOaYS9ETmxNWBMTvpgjvSiSJp1OFljIXPIqVTJ3xtJpSNZiO3ZaA==}
 
+  '@opentelemetry/api-logs@0.214.0':
+    resolution: {integrity: sha512-40lSJeqYO8Uz2Yj7u94/SJWE/wONa7rmMKjI1ZcIjgf3MHNHv1OZUCrCETGuaRF62d5pQD1wKIW+L4lmSMTzZA==}
+    engines: {node: '>=8.0.0'}
+
+  '@opentelemetry/api@1.9.1':
+    resolution: {integrity: sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q==}
+    engines: {node: '>=8.0.0'}
+
+  '@opentelemetry/core@2.8.0':
+    resolution: {integrity: sha512-hd1Lfh8p545nNz+jq1Ejfz+Mn1hyLuxYn1YzTfFNrxr8urEWMNQLPf1Th8kjOH+HxwawCrtgBp8JpBUR4ZSgww==}
+    engines: {node: ^18.19.0 || >=20.6.0}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+
+  '@opentelemetry/instrumentation@0.214.0':
+    resolution: {integrity: sha512-MHqEX5Dk59cqVah5LiARMACku7jXSVk9iVDWOea4x3cr7VfdByeDCURK6o1lntT1JS/Tsovw01UJrBhN3/uC5w==}
+    engines: {node: ^18.19.0 || >=20.6.0}
+    peerDependencies:
+      '@opentelemetry/api': ^1.3.0
+
+  '@opentelemetry/resources@2.8.0':
+    resolution: {integrity: sha512-qmXQ27ilDbUK/vGMqwL8D4/rhn76C+sherM4wTbjlfknR8Nvfc/hCxjRJPhkzZzUsPiNg16SA31NxMabwttRjg==}
+    engines: {node: ^18.19.0 || >=20.6.0}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.3.0 <1.10.0'
+
+  '@opentelemetry/sdk-trace-base@2.8.0':
+    resolution: {integrity: sha512-mhU4jp+vW0mGbFRd+GeXHvmfA4aDqWjBjLC3pE5XMpLs0IE2ryYb019Ts2AQrOq67gaTF25D91+fgvEHDZEnuQ==}
+    engines: {node: ^18.19.0 || >=20.6.0}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.3.0 <1.10.0'
+
+  '@opentelemetry/semantic-conventions@1.41.1':
+    resolution: {integrity: sha512-/UhIkaZgPutTFmQ7RnIJGgDXZmtEJ7Dvi86xNTFWcnRxVRNk/aotsqDJYeEvDP+FSMB2SdW+pQzNMcWP0rwuNA==}
+    engines: {node: '>=14'}
+
   '@orpc/client@1.13.5':
     resolution: {integrity: sha512-j0VJpiWiFv9Xfan3NOoouHL07nSiHX8haxYaZzHYWSdWh+ABzwa8aRTwQSUpuCfD6i0EtYEZJAB6gVwtAnQoxQ==}
 
@@ -2481,6 +2529,51 @@ packages:
     resolution: {integrity: sha512-2HRCml6OztYXyJXAvdDXPKcawukWY2GpR5/nxKp4iBgiO3wcoEGkAaqctIbZcNB6KlUQBIqt8VYkNSj2397EfA==}
     cpu: [x64]
     os: [win32]
+
+  '@sentry-internal/server-utils@10.57.0':
+    resolution: {integrity: sha512-Qu8ETmX/ITzteG7Im46b9HOxKKzeaIeqNvftaIlFURu1RUQdHbtGerS7QOmXzwnhuqNGNeiCQYkduB798IfRqA==}
+    engines: {node: '>=18'}
+
+  '@sentry/core@10.57.0':
+    resolution: {integrity: sha512-kntItTA2kiT0YpL7encXaF6mkdZMB+y48lwj8w1wkfBpfJAC7sifdgrzLQZqmsqVNE3crg9VfufaAGA+78uFMg==}
+    engines: {node: '>=18'}
+
+  '@sentry/node-core@10.57.0':
+    resolution: {integrity: sha512-2v2IF6MfTiu7pimWEq2rYhZsmlwyNbs3bHUsrYFPeP/Rpa6ObDuUWPdVEzJjfyK+AqqYZYxZdV0l3+B13kTEmQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@opentelemetry/api': ^1.9.0
+      '@opentelemetry/core': ^1.30.1 || ^2.1.0
+      '@opentelemetry/exporter-trace-otlp-http': '>=0.57.0 <1'
+      '@opentelemetry/instrumentation': '>=0.57.1 <1'
+      '@opentelemetry/sdk-trace-base': ^1.30.1 || ^2.1.0
+      '@opentelemetry/semantic-conventions': ^1.39.0
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@opentelemetry/core':
+        optional: true
+      '@opentelemetry/exporter-trace-otlp-http':
+        optional: true
+      '@opentelemetry/instrumentation':
+        optional: true
+      '@opentelemetry/sdk-trace-base':
+        optional: true
+      '@opentelemetry/semantic-conventions':
+        optional: true
+
+  '@sentry/node@10.57.0':
+    resolution: {integrity: sha512-7KEStrJ97wPf1fA5nU5ONeTTcIIlh7oT8OMffEVA1PXmlhFoXhcQZVzr4rM+zj9tfMWT01og5Ng/Grgh3dN+FA==}
+    engines: {node: '>=18'}
+
+  '@sentry/opentelemetry@10.57.0':
+    resolution: {integrity: sha512-iwRz8cEK0GOISG34aJRO8GdYOk3nfpuT6dT2GDQrxw8f7JjkJKx9LPU8MaenOFa4MhY+Z02hI6NNcrbsoI3cXg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@opentelemetry/api': ^1.9.0
+      '@opentelemetry/core': ^1.30.1 || ^2.1.0
+      '@opentelemetry/sdk-trace-base': ^1.30.1 || ^2.1.0
+      '@opentelemetry/semantic-conventions': ^1.39.0
 
   '@sindresorhus/is@7.2.0':
     resolution: {integrity: sha512-P1Cz1dWaFfR4IR+U13mqqiGsLFf1KbayybWwdd2vfctdV6hDpUkgCY0nKOLLTMSoRd/jJNjtbqzf13K8DCCXQw==}
@@ -3693,6 +3786,9 @@ packages:
   citty@0.2.1:
     resolution: {integrity: sha512-kEV95lFBhQgtogAPlQfJJ0WGVSokvLr/UEoFPiKKOXF7pl98HfUVUD0ejsuTCld/9xH9vogSywZ5KqHzXrZpqg==}
 
+  cjs-module-lexer@2.2.0:
+    resolution: {integrity: sha512-4bHTS2YuzUvtoLjdy+98ykbNB5jS0+07EvFNXerqZQJ89F7DI6ET7OQo/HJuW6K0aVsKA9hj9/RVb2kQVOrPDQ==}
+
   clipboardy@4.0.0:
     resolution: {integrity: sha512-5mOlNS0mhX0707P2I0aZ2V/cmHUEO/fL7VFLqszkhUsxt7RwnmrInf/eEQKlf5GzvYeHIjT+Ov1HRfNmymlG0w==}
     engines: {node: '>=18'}
@@ -4504,6 +4600,10 @@ packages:
   image-meta@0.2.2:
     resolution: {integrity: sha512-3MOLanc3sb3LNGWQl1RlQlNWURE5g32aUphrDyFeCsxBTk08iE3VNe4CwsUZ0Qs1X+EfX0+r29Sxdpza4B+yRA==}
 
+  import-in-the-middle@3.0.2:
+    resolution: {integrity: sha512-LGLYRl0A2gtyUJb2WDliBHmk6TtlHwdDjxonacZ8QrEs/ZW+YDgNv2QAfjRQWpS8HqvNcq6GGnN6jrOa5FysDQ==}
+    engines: {node: '>=18'}
+
   impound@1.0.0:
     resolution: {integrity: sha512-8lAJ+1Arw2sMaZ9HE2ZmL5zOcMnt18s6+7Xqgq2aUVy4P1nlzAyPtzCDxsk51KVFwHEEdc6OWvUyqwHwhRYaug==}
 
@@ -4892,6 +4992,9 @@ packages:
 
   mocked-exports@0.1.1:
     resolution: {integrity: sha512-aF7yRQr/Q0O2/4pIXm6PZ5G+jAd7QS4Yu8m+WEeEHGnbo+7mE36CbLSDQiXYV8bVL3NfmdeqPJct0tUlnjVSnA==}
+
+  module-details-from-path@1.0.4:
+    resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
   motion-dom@12.34.3:
     resolution: {integrity: sha512-sYgFe+pR9aIM7o4fhs2aXtOI+oqlUd33N9Yoxcgo1Fv7M20sRkHtCmzE/VRNIcq7uNJ+qio+Xubt1FXH3pQ+eQ==}
@@ -5530,6 +5633,10 @@ packages:
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
+
+  require-in-the-middle@8.0.1:
+    resolution: {integrity: sha512-QT7FVMXfWOYFbeRBF6nu+I6tr2Tf3u0q8RIEjNob/heKY/nh7drD/k7eeMFmSQgnTtCzLDcCu/XEnpW2wk4xCQ==}
+    engines: {node: '>=9.3.0 || >=8.10.0 <9.0.0'}
 
   resolve-from@5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
@@ -7715,13 +7822,13 @@ snapshots:
       - utf-8-validate
       - vue
 
-  '@nuxt/fonts@0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@nuxt/fonts@0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@nuxt/devtools-kit': 3.2.2(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       consola: 3.4.2
       defu: 6.1.4
-      fontless: 0.2.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      fontless: 0.2.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       h3: 1.15.5
       magic-regexp: 0.10.0
       ofetch: 1.5.1
@@ -7731,7 +7838,7 @@ snapshots:
       ufo: 1.6.3
       unifont: 0.7.4
       unplugin: 3.0.0
-      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -7798,7 +7905,7 @@ snapshots:
       - vite
       - vue
 
-  '@nuxt/image@1.11.0(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)':
+  '@nuxt/image@1.11.0(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)':
     dependencies:
       '@nuxt/kit': 3.21.1(magicast@0.5.2)
       consola: 3.4.2
@@ -7811,7 +7918,7 @@ snapshots:
       std-env: 3.10.0
       ufo: 1.6.3
     optionalDependencies:
-      ipx: 2.1.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      ipx: 2.1.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -7888,7 +7995,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/nitro-server@4.3.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(typescript@5.9.3)':
+  '@nuxt/nitro-server@4.3.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(typescript@5.9.3)':
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
@@ -7905,8 +8012,8 @@ snapshots:
       impound: 1.0.0
       klona: 2.0.6
       mocked-exports: 0.1.1
-      nitropack: 2.13.1(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(rolldown@1.0.0-rc.5)
-      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
+      nitropack: 2.13.1(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(rolldown@1.0.0-rc.5)
+      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
       ohash: 2.0.11
       pathe: 2.0.3
       pkg-types: 2.3.0
@@ -7914,7 +8021,7 @@ snapshots:
       std-env: 3.10.0
       ufo: 1.6.3
       unctx: 2.5.0
-      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
       vue: 3.5.29(typescript@5.9.3)
       vue-bundle-renderer: 2.2.0
       vue-devtools-stub: 0.1.0
@@ -7970,13 +8077,13 @@ snapshots:
       rc9: 3.0.0
       std-env: 3.10.0
 
-  '@nuxt/ui@4.5.0(@tiptap/extensions@3.20.0(@tiptap/core@3.20.0(@tiptap/pm@3.20.0))(@tiptap/pm@3.20.0))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(embla-carousel@8.6.0)(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(tailwindcss@4.2.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)':
+  '@nuxt/ui@4.5.0(@tiptap/extensions@3.20.0(@tiptap/core@3.20.0(@tiptap/pm@3.20.0))(@tiptap/pm@3.20.0))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)(y-protocols@1.0.7(yjs@13.6.29))(yjs@13.6.29))(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(embla-carousel@8.6.0)(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(tailwindcss@4.2.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue-router@4.6.4(vue@3.5.29(typescript@5.9.3)))(vue@3.5.29(typescript@5.9.3))(yjs@13.6.29)(zod@4.3.6)':
     dependencies:
       '@floating-ui/dom': 1.7.5
       '@iconify/vue': 5.0.0(vue@3.5.29(typescript@5.9.3))
       '@internationalized/date': 3.11.0
       '@internationalized/number': 3.6.5
-      '@nuxt/fonts': 0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@nuxt/fonts': 0.14.0(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@nuxt/icon': 2.2.1(magicast@0.5.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       '@nuxt/schema': 4.3.1
@@ -8083,7 +8190,7 @@ snapshots:
       - vue
       - yjs
 
-  '@nuxt/vite-builder@4.3.1(@types/node@25.3.2)(lightningcss@1.31.1)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vue@3.5.29(typescript@5.9.3))(yaml@2.8.2)':
+  '@nuxt/vite-builder@4.3.1(@types/node@25.3.2)(lightningcss@1.31.1)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vue@3.5.29(typescript@5.9.3))(yaml@2.8.2)':
     dependencies:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.59.0)
@@ -8102,7 +8209,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.0
       mocked-exports: 0.1.1
-      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
+      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
       pathe: 2.0.3
       pkg-types: 2.3.0
       postcss: 8.5.6
@@ -8152,19 +8259,54 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@orpc/client@1.13.5':
+  '@opentelemetry/api-logs@0.214.0':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
-      '@orpc/standard-server-fetch': 1.13.5
-      '@orpc/standard-server-peer': 1.13.5
+      '@opentelemetry/api': 1.9.1
+
+  '@opentelemetry/api@1.9.1': {}
+
+  '@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/semantic-conventions': 1.41.1
+
+  '@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/api-logs': 0.214.0
+      import-in-the-middle: 3.0.2
+      require-in-the-middle: 8.0.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@opentelemetry/resources@2.8.0(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions': 1.41.1
+
+  '@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/resources': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions': 1.41.1
+
+  '@opentelemetry/semantic-conventions@1.41.1': {}
+
+  '@orpc/client@1.13.5(@opentelemetry/api@1.9.1)':
+    dependencies:
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-fetch': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-peer': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/contract@1.13.5':
+  '@orpc/contract@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/client': 1.13.5
-      '@orpc/shared': 1.13.5
+      '@orpc/client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
       '@standard-schema/spec': 1.1.0
       openapi-types: 12.1.3
     transitivePeerDependencies:
@@ -8172,13 +8314,13 @@ snapshots:
 
   '@orpc/interop@1.13.5': {}
 
-  '@orpc/json-schema@1.13.5(crossws@0.3.5)(ws@8.19.0)':
+  '@orpc/json-schema@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)':
     dependencies:
-      '@orpc/contract': 1.13.5
+      '@orpc/contract': 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/interop': 1.13.5
-      '@orpc/openapi': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/server': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/shared': 1.13.5
+      '@orpc/openapi': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/server': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
       json-schema-typed: 8.0.2
     transitivePeerDependencies:
       - '@opentelemetry/api'
@@ -8186,24 +8328,24 @@ snapshots:
       - fastify
       - ws
 
-  '@orpc/openapi-client@1.13.5':
+  '@orpc/openapi-client@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/client': 1.13.5
-      '@orpc/contract': 1.13.5
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
+      '@orpc/client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/contract': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/openapi@1.13.5(crossws@0.3.5)(ws@8.19.0)':
+  '@orpc/openapi@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)':
     dependencies:
-      '@orpc/client': 1.13.5
-      '@orpc/contract': 1.13.5
+      '@orpc/client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/contract': 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/interop': 1.13.5
-      '@orpc/openapi-client': 1.13.5
-      '@orpc/server': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
+      '@orpc/openapi-client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/server': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
       json-schema-typed: 8.0.2
       rou3: 0.7.12
     transitivePeerDependencies:
@@ -8212,18 +8354,18 @@ snapshots:
       - fastify
       - ws
 
-  '@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0)':
+  '@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)':
     dependencies:
-      '@orpc/client': 1.13.5
-      '@orpc/contract': 1.13.5
+      '@orpc/client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/contract': 1.13.5(@opentelemetry/api@1.9.1)
       '@orpc/interop': 1.13.5
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
-      '@orpc/standard-server-aws-lambda': 1.13.5
-      '@orpc/standard-server-fastify': 1.13.5
-      '@orpc/standard-server-fetch': 1.13.5
-      '@orpc/standard-server-node': 1.13.5
-      '@orpc/standard-server-peer': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-aws-lambda': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-fastify': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-fetch': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-node': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-peer': 1.13.5(@opentelemetry/api@1.9.1)
       cookie: 1.1.1
     optionalDependencies:
       crossws: 0.3.5
@@ -8232,71 +8374,73 @@ snapshots:
       - '@opentelemetry/api'
       - fastify
 
-  '@orpc/shared@1.13.5':
+  '@orpc/shared@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
       radash: 12.1.1
       type-fest: 5.4.4
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
 
-  '@orpc/standard-server-aws-lambda@1.13.5':
+  '@orpc/standard-server-aws-lambda@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
-      '@orpc/standard-server-fetch': 1.13.5
-      '@orpc/standard-server-node': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-fetch': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-node': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/standard-server-fastify@1.13.5':
+  '@orpc/standard-server-fastify@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
-      '@orpc/standard-server-node': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-node': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/standard-server-fetch@1.13.5':
+  '@orpc/standard-server-fetch@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/standard-server-node@1.13.5':
+  '@orpc/standard-server-node@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
-      '@orpc/standard-server-fetch': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server-fetch': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/standard-server-peer@1.13.5':
+  '@orpc/standard-server-peer@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
-      '@orpc/standard-server': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/standard-server': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/standard-server@1.13.5':
+  '@orpc/standard-server@1.13.5(@opentelemetry/api@1.9.1)':
     dependencies:
-      '@orpc/shared': 1.13.5
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/tanstack-query@1.13.5(@orpc/client@1.13.5)(@tanstack/query-core@5.100.0)':
+  '@orpc/tanstack-query@1.13.5(@opentelemetry/api@1.9.1)(@orpc/client@1.13.5(@opentelemetry/api@1.9.1))(@tanstack/query-core@5.100.0)':
     dependencies:
-      '@orpc/client': 1.13.5
-      '@orpc/shared': 1.13.5
+      '@orpc/client': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
       '@tanstack/query-core': 5.100.0
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  '@orpc/zod@1.13.5(@orpc/contract@1.13.5)(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)':
+  '@orpc/zod@1.13.5(@opentelemetry/api@1.9.1)(@orpc/contract@1.13.5(@opentelemetry/api@1.9.1))(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(crossws@0.3.5)(ws@8.19.0)(zod@4.3.6)':
     dependencies:
-      '@orpc/contract': 1.13.5
-      '@orpc/json-schema': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/openapi': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/server': 1.13.5(crossws@0.3.5)(ws@8.19.0)
-      '@orpc/shared': 1.13.5
+      '@orpc/contract': 1.13.5(@opentelemetry/api@1.9.1)
+      '@orpc/json-schema': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/openapi': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/server': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/shared': 1.13.5(@opentelemetry/api@1.9.1)
       escape-string-regexp: 5.0.0
       wildcard-match: 5.1.4
       zod: 4.3.6
@@ -8816,6 +8960,48 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.59.0':
     optional: true
+
+  '@sentry-internal/server-utils@10.57.0':
+    dependencies:
+      '@sentry/core': 10.57.0
+
+  '@sentry/core@10.57.0': {}
+
+  '@sentry/node-core@10.57.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.41.1)':
+    dependencies:
+      '@sentry/core': 10.57.0
+      '@sentry/opentelemetry': 10.57.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.41.1)
+      import-in-the-middle: 3.0.2
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/instrumentation': 0.214.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-trace-base': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions': 1.41.1
+
+  '@sentry/node@10.57.0':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/instrumentation': 0.214.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-trace-base': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions': 1.41.1
+      '@sentry-internal/server-utils': 10.57.0
+      '@sentry/core': 10.57.0
+      '@sentry/node-core': 10.57.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.214.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.41.1)
+      '@sentry/opentelemetry': 10.57.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.41.1)
+      import-in-the-middle: 3.0.2
+    transitivePeerDependencies:
+      - '@opentelemetry/exporter-trace-otlp-http'
+      - supports-color
+
+  '@sentry/opentelemetry@10.57.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.8.0(@opentelemetry/api@1.9.1))(@opentelemetry/semantic-conventions@1.41.1)':
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      '@opentelemetry/core': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/sdk-trace-base': 2.8.0(@opentelemetry/api@1.9.1)
+      '@opentelemetry/semantic-conventions': 1.41.1
+      '@sentry/core': 10.57.0
 
   '@sindresorhus/is@7.2.0': {}
 
@@ -9862,13 +10048,13 @@ snapshots:
 
   '@vueuse/metadata@14.2.1': {}
 
-  '@vueuse/nuxt@14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))':
+  '@vueuse/nuxt@14.2.1(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))':
     dependencies:
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
       '@vueuse/core': 14.2.1(vue@3.5.29(typescript@5.9.3))
       '@vueuse/metadata': 14.2.1
       local-pkg: 1.1.2
-      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
+      nuxt: 4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2)
       vue: 3.5.29(typescript@5.9.3)
     transitivePeerDependencies:
       - magicast
@@ -10022,7 +10208,7 @@ snapshots:
 
   baseline-browser-mapping@2.10.0: {}
 
-  better-auth@1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3)):
+  better-auth@1.4.20(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(pg@8.19.0)(vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vue@3.5.29(typescript@5.9.3)):
     dependencies:
       '@better-auth/core': 1.4.20(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.1)
       '@better-auth/telemetry': 1.4.20(@better-auth/core@1.4.20(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.8(zod@4.3.6))(jose@6.1.3)(kysely@0.28.11)(nanostores@1.1.1))
@@ -10038,9 +10224,9 @@ snapshots:
       zod: 4.3.6
     optionalDependencies:
       drizzle-kit: 0.31.9
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+      drizzle-orm: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
       pg: 8.19.0
-      vitest: 4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      vitest: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       vue: 3.5.29(typescript@5.9.3)
 
   better-call@1.1.8(zod@4.3.6):
@@ -10158,6 +10344,8 @@ snapshots:
       consola: 3.4.2
 
   citty@0.2.1: {}
+
+  cjs-module-lexer@2.2.0: {}
 
   clipboardy@4.0.0:
     dependencies:
@@ -10344,9 +10532,9 @@ snapshots:
 
   csstype@3.2.3: {}
 
-  db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)):
+  db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)):
     optionalDependencies:
-      drizzle-orm: 0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
+      drizzle-orm: 0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)
 
   debug@4.4.3:
     dependencies:
@@ -10420,8 +10608,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0):
+  drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0):
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/pg': 8.16.0
       kysely: 0.28.11
       pg: 8.19.0
@@ -10624,9 +10813,9 @@ snapshots:
       ofetch: 1.5.1
       vite: 7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  evlog@2.19.1(@orpc/server@1.13.5(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  evlog@2.19.1(@orpc/server@1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0))(hono@4.12.3)(ofetch@1.5.1)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     optionalDependencies:
-      '@orpc/server': 1.13.5(crossws@0.3.5)(ws@8.19.0)
+      '@orpc/server': 1.13.5(@opentelemetry/api@1.9.1)(crossws@0.3.5)(ws@8.19.0)
       hono: 4.12.3
       ofetch: 1.5.1
       vite: 7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
@@ -10694,7 +10883,7 @@ snapshots:
     dependencies:
       tiny-inflate: 1.0.3
 
-  fontless@0.2.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  fontless@0.2.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       consola: 3.4.2
       css-tree: 3.1.0
@@ -10708,7 +10897,7 @@ snapshots:
       pathe: 2.0.3
       ufo: 1.6.3
       unifont: 0.7.4
-      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
     optionalDependencies:
       vite: 7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
@@ -10882,6 +11071,13 @@ snapshots:
 
   image-meta@0.2.2: {}
 
+  import-in-the-middle@3.0.2:
+    dependencies:
+      acorn: 8.16.0
+      acorn-import-attributes: 1.9.5(acorn@8.16.0)
+      cjs-module-lexer: 2.2.0
+      module-details-from-path: 1.0.4
+
   impound@1.0.0:
     dependencies:
       exsolve: 1.0.8
@@ -10911,7 +11107,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ipx@2.1.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0):
+  ipx@2.1.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0):
     dependencies:
       '@fastify/accept-negotiator': 1.1.0
       citty: 0.1.6
@@ -10927,7 +11123,7 @@ snapshots:
       sharp: 0.32.6
       svgo: 3.3.3
       ufo: 1.6.3
-      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
       xss: 1.0.15
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -11268,6 +11464,8 @@ snapshots:
 
   mocked-exports@0.1.1: {}
 
+  module-details-from-path@1.0.4: {}
+
   motion-dom@12.34.3:
     dependencies:
       motion-utils: 12.29.2
@@ -11316,7 +11514,7 @@ snapshots:
   napi-build-utils@2.0.0:
     optional: true
 
-  nitropack@2.13.1(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(rolldown@1.0.0-rc.5):
+  nitropack@2.13.1(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(rolldown@1.0.0-rc.5):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.59.0)
@@ -11337,7 +11535,7 @@ snapshots:
       cookie-es: 2.0.0
       croner: 9.1.0
       crossws: 0.3.5
-      db0: 0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))
+      db0: 0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))
       defu: 6.1.4
       destr: 2.0.5
       dot-prop: 10.1.0
@@ -11383,7 +11581,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       unimport: 5.7.0
       unplugin-utils: 0.3.1
-      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
+      unstorage: 1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0)
       untyped: 2.0.0
       unwasm: 0.5.3
       youch: 4.1.0
@@ -11461,16 +11659,16 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2):
+  nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2):
     dependencies:
       '@dxup/nuxt': 0.3.2(magicast@0.5.2)
       '@nuxt/cli': 3.33.1(@nuxt/schema@4.3.1)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools': 3.2.2(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.29(typescript@5.9.3))
       '@nuxt/kit': 4.3.1(magicast@0.5.2)
-      '@nuxt/nitro-server': 4.3.1(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(typescript@5.9.3)
+      '@nuxt/nitro-server': 4.3.1(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(typescript@5.9.3)
       '@nuxt/schema': 4.3.1
       '@nuxt/telemetry': 2.7.0(@nuxt/kit@4.3.1(magicast@0.5.2))
-      '@nuxt/vite-builder': 4.3.1(@types/node@25.3.2)(lightningcss@1.31.1)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vue@3.5.29(typescript@5.9.3))(yaml@2.8.2)
+      '@nuxt/vite-builder': 4.3.1(@types/node@25.3.2)(lightningcss@1.31.1)(magicast@0.5.2)(nuxt@4.3.1(@parcel/watcher@2.5.6)(@types/node@25.3.2)(@vue/compiler-sfc@3.5.29)(cac@6.7.14)(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))(idb-keyval@6.2.2)(ioredis@5.10.0)(lightningcss@1.31.1)(magicast@0.5.2)(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(yaml@2.8.2))(rolldown@1.0.0-rc.5)(rollup@4.59.0)(terser@5.46.0)(tsx@4.21.0)(typescript@5.9.3)(vue@3.5.29(typescript@5.9.3))(yaml@2.8.2)
       '@unhead/vue': 2.1.9(vue@3.5.29(typescript@5.9.3))
       '@vue/shared': 3.5.29
       c12: 3.3.3(magicast@0.5.2)
@@ -12197,6 +12395,13 @@ snapshots:
 
   require-directory@2.1.1: {}
 
+  require-in-the-middle@8.0.1:
+    dependencies:
+      debug: 4.4.3
+      module-details-from-path: 1.0.4
+    transitivePeerDependencies:
+      - supports-color
+
   resolve-from@5.0.0: {}
 
   resolve-pkg-maps@1.0.0: {}
@@ -12884,7 +13089,7 @@ snapshots:
     dependencies:
       rolldown: 1.0.0-rc.5
 
-  unstorage@1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0):
+  unstorage@1.17.4(db0@0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0)))(idb-keyval@6.2.2)(ioredis@5.10.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -12895,7 +13100,7 @@ snapshots:
       ofetch: 1.5.1
       ufo: 1.6.3
     optionalDependencies:
-      db0: 0.3.4(drizzle-orm@0.45.1(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))
+      db0: 0.3.4(drizzle-orm@0.45.1(@opentelemetry/api@1.9.1)(@types/pg@8.16.0)(kysely@0.28.11)(pg@8.19.0))
       idb-keyval: 6.2.2
       ioredis: 5.10.0
 
@@ -13045,7 +13250,7 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@4.1.8(@types/node@22.19.13)(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@22.19.13)(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@vitest/expect': 4.1.8
       '@vitest/mocker': 4.1.8(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
@@ -13068,11 +13273,12 @@ snapshots:
       vite: 7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/node': 22.19.13
     transitivePeerDependencies:
       - msw
 
-  vitest@4.1.8(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  vitest@4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.3.2)(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@vitest/expect': 4.1.8
       '@vitest/mocker': 4.1.8(vite@7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
@@ -13095,6 +13301,7 @@ snapshots:
       vite: 7.3.1(@types/node@25.3.2)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@opentelemetry/api': 1.9.1
       '@types/node': 25.3.2
     transitivePeerDependencies:
       - msw

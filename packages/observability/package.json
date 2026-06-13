@@ -8,6 +8,7 @@
     "./errors": "./src/errors.ts"
   },
   "dependencies": {
+    "@sentry/node": "^10.57.0",
     "@zhk/env": "workspace:*",
     "evlog": "^2.19.1"
   },

@@ -1,6 +1,6 @@
 import { initLogger } from "evlog";
-import { createSentryDrain } from "evlog/sentry";
 import { env } from "@zhk/env/server";
+import { initSentry, createObservabilityDrain } from "./sentry";
 
 let initialized = false;
 
@@ -10,6 +10,9 @@ export function initObservability(service: string) {
   initialized = true;
 
   const dsn = env.GLITCHTIP_DSN;
+  // Путь B: @sentry/node для Issues (неожиданные ошибки). No-op без DSN.
+  initSentry(dsn);
+
   initLogger({
     env: {
       service,
@@ -20,6 +23,8 @@ export function initObservability(service: string) {
       // дополнительно частично маскируются встроенными паттернами evlog по умолчанию.
       paths: ["password", "accessPassword", "*_token", "phone"],
     },
-    drain: dsn ? createSentryDrain({ dsn }) : undefined,
+    // Композитный drain: evlog→Logs (createSentryDrain) + Sentry Issues для
+    // неожиданных ошибок. Без DSN — drain отсутствует (console-only).
+    drain: dsn ? createObservabilityDrain(dsn) : undefined,
   });
 }

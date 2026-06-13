@@ -2,7 +2,14 @@ import { createContext } from "@zhk/api/context";
 import { appRouter } from "@zhk/api/routers/index";
 import { auth } from "@zhk/auth";
 import { env } from "@zhk/env/server";
-import { initObservability, parseError } from "@zhk/observability";
+import {
+  initObservability,
+  parseError,
+  isUnexpectedError,
+  extractNormalizedError,
+  buildIssueEnrichment,
+} from "@zhk/observability";
+import * as Sentry from "@sentry/node";
 import { RPCHandler } from "@orpc/server/fetch";
 import { withEvlog, type EvlogOrpcContext } from "evlog/orpc";
 import { Hono } from "hono";
@@ -59,6 +66,24 @@ app.get("/", (c) => c.text("OK"));
 
 app.onError((error, c) => {
   const parsed = parseError(error);
+
+  // Hono-level необработанные ошибки не проходят через evlog drain — захватываем
+  // неожиданные (5xx / без статуса) в Sentry Issues прямо здесь. Ожидаемые 4xx
+  // пропускаем (они и так уезжают в Logs через oRPC-путь).
+  if (isUnexpectedError({ status: parsed.status })) {
+    const normalized = extractNormalizedError({
+      name: parsed.code,
+      message: parsed.message,
+      code: parsed.code,
+      status: parsed.status,
+      why: parsed.why,
+      fix: parsed.fix,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    const { error: errObj, tags, extra } = buildIssueEnrichment(normalized, {}, error);
+    Sentry.captureException(errObj, { tags, extra });
+  }
+
   const status = (parsed.status ?? 500) as 500;
   return c.json({ message: parsed.message, code: parsed.code }, status);
 });
