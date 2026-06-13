@@ -10,14 +10,14 @@ const pageSize = 20;
 const search = ref("");
 const debouncedSearch = refDebounced(search, 300);
 const statusFilter = ref<PageStatus>();
-const categoryFilter = ref<string>("");
+const categoryFilter = ref<string>("_all");
 const categoriesModalOpen = ref(false);
 
 const { data: categoriesData } = useQuery(
   computed(() => $orpc.pageCategories.list.queryOptions()),
 );
 const categoryFilterItems = computed(() => [
-  { label: "Все категории", value: "" },
+  { label: "Все категории", value: "_all" },
   { label: "Без категории", value: "_none" },
   ...(categoriesData.value?.map((c) => ({ label: c.title, value: c.id })) ?? []),
 ]);
@@ -30,7 +30,7 @@ const { data, isPending } = useQuery(
         pageSize,
         search: debouncedSearch.value || undefined,
         status: statusFilter.value,
-        categoryId: categoryFilter.value || undefined,
+        categoryId: categoryFilter.value === "_all" ? undefined : categoryFilter.value,
       },
     }),
     placeholderData: keepPreviousData,
