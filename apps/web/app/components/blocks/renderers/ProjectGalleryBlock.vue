@@ -47,15 +47,21 @@ const gridClass = computed(() => {
         :class="gridClass"
       >
         <Motion
-          as="img"
+          as="div"
           v-for="(src, i) in images"
           :key="i"
           :variants="staggerChild"
-          :src="src"
-          :alt="`${project.name} — ${i + 1}`"
-          :loading="i > 0 ? 'lazy' : undefined"
-          class="aspect-[4/3] w-full rounded-lg object-cover"
-        />
+          class="aspect-[4/3] w-full overflow-hidden rounded-lg"
+        >
+          <AppImage
+            :src="src"
+            :alt="`${project.name} — ${i + 1}`"
+            :width="800"
+            sizes="sm:100vw lg:33vw"
+            :loading="i > 0 ? 'lazy' : 'eager'"
+            class="size-full object-cover"
+          />
+        </Motion>
       </Motion>
     </div>
   </div>

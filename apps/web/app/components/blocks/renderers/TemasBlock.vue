@@ -31,7 +31,7 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
         >
           <UiCard hoverable>
             <template #header>
-              <img :src="item.avatar" :alt="item.name" :loading="i > 0 ? 'lazy' : undefined" class="aspect-[4/3] w-full object-cover" />
+              <AppImage v-if="item.avatar" :src="item.avatar" :alt="item.name" :width="400" sizes="sm:50vw md:25vw" :loading="i > 0 ? 'lazy' : 'eager'" class="aspect-[4/3] w-full object-cover" />
             </template>
             <!-- TODO: рендеринг содержимого карточки -->
             <pre class="text-sm">{{ item }}</pre>

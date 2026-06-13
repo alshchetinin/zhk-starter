@@ -73,7 +73,7 @@ export function generateWebRenderer(rootDir: string, block: BlockInfo): void {
       templateLines.push(
         `          <UiCard hoverable>`,
         `            <template #header>`,
-        `              <img :src="item.${imageField.name}" :alt="item.${titleField?.name ?? imageField.name}" :loading="i > 0 ? 'lazy' : undefined" class="aspect-[4/3] w-full object-cover" />`,
+        `              <AppImage :src="item.${imageField.name}" :alt="item.${titleField?.name ?? imageField.name}" :width="600" sizes="sm:100vw lg:33vw" :loading="i > 0 ? 'lazy' : 'eager'" class="aspect-[4/3] w-full object-cover" />`,
         `            </template>`,
         `            <!-- TODO: рендеринг содержимого карточки -->`,
         `            <pre class="text-sm">{{ item }}</pre>`,

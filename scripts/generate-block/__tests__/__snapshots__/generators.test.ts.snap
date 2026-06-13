@@ -61,7 +61,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
 "
 `;
 
-exports[`editor и renderer > renderer: snapshot 1`] = `
+exports[`editor и renderer > renderer: snapshot + AppImage для image-полей 1`] = `
 "<script setup lang="ts">
 defineProps<{
   title: string;
@@ -100,7 +100,7 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
         >
           <UiCard hoverable>
             <template #header>
-              <img :src="item.photo" :alt="item.name" :loading="i > 0 ? 'lazy' : undefined" class="aspect-[4/3] w-full object-cover" />
+              <AppImage :src="item.photo" :alt="item.name" :width="600" sizes="sm:100vw lg:33vw" :loading="i > 0 ? 'lazy' : 'eager'" class="aspect-[4/3] w-full object-cover" />
             </template>
             <!-- TODO: рендеринг содержимого карточки -->
             <pre class="text-sm">{{ item }}</pre>

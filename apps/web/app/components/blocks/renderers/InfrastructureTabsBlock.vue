@@ -46,10 +46,12 @@ const activeTabData = computed(() => props.tabs.find(t => t.label === activeTab.
           <Transition name="tab-fade" mode="out-in">
             <div :key="activeTab" class="flex flex-1 flex-col">
               <div class="relative flex-1 overflow-hidden rounded-[var(--radius-xl)]">
-                <img
+                <AppImage
                   v-if="activeTabData.image"
                   :src="activeTabData.image"
                   :alt="activeTabData.title"
+                  :width="800"
+                  sizes="sm:100vw lg:50vw"
                   class="size-full min-h-80 object-cover"
                 />
                 <div v-else class="flex min-h-80 items-center justify-center bg-white/10">

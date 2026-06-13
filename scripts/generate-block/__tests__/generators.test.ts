@@ -170,8 +170,11 @@ describe("editor и renderer", () => {
     expect(editor).toContain("TagInput");
   });
 
-  it("renderer: snapshot", () => {
+  it("renderer: snapshot + AppImage для image-полей", () => {
     generateWebRenderer(root, BLOCK);
-    expect(read("apps/web/app/components/blocks/renderers/TestCardsBlock.vue")).toMatchSnapshot();
+    const renderer = read("apps/web/app/components/blocks/renderers/TestCardsBlock.vue");
+    expect(renderer).toMatchSnapshot();
+    expect(renderer).toContain("<AppImage");
+    expect(renderer).not.toContain("<img ");
   });
 });

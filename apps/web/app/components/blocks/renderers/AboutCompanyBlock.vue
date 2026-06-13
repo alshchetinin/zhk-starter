@@ -16,12 +16,13 @@ const { fadeUp, fade, staggerContainer, staggerChild } = useMotionPresets();
     <!-- Image — first on mobile, sticky right on desktop -->
     <div class="about__image-col">
       <Motion as="div" v-bind="fade" class="h-full">
-        <img
+        <AppImage
           v-if="image"
           :src="image"
           :alt="title"
+          :width="800"
+          sizes="sm:100vw lg:50vw"
           class="h-full w-full object-cover"
-          loading="lazy"
         />
         <div
           v-else

@@ -40,12 +40,16 @@ onUnmounted(() => clearInterval(interval));
     <!-- Full-bleed background image -->
     <div class="hero__bg">
       <TransitionGroup name="hero-img">
-        <img
+        <AppImage
           v-for="(src, i) in images"
           v-show="i === currentSlide"
           :key="src"
           :src="src"
           :alt="title"
+          :width="1920"
+          sizes="sm:100vw xl:100vw"
+          :loading="i === 0 ? 'eager' : 'lazy'"
+          :preload="i === 0"
           class="hero__bg-img"
         />
       </TransitionGroup>

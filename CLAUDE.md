@@ -177,6 +177,7 @@ PNG-скриншот блока кладётся в `apps/admin/public/block-pre
 - CSS-токены: `var(--web-text-primary)`, `var(--web-accent)`, `var(--web-bg-muted)`, `var(--web-border)`
 - Иконки: `lucide:*` через `<Icon name="lucide:...">`
 - Richtext: `v-html` + `class="prose-web"`
+- Изображения: **только** `<AppImage>` (обёртка над `<NuxtImg>`/imgproxy), не голый `<img>`. Строковые URL (og/background-image) — `useOptimizedImage()`. См. [docs/images.md](docs/images.md)
 
 ### Admin data-fetching (vue-query + oRPC)
 
