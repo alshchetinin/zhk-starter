@@ -36,6 +36,7 @@ const sections = [
   { id: "blocks", label: "Блоки", icon: "i-solar-layers-minimalistic-linear" },
   { id: "collections", label: "Коллекции", icon: "i-solar-database-linear" },
   { id: "modals", label: "Модальные окна", icon: "i-solar-window-frame-linear" },
+  { id: "images", label: "Изображения", icon: "i-solar-gallery-linear" },
   { id: "tracking", label: "Трекинг событий", icon: "i-solar-chart-2-linear" },
   { id: "security", label: "Безопасность", icon: "i-solar-shield-keyhole-linear" },
 ];
@@ -516,6 +517,140 @@ watch(activeModalSlug, (slug) =&gt; {
             <li><code>apps/web/app/composables/useActionLink.ts</code> — helper для блоков</li>
             <li><code>apps/web/app/components/ModalProvider.vue</code> — рантайм модалки</li>
           </ul>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'images'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Изображения</h2>
+          <p>
+            Картинки на публичном сайте (<code>apps/web</code>) выводятся
+            <strong>только</strong> через компонент <code>&lt;AppImage&gt;</code> (теги)
+            или composable <code>useOptimizedImage()</code> (строковые URL).
+            Под капотом — <code>@nuxt/image</code> с кастомным провайдером, который
+            строит ссылку для self-hosted <strong>imgproxy</strong>: ресайз под нужную
+            ширину + WebP/AVIF по заголовку <code>Accept</code>, оригинал тянется из
+            S3 по allowlist.
+          </p>
+          <p class="callout callout-info">
+            <strong>Голый <code>&lt;img&gt;</code> в <code>apps/web</code> не используем.</strong>
+            В БД и в данных блоков лежит полный S3-URL — там ничего не меняется,
+            вся оптимизация на слое рендера. Та же документация в репо —
+            <code>docs/images.md</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>1. Тег картинки — <code>&lt;AppImage&gt;</code></h3>
+          <pre><code>&lt;AppImage
+  :src="item.image"
+  alt="Фасад дома"
+  :width="800"
+  sizes="sm:100vw lg:33vw"
+  loading="lazy"
+/&gt;</code></pre>
+          <ul>
+            <li><code>src</code> — полный S3-URL из данных блока/проекта;</li>
+            <li><code>alt</code> — обязателен (для декоративных — <code>alt=""</code>);</li>
+            <li><code>width</code> — целевая ширина (драйвит <code>srcset</code>);</li>
+            <li>Первый экран (hero, LCP): <code>loading="eager"</code> + <code>:preload="true"</code>;</li>
+            <li>Дефолты: <code>fit="cover"</code>, <code>quality=80</code>, <code>loading="lazy"</code>, <code>decoding="async"</code>.</li>
+          </ul>
+          <p class="callout callout-warn">
+            <strong><code>sizes</code> — синтаксис <code>@nuxt/image</code>, не CSS-медиазапрос.</strong>
+            Каждый токен с префиксом брейкпоинта: <code>sm:100vw lg:33vw</code>
+            (на ширине ≥ <code>sm</code> → 100vw, ≥ <code>lg</code> → 33vw). Брейкпоинты —
+            ключи <code>image.screens</code> (<code>xs sm md lg xl xxl</code>).
+            ⚠️ Голый токен без префикса (<code>100vw</code>) или CSS-строка
+            (<code>(max-width: 768px) 100vw, 33vw</code>) ломают <code>srcset</code> —
+            дают мусорные кандидаты <code>1w/2w</code>. Всегда префиксуй брейкпоинтом.
+          </p>
+        </section>
+
+        <section>
+          <h3>2. Строковый URL — <code>useOptimizedImage()</code></h3>
+          <p>
+            Для случаев, где нужен URL-строка, а не тег: <code>background-image</code>,
+            <code>og:image</code>, JSON-LD.
+          </p>
+          <pre><code>const optimize = useOptimizedImage();
+const bg = optimize(block.image, { width: 1600 });
+// :style="`background-image: url(${bg})`"</code></pre>
+          <p>
+            При <code>IMG_PROXY_ENABLED=false</code> возвращает исходный URL без изменений.
+          </p>
+        </section>
+
+        <section>
+          <h3>3. Архитектура</h3>
+          <pre><code>данные блока: https://s3.twcstorage.ru/.../foo.jpg
+  → &lt;AppImage :src :width 800 sizes=…/&gt;
+  → @nuxt/image (provider imgproxy) строит URL
+  → {IMG_PROXY_URL}/unsafe/rs:fill:800:0/q:80/{base64url(S3-URL)}
+  → imgproxy тянет оригинал из S3 (allowlist) → WebP/AVIF по Accept, кэш
+  → браузер грузит оптимизированную картинку (srcset под DPR/ширину)</code></pre>
+          <ul class="font-mono text-xs">
+            <li><code>apps/web/app/providers/imgproxy-url.ts</code> — чистый билдер URL (юнит-тест)</li>
+            <li><code>apps/web/app/providers/imgproxy.ts</code> — провайдер @nuxt/image</li>
+            <li><code>apps/web/app/components/AppImage.vue</code> — обёртка + единственная точка тоггла</li>
+            <li><code>apps/web/app/composables/useOptimizedImage.ts</code> — строковые URL</li>
+            <li><code>apps/web/nuxt.config.ts</code> — <code>image.providers.imgproxy</code> (default) + <code>runtimeConfig.public.imgProxy</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>4. Тоггл и инфраструктура imgproxy</h3>
+          <p>
+            <strong>Dev:</strong> сервис <code>imgproxy</code> в
+            <code>packages/db/docker-compose.yml</code>, поднимается вместе с
+            <code>pnpm db:start</code> на <code>http://localhost:8088</code>.
+            <strong>Prod:</strong> отдельный сервис imgproxy в Coolify за Traefik на
+            поддомене <code>img.&lt;домен&gt;</code> (конфиг — в дашборде, как и для Traefik
+            в rate-limiting).
+          </p>
+          <p>Env imgproxy (одинаков dev/prod):</p>
+          <table>
+            <thead>
+              <tr><th>Переменная</th><th>Значение</th><th>Зачем</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>IMGPROXY_ALLOWED_SOURCES</code></td><td><code>https://s3.twcstorage.ru/&lt;bucket&gt;/</code></td><td>только наш бакет — SSRF закрыт</td></tr>
+              <tr><td><code>IMGPROXY_AUTO_WEBP</code> / <code>_AVIF</code></td><td><code>true</code></td><td>формат по <code>Accept</code></td></tr>
+              <tr><td><code>IMGPROXY_MAX_SRC_RESOLUTION</code></td><td><code>50</code></td><td>защита от бомб-картинок</td></tr>
+              <tr><td><code>IMGPROXY_TTL</code></td><td><code>2592000</code></td><td><code>Cache-Control</code> для CDN</td></tr>
+              <tr><td><code>IMGPROXY_KEY</code> / <code>_SALT</code></td><td>не задаём</td><td>режим без подписи</td></tr>
+            </tbody>
+          </table>
+          <p>Env приложения (<code>apps/web</code>):</p>
+          <table>
+            <thead>
+              <tr><th>Переменная</th><th>Dev</th><th>Prod</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>IMG_PROXY_ENABLED</code></td><td><code>true</code> (<code>false</code> → оригиналы)</td><td><code>true</code></td></tr>
+              <tr><td><code>IMG_PROXY_URL</code></td><td><code>http://localhost:8088</code></td><td><code>https://img.&lt;домен&gt;</code></td></tr>
+            </tbody>
+          </table>
+          <p class="callout callout-warn">
+            При <code>IMG_PROXY_ENABLED=false</code> <code>&lt;AppImage&gt;</code> рендерит
+            нативный <code>&lt;img&gt;</code> с оригиналом из S3 (без ресайза) — локальная
+            разработка без поднятого imgproxy и аварийный фолбэк на проде.
+            imgproxy ставит <code>Vary: Accept</code> — кэш Traefik/CDN должен это учитывать.
+            AVIF заметно нагружает CPU — на проде проверить под нагрузкой, при росте
+            латентности отключить <code>IMGPROXY_AUTO_AVIF</code> (оставив WebP).
+          </p>
+        </section>
+
+        <section>
+          <h3>5. Чек-лист для нового блока с картинкой</h3>
+          <ol>
+            <li>В web-рендерере выводить изображение через <code>&lt;AppImage&gt;</code> (генератор уже эмитит его в stub);</li>
+            <li>Задать осмысленные <code>width</code> и <code>sizes</code> (формат брейкпоинтов!) под раскладку блока;</li>
+            <li>Первый экран — <code>loading="eager"</code> + <code>:preload="true"</code>; остальное — <code>lazy</code> (дефолт);</li>
+            <li>Для <code>background-image</code> / строковых URL — <code>useOptimizedImage()</code>;</li>
+            <li>Nullable-источник прикрывай <code>v-if="src"</code> — иначе битый imgproxy-запрос;</li>
+            <li>Голый <code>&lt;img&gt;</code> в <code>apps/web</code> — нельзя.</li>
+          </ol>
         </section>
       </article>
 
