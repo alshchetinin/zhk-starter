@@ -36,11 +36,13 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
         >
           <div class="group relative overflow-hidden rounded-[var(--radius-xl)]">
             <div class="aspect-[4/3]">
-              <img
+              <AppImage
                 v-if="item.image"
                 :src="item.image"
                 :alt="item.title"
-                :loading="i > 0 ? 'lazy' : undefined"
+                :width="600"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                :loading="i > 0 ? 'lazy' : 'eager'"
                 class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div v-else class="size-full bg-[var(--web-bg-muted)]" />

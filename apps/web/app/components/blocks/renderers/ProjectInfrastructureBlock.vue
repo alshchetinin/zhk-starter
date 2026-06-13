@@ -138,7 +138,7 @@ onUnmounted(() => {
           @click="activeCategory = activeCategory === cat.id ? null : cat.id"
         >
           <Icon v-if="!cat.icon.startsWith('http')" :name="cat.icon" class="size-4" />
-          <img v-else :src="cat.icon" class="size-4" />
+          <AppImage v-else :src="cat.icon" alt="" :width="32" class="size-4" />
           {{ cat.name }}
         </button>
       </div>

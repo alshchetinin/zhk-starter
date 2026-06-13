@@ -58,10 +58,12 @@ function next() {
         <div class="relative overflow-hidden rounded-[var(--radius-2xl)] bg-[var(--web-bg-muted)]">
           <div class="relative aspect-[16/9] w-full">
             <Transition name="fade" mode="out-in">
-              <img
+              <AppImage
                 :key="`${activeTab}-${currentSlide}`"
                 :src="activeTabData.images[currentSlide]"
                 :alt="activeTabData.title"
+                :width="1280"
+                sizes="(max-width: 1024px) 100vw, 66vw"
                 class="absolute inset-0 size-full object-cover"
               />
             </Transition>
