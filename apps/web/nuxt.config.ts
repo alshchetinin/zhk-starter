@@ -60,7 +60,6 @@ export default defineNuxtConfig({
       metrikaDev: process.env.NUXT_PUBLIC_METRIKA_DEV === "true",
       imgProxy: {
         enabled: process.env.IMG_PROXY_ENABLED !== "false",
-        url: process.env.IMG_PROXY_URL || "http://localhost:8088",
       },
     },
   },
