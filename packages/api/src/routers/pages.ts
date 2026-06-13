@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import { pages, pageStatusEnum } from "@zhk/db/schema";
 import { and, count, eq, ilike, isNull } from "drizzle-orm";
-import { ORPCError } from "@orpc/server";
+import { appErrors } from "@zhk/observability/errors";
 import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
@@ -48,7 +48,7 @@ export const pagesRouter = {
         with: { category: { columns: { id: true, title: true } } },
       });
       if (!item) {
-        throw new ORPCError("NOT_FOUND", { message: "Page not found" });
+        throw appErrors.NOT_FOUND({ entity: "Страница" });
       }
       return item;
     }),
@@ -112,7 +112,7 @@ export const pagesRouter = {
           where: and(eq(pages.id, id), eq(pages.siteId, context.siteId)),
         });
         if (!existing) {
-          throw new ORPCError("NOT_FOUND", { message: "Page not found" });
+          throw appErrors.NOT_FOUND({ entity: "Страница" });
         }
         return existing;
       }
@@ -123,7 +123,7 @@ export const pagesRouter = {
         .where(and(eq(pages.id, id), eq(pages.siteId, context.siteId)))
         .returning();
       if (!updated) {
-        throw new ORPCError("NOT_FOUND", { message: "Page not found" });
+        throw appErrors.NOT_FOUND({ entity: "Страница" });
       }
       return updated;
     }),
@@ -136,7 +136,7 @@ export const pagesRouter = {
         .where(and(eq(pages.id, input.id), eq(pages.siteId, context.siteId)))
         .returning({ id: pages.id });
       if (!deleted.length) {
-        throw new ORPCError("NOT_FOUND", { message: "Page not found" });
+        throw appErrors.NOT_FOUND({ entity: "Страница" });
       }
       return { success: true };
     }),
