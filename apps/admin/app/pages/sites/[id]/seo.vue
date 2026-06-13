@@ -34,7 +34,7 @@ const form = ref({
   seoOrgName: "",
   seoOrgLegalName: "",
   seoOrgLogo: null as string | null,
-  seoOrgContactId: "",
+  seoOrgContactId: null as string | null,
 });
 
 watchEffect(() => {
@@ -52,7 +52,7 @@ watchEffect(() => {
       seoOrgName: seo?.organization?.name ?? "",
       seoOrgLegalName: seo?.organization?.legalName ?? "",
       seoOrgLogo: seo?.organization?.logo ?? null,
-      seoOrgContactId: seo?.organization?.contactId ?? "",
+      seoOrgContactId: seo?.organization?.contactId ?? null,
     };
   }
 });
