@@ -6,7 +6,6 @@ import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { cities } from "./cities";
 import { buildings } from "./buildings";
-import { pages } from "./pages";
 
 export const projects = pgTable("projects", {
   id: text("id")
@@ -66,5 +65,4 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [integrations.id],
   }),
   buildings: many(buildings),
-  pages: many(pages),
 }));

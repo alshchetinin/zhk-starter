@@ -6,7 +6,6 @@ const route = useRoute();
 const router = useRouter();
 const { $orpc, $orpcClient } = useNuxtApp();
 
-const { options: projectOptions } = useProjectOptions();
 const toast = useToast();
 const queryClient = useQueryClient();
 
@@ -27,7 +26,7 @@ const form = reactive({
   slug: "",
   status: "draft" as PageStatus,
   contentBlocks: [] as ContentBlock[],
-  projectId: PROJECT_NONE,
+  categoryId: CATEGORY_NONE,
   metaTitle: "",
   metaDescription: "",
   ogImage: null as string | null,
@@ -40,7 +39,7 @@ whenever(pageData, (val) => {
   form.slug = val.slug;
   form.status = val.status;
   form.contentBlocks = (val.contentBlocks as ContentBlock[]) ?? [];
-  form.projectId = val.projectId ?? PROJECT_NONE;
+  form.categoryId = val.categoryId ?? CATEGORY_NONE;
   form.metaTitle = val.metaTitle ?? "";
   form.metaDescription = val.metaDescription ?? "";
   form.ogImage = val.ogImage ?? null;
@@ -63,7 +62,7 @@ const updateMutation = useMutation({
       slug: form.slug,
       status: form.status,
       contentBlocks: form.contentBlocks,
-      projectId: form.projectId === PROJECT_NONE ? null : form.projectId,
+      categoryId: form.categoryId === CATEGORY_NONE ? null : form.categoryId,
       metaTitle: form.metaTitle || null,
       metaDescription: form.metaDescription || null,
       ogImage: form.ogImage,
@@ -79,7 +78,7 @@ const updateMutation = useMutation({
         slug: form.slug,
         status: form.status,
         contentBlocks: form.contentBlocks,
-        projectId: form.projectId === PROJECT_NONE ? null : form.projectId,
+        categoryId: form.categoryId === CATEGORY_NONE ? null : form.categoryId,
         metaTitle: form.metaTitle || null,
         metaDescription: form.metaDescription || null,
         ogImage: form.ogImage,
@@ -185,8 +184,8 @@ const deleteMutation = useMutation({
           <div
             class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4"
           >
-            <UFormField label="Проект">
-              <USelect v-model="form.projectId" :items="projectOptions" placeholder="Без проекта" />
+            <UFormField label="Категория">
+              <CategorySelect v-model="form.categoryId" />
             </UFormField>
 
             <UFormField label="Статус">

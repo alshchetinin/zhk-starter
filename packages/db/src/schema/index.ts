@@ -27,6 +27,7 @@ export * from "./tickets";
 export * from "./auth";
 export * from "./news";
 export * from "./pages";
+export * from "./page-categories";
 export * from "./documents";
 export * from "./contacts";
 export * from "./social-links";

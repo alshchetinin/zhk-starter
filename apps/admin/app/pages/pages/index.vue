@@ -10,6 +10,16 @@ const pageSize = 20;
 const search = ref("");
 const debouncedSearch = refDebounced(search, 300);
 const statusFilter = ref<PageStatus>();
+const categoryFilter = ref<string>("");
+const categoriesModalOpen = ref(false);
+
+const { data: categoriesData } = useQuery(
+  computed(() => $orpc.pageCategories.list.queryOptions()),
+);
+const categoryFilterItems = computed(() => [
+  { label: "Все категории", value: "" },
+  ...(categoriesData.value?.map((c) => ({ label: c.title, value: c.id })) ?? []),
+]);
 
 const { data, isPending } = useQuery(
   computed(() => ({
@@ -19,6 +29,7 @@ const { data, isPending } = useQuery(
         pageSize,
         search: debouncedSearch.value || undefined,
         status: statusFilter.value,
+        categoryId: categoryFilter.value || undefined,
       },
     }),
     placeholderData: keepPreviousData,
@@ -29,7 +40,7 @@ function prefetchPage(id: string) {
   queryClient.prefetchQuery($orpc.pages.getById.queryOptions({ input: { id } }));
 }
 
-watch([debouncedSearch, statusFilter], () => {
+watch([debouncedSearch, statusFilter, categoryFilter], () => {
   page.value = 1;
 });
 
@@ -65,6 +76,13 @@ const deleteMutation = useMutation({
       :subtitle="data?.total != null ? `${data.total} страниц` : undefined"
     >
       <template #actions>
+        <UButton
+          variant="outline"
+          icon="i-solar-folder-with-files-linear"
+          @click="categoriesModalOpen = true"
+        >
+          Категории
+        </UButton>
         <UButton to="/pages/create" icon="i-solar-add-square-linear" color="primary">
           Новая страница
         </UButton>
@@ -74,6 +92,7 @@ const deleteMutation = useMutation({
     <div class="mb-4 flex items-center gap-2">
       <UInput v-model="search" placeholder="Поиск…" icon="i-solar-magnifer-linear" size="sm" class="max-w-xs" />
       <USelect v-model="statusFilter" :items="pageStatusOptions" placeholder="Все статусы" size="sm" class="max-w-[200px]" />
+      <USelect v-model="categoryFilter" :items="categoryFilterItems" placeholder="Все категории" size="sm" class="max-w-[200px]" />
     </div>
 
     <div
@@ -103,7 +122,7 @@ const deleteMutation = useMutation({
                 :label="pageStatusLabels[item.status] ?? item.status"
                 dot
               />
-              <AppStatusPill v-if="item.project" tone="info" :label="item.project.name" />
+              <AppStatusPill v-if="item.category" tone="neutral" :label="item.category.title" />
             </div>
             <div class="text-[11px] text-(--ui-text-dimmed) tabular-nums mt-0.5">
               создано {{ formatDate(item.createdAt) }}
@@ -133,5 +152,6 @@ const deleteMutation = useMutation({
     <div v-if="(data?.total ?? 0) > pageSize" class="mt-4 flex justify-center">
       <UPagination v-model:page="page" :total="data?.total ?? 0" :items-per-page="pageSize" />
     </div>
+    <PageCategoriesModal v-model:open="categoriesModalOpen" />
   </PageContainer>
 </template>
