@@ -2,7 +2,7 @@ import { auth } from "@zhk/auth";
 import { db } from "@zhk/db";
 import * as schema from "@zhk/db/schema";
 import { env } from "@zhk/env/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 async function seed() {
   const email = env.ADMIN_EMAIL;
@@ -32,6 +32,32 @@ async function seed() {
     console.log("Default site created (id=default, slug=main, isPrimary=true)");
   } else {
     console.log("Default site already exists. Skipping.");
+  }
+
+  const defaultCategories = [
+    { title: "Проекты", sortOrder: 0 },
+    { title: "Способы покупки", sortOrder: 1 },
+    { title: "Второстепенные", sortOrder: 2 },
+  ];
+  for (const cat of defaultCategories) {
+    const exists = await db
+      .select({ id: schema.pageCategories.id })
+      .from(schema.pageCategories)
+      .where(
+        and(
+          eq(schema.pageCategories.siteId, "default"),
+          eq(schema.pageCategories.title, cat.title),
+        ),
+      )
+      .limit(1);
+    if (exists.length === 0) {
+      await db.insert(schema.pageCategories).values({
+        siteId: "default",
+        title: cat.title,
+        sortOrder: cat.sortOrder,
+      });
+      console.log(`Page category "${cat.title}" created`);
+    }
   }
 
   const existing = await db
