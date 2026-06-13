@@ -14,7 +14,7 @@ const createMut = useMutation({
   mutationFn: () => $orpcClient.pageCategories.create({ title: newTitle.value.trim() }),
   onSuccess: (created) => {
     queryClient.invalidateQueries({ queryKey: $orpc.pageCategories.key() });
-    model.value = created.id;
+    if (created) model.value = created.id;
     newTitle.value = "";
     creating.value = false;
   },
