@@ -19,7 +19,7 @@
   :src="item.image"
   alt="Фасад дома"
   :width="800"
-  sizes="(max-width: 768px) 100vw, 33vw"
+  sizes="sm:100vw lg:33vw"
   loading="lazy"
 />
 ```
@@ -27,6 +27,12 @@
 - `src` — полный S3-URL из данных блока/проекта.
 - `alt` — обязателен (для декоративных — `alt=""`).
 - `width` — целевая ширина (драйвит `srcset`); `sizes` — раскладка под вьюпорты.
+- **`sizes` — синтаксис `@nuxt/image`, не CSS-медиазапрос.** Каждый токен с
+  префиксом брейкпоинта: `sm:100vw lg:33vw` (на ширине ≥ `sm` → 100vw, ≥ `lg` →
+  33vw). Брейкпоинты — ключи `image.screens` (`xs sm md lg xl xxl`).
+  ⚠️ Голый токен без префикса (`100vw`) или CSS-строка
+  (`(max-width: 768px) 100vw, 33vw`) ломают `srcset` — дают мусорные кандидаты
+  `1w/2w`. Всегда префиксуй брейкпоинтом.
 - Первый экран (hero, LCP): `loading="eager"` + `:preload="true"`.
 - Дефолты: `fit="cover"`, `quality=80`, `loading="lazy"`, `decoding="async"`.
 

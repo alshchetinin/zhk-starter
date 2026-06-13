@@ -21,7 +21,7 @@ const { fadeUp, fade, staggerContainer, staggerChild } = useMotionPresets();
           :src="image"
           :alt="title"
           :width="800"
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="sm:100vw lg:50vw"
           class="h-full w-full object-cover"
         />
         <div

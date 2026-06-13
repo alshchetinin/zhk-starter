@@ -47,7 +47,7 @@ onUnmounted(() => clearInterval(interval));
           :src="src"
           :alt="title"
           :width="1920"
-          sizes="100vw"
+          sizes="sm:100vw xl:100vw"
           :loading="i === 0 ? 'eager' : 'lazy'"
           :preload="i === 0"
           class="hero__bg-img"

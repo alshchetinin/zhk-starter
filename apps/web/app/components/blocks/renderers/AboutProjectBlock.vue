@@ -63,7 +63,7 @@ function next() {
                 :src="activeTabData.images[currentSlide]"
                 :alt="activeTabData.title"
                 :width="1280"
-                sizes="(max-width: 1024px) 100vw, 66vw"
+                sizes="sm:100vw lg:66vw"
                 class="absolute inset-0 size-full object-cover"
               />
             </Transition>

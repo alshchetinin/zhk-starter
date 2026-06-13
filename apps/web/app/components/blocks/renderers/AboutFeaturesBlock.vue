@@ -41,7 +41,7 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
                 :src="item.image"
                 :alt="item.title"
                 :width="600"
-                sizes="(max-width: 768px) 100vw, 33vw"
+                sizes="sm:100vw lg:33vw"
                 :loading="i > 0 ? 'lazy' : 'eager'"
                 class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

@@ -51,7 +51,7 @@ const activeTabData = computed(() => props.tabs.find(t => t.label === activeTab.
                   :src="activeTabData.image"
                   :alt="activeTabData.title"
                   :width="800"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  sizes="sm:100vw lg:50vw"
                   class="size-full min-h-80 object-cover"
                 />
                 <div v-else class="flex min-h-80 items-center justify-center bg-white/10">

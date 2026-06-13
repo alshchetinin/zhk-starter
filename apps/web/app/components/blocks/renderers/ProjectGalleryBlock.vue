@@ -57,7 +57,7 @@ const gridClass = computed(() => {
             :src="src"
             :alt="`${project.name} — ${i + 1}`"
             :width="800"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            sizes="sm:100vw lg:33vw"
             :loading="i > 0 ? 'lazy' : 'eager'"
             class="size-full object-cover"
           />
