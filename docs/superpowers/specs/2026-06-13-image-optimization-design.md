@@ -34,7 +34,7 @@
 | DX | `<AppImage>` (обёртка над `<NuxtImg>`) + `useOptimizedImage()` (строковые URL) |
 | Охват | **Только `apps/web`** (admin грузит оригиналы как сейчас) |
 | Dev | Локальный imgproxy в docker-compose + флаг `IMG_PROXY_ENABLED` |
-| Объём | Миграция **всех** текущих рендереров + генератор + SEO + доки — сразу |
+| Объём | Миграция **всех** текущих рендереров + генератор + доки — сразу. SEO-обвязка отложена (см. ниже) |
 
 ## Архитектура / поток данных
 
@@ -160,11 +160,17 @@ const ogImage = optimize(site.imageUrl, { width: 1200, height: 630 })
 `<AppImage>` вместо `<img>`. Idempotency-тесты генератора обновить под новую
 эмиссию.
 
-### SEO
+### SEO (отложено)
 
-- `og:image` в `usePageSeo()` → через `useOptimizedImage()` (1200×630);
-- картинки в `apps/web/app/utils/json-ld.ts` (Organization logo, NewsArticle image,
-  ApartmentComplex) → через `useOptimizedImage()`.
+> На текущей ветке (`feat/62-image-optimization` от `main`) SEO-слоя web ещё нет:
+> `usePageSeo()`, `useJsonLd()`, `apps/web/app/utils/json-ld.ts` отсутствуют —
+> описаны в `CLAUDE.md`, но не смёрджены (есть только спек
+> `2026-06-12-seo-layer-design.md`). Привязывать `og:image`/JSON-LD не к чему.
+
+Поэтому в этой задаче SEO-обвязку **не делаем**, но `useOptimizedImage()` строим
+сразу — он станет точкой интеграции, когда SEO-слой смёрджится. Тогда отдельной
+правкой: `og:image` (1200×630) и картинки JSON-LD прогоняются через
+`useOptimizedImage()`. Зафиксировать как follow-up в issue SEO-слоя.
 
 ### Документация
 
@@ -181,9 +187,10 @@ const ogImage = optimize(site.imageUrl, { width: 1200, height: 630 })
   `img.<...>/unsafe/...`, в ответах WebP/AVIF по `Accept`, `srcset` присутствует.
 - Тоггл: `IMG_PROXY_ENABLED=false` → грузятся оригиналы S3, ошибок нет.
 - imgproxy с чужим URL (не из бакета) → 404/403 (allowlist работает).
-- Idempotency-тесты генератора зелёные после правки stub.
-- SEO: `og:image` и JSON-LD-картинки указывают на оптимизированный URL (при
-  включённом тоггле).
+- Snapshot-тест генератора (`scripts/generate-block/__tests__/generators.test.ts`)
+  обновлён, renderer-stub эмитит `<AppImage>`.
+- Unit-тест провайдера (`buildImgproxyUrl`) зелёный: формат
+  `{base}/unsafe/rs:fit:W:H/q:Q/{base64url}`.
 - Визуальная проверка через preview-инструменты: hero, галерея проекта,
   about-features.
 
