@@ -1,4 +1,9 @@
 <script setup lang="ts">
+// Единая точка вывода картинок на сайте. Включён imgproxy (IMG_PROXY_ENABLED) —
+// рендерим <NuxtImg> через провайдер imgproxy (ресайз + WebP/AVIF, srcset).
+// Выключен — нативный <img> с оригиналом из S3 (без обработки).
+defineOptions({ inheritAttrs: false });
+
 withDefaults(
   defineProps<{
     src: string;
@@ -19,12 +24,13 @@ withDefaults(
 );
 
 const config = useRuntimeConfig();
-const provider = computed(() => (config.public.imgProxy.enabled ? "imgproxy" : "none"));
+const enabled = computed(() => config.public.imgProxy.enabled);
 </script>
 
 <template>
   <NuxtImg
-    :provider="provider"
+    v-if="enabled"
+    provider="imgproxy"
     :src="src"
     :alt="alt"
     :width="width"
@@ -35,5 +41,16 @@ const provider = computed(() => (config.public.imgProxy.enabled ? "imgproxy" : "
     :loading="loading"
     :preload="preload"
     decoding="async"
+    v-bind="$attrs"
+  />
+  <img
+    v-else
+    :src="src"
+    :alt="alt"
+    :width="width"
+    :height="height"
+    :loading="loading"
+    decoding="async"
+    v-bind="$attrs"
   />
 </template>
