@@ -191,6 +191,7 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   await copyRows(tx, promotions, input.sourceSiteId, newSiteId, (row) => ({
     ...row,
     integrationId: null,
+    externalId: null, // не тащим привязку к синку источника
     contentBlocks: remap(row.contentBlocks),
   }));
   await copyRows(tx, documents, input.sourceSiteId, newSiteId, (row) => ({
@@ -207,6 +208,11 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   }
   if (newSettings.contactsFooterIds) {
     newSettings.contactsFooterIds = remapIds(newSettings.contactsFooterIds);
+  }
+  // seo.organization.contactId — тоже ссылка на контакт, ремапим
+  const orgContactId = newSettings.seo?.organization?.contactId;
+  if (orgContactId && newSettings.seo?.organization) {
+    newSettings.seo.organization.contactId = contactsMap.get(orgContactId) ?? orgContactId;
   }
   await tx
     .update(sites)
