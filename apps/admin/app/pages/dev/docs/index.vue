@@ -40,6 +40,7 @@ const sections = [
   { id: "tracking", label: "Трекинг событий", icon: "i-solar-chart-2-linear" },
   { id: "security", label: "Безопасность", icon: "i-solar-shield-keyhole-linear" },
   { id: "observability", label: "Ошибки (GlitchTip)", icon: "i-solar-bug-minimalistic-linear" },
+  { id: "site-duplication", label: "Дублирование сайта", icon: "i-solar-copy-linear" },
 ];
 
 const rateLimitScopes = [
@@ -1034,6 +1035,66 @@ docker compose -f docs/observability/glitchtip.compose.yml down   # остано
             <li><code>apps/admin/sentry.{client,server}.config.ts</code> — @sentry/nuxt</li>
             <li><code>packages/env/src/server.ts</code> — GLITCHTIP_DSN</li>
             <li><code>docs/observability.md</code> + <code>docs/observability/glitchtip.compose.yml</code></li>
+          </ul>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'site-duplication'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Дублирование сайта под город</h2>
+          <p>
+            Кнопка <strong>«Дублировать»</strong> у сайта (Сайты → действие в строке) создаёт
+            новый сайт-черновик и копирует <strong>контент-шаблон</strong>, чтобы не заполнять
+            город с нуля. Каталог недвижимости у города свой (приходит своим синком), поэтому
+            не копируется. Подход — клон-однократно: копия живёт независимо (правки исходника
+            в неё не доезжают).
+          </p>
+          <p class="callout callout-info">
+            Всё в одной транзакции (<code>db.transaction</code>): при ошибке — полный откат. Новый сайт
+            создаётся <strong>неактивным</strong> (черновик); домен/пароль/Metrika counterId
+            сброшены — заполняешь под город.
+          </p>
+        </section>
+
+        <section>
+          <h3>Что копируется / что нет</h3>
+          <p><strong>Копируется</strong> (с ремапом FK на новые id):</p>
+          <ul class="font-mono text-xs">
+            <li>pages, homepage, modals, page_categories</li>
+            <li>contacts, social_links, ticket_settings</li>
+            <li>banks, mortgage_programs (ремап bankId), purchase_methods</li>
+            <li>news, promotions (integrationId → null), documents</li>
+            <li>site.settings (SEO/analytics; контакт-id ремап; counterId очищен)</li>
+          </ul>
+          <p class="callout callout-warn">
+            <strong>НЕ копируется:</strong> каталог недвижимости (projects/дома/квартиры/коммерция/
+            паркинг/кладовки/планировки/decorations/прогресс стройки), интеграции, теги,
+            история версий контента. Город синкает свой каталог.
+          </p>
+        </section>
+
+        <section>
+          <h3>Ссылки внутри блоков (JSONB)</h3>
+          <ul>
+            <li><code>project</code>-поля (projectId) — <strong>оставляем как есть</strong>.
+              Каталог не копируется; ссылка резолвится по id кросс-сайтово
+              (<code>enrichContentBlocks</code> фильтрует по <code>projects.id</code>, не по siteId) —
+              покажет исходный проект, пока не перелинкуешь под город.</li>
+            <li><code>contacts</code>-поля (contactIds) — <strong>ремап</strong> на скопированные
+              контакты нового сайта.</li>
+          </ul>
+          <p>
+            Логика ремапа — чистая функция <code>remapBlockReferences</code> (по индексу полей из
+            определений блоков), покрыта unit-тестами.
+          </p>
+        </section>
+
+        <section>
+          <h3>Где что лежит</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/api/src/services/site-duplication.ts</code> — сервис (copyRows, duplicateSite, remapBlockReferences)</li>
+            <li><code>packages/api/src/routers/sites.ts</code> — процедура <code>sites.duplicate</code> (adminProcedure)</li>
+            <li><code>apps/admin/app/pages/sites/index.vue</code> — кнопка + модалка</li>
           </ul>
         </section>
       </article>
