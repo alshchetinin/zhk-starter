@@ -115,7 +115,7 @@ export const sitesRouter = {
       z.object({
         sourceSiteId: z.string(),
         name: z.string().min(1),
-        slug: z.string().min(1),
+        slug: slugSchema,
         cityId: z.string().nullable().optional(),
       }),
     )
