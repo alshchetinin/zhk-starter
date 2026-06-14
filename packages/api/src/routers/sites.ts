@@ -4,6 +4,7 @@ import { sites } from "@zhk/db/schema";
 import { and, eq, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { adminProcedure, protectedProcedure } from "../index";
+import { duplicateSite } from "../services/site-duplication";
 import { resolveSiteFromHost } from "../utils/resolve-site";
 import { METRIKA_COUNTER_ID_REGEX } from "../shared/tracking";
 
@@ -107,6 +108,26 @@ export const sitesRouter = {
         })
         .returning();
       return created;
+    }),
+
+  duplicate: adminProcedure
+    .input(
+      z.object({
+        sourceSiteId: z.string(),
+        name: z.string().min(1),
+        slug: slugSchema,
+        cityId: z.string().nullable().optional(),
+      }),
+    )
+    .handler(async ({ input }) => {
+      const slugTaken = await db.query.sites.findFirst({
+        where: eq(sites.slug, input.slug),
+        columns: { id: true },
+      });
+      if (slugTaken) {
+        throw new ORPCError("CONFLICT", { message: "Сайт с таким slug уже существует" });
+      }
+      return db.transaction((tx) => duplicateSite(tx, input));
     }),
 
   update: adminProcedure
