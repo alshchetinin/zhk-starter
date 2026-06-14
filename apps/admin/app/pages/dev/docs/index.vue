@@ -39,6 +39,7 @@ const sections = [
   { id: "images", label: "Изображения", icon: "i-solar-gallery-linear" },
   { id: "tracking", label: "Трекинг событий", icon: "i-solar-chart-2-linear" },
   { id: "security", label: "Безопасность", icon: "i-solar-shield-keyhole-linear" },
+  { id: "observability", label: "Ошибки (GlitchTip)", icon: "i-solar-bug-minimalistic-linear" },
 ];
 
 const rateLimitScopes = [
@@ -938,6 +939,101 @@ export const myRouter = {
             <li><code>apps/server/src/middleware/rate-limit.ts</code> — Hono потолок</li>
             <li><code>packages/auth/src/index.ts</code> — better-auth sign-in лимит</li>
             <li><code>packages/env/src/server.ts</code> — REDIS_URL, RL_*</li>
+          </ul>
+        </section>
+      </article>
+
+      <article v-if="activeSection === 'observability'" class="space-y-8 prose-docs">
+        <section>
+          <h2>Ошибки → GlitchTip Issues</h2>
+          <p>
+            Трекинг ошибок на <code>@sentry/node</code> → self-hosted
+            <strong>GlitchTip</strong> (Sentry-совместимый дашборд Issues: группировка,
+            алёрты, resolve/ignore). В Issues уходят <strong>только неожиданные</strong>
+            ошибки (5xx / необработанные), с тегами <code>operation</code>/<code>siteId</code>/<code>userId</code>
+            и <code>why</code>/<code>fix</code>/<code>code</code> в extra. Ожидаемые доменные
+            4xx (404/401/403/429) в дашборд не шлются — чисто, без спама.
+          </p>
+          <p class="callout callout-info">
+            Полное руководство и runbook локального GlitchTip — <code>docs/observability.md</code>.
+            Выключатель — env <code>GLITCHTIP_DSN</code> (пусто → отправка выключена, no-op).
+          </p>
+        </section>
+
+        <section>
+          <h3>Архитектура</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/observability</code> — обвязка: <code>initSentry</code>, <code>captureUnexpected</code>, каталог <code>appErrors</code></li>
+            <li><code>apps/server</code> — oRPC-middleware <code>sentryCapture</code> (ловит ошибки процедур) + <code>app.onError</code></li>
+            <li><code>apps/admin</code> — модуль <code>@sentry/nuxt</code> (client + server)</li>
+            <li><code>apps/web</code> — <code>@sentry/node</code> в Nitro (хук <code>error</code>): <strong>только серверные/SSR</strong>, без браузерного SDK</li>
+          </ul>
+          <p class="callout callout-info">
+            DSN остаётся <strong>server-side</strong>: у публичного <code>web</code> браузерного
+            SDK нет (сайт лёгкий, DSN не утекает). У <code>admin</code> DSN попадает в браузер
+            через public runtimeConfig — это допустимо (Sentry DSN — публичный ingest-ключ, админка внутренняя).
+          </p>
+        </section>
+
+        <section>
+          <h3>Что считается «неожиданным»</h3>
+          <p>
+            Чистая функция <code>isUnexpectedError(status)</code> в
+            <code>packages/observability/src/sentry.ts</code>. В Issues шлём ТОЛЬКО:
+          </p>
+          <ul>
+            <li><code>ORPCError</code> со статусом <strong>≥ 500</strong>, ИЛИ</li>
+            <li>любой не-<code>ORPCError</code> throw (обычный <code>Error</code> — статус неизвестен → считаем неожиданным).</li>
+          </ul>
+          <p>
+            Ожидаемые 4xx — нормальный control-flow, не баг. oRPC-ошибки ловит middleware
+            <code>sentryCapture</code> на <code>publicProcedure</code>; Hono-level/необработанные — <code>app.onError</code>.
+          </p>
+        </section>
+
+        <section>
+          <h3>Каталог доменных ошибок (why/fix)</h3>
+          <p>
+            <code>packages/observability/src/errors.ts</code> — простые фабрики, возвращающие
+            <code>ORPCError</code>. <code>code</code>/<code>why</code>/<code>fix</code> лежат в
+            <code>ORPCError.data</code> (их читают <code>captureUnexpected</code> для тегов и клиент):
+          </p>
+          <pre><code>import { appErrors } from "@zhk/observability/errors";
+
+// в oRPC-процедуре — обычная 4xx, клиенту вернётся 404, в Issues НЕ попадёт:
+throw appErrors.NOT_FOUND({ entity: "Страница" });</code></pre>
+          <p>
+            Конвенция: для повторяющихся доменных случаев предпочитать каталог вместо
+            «голого» <code>new ORPCError(...)</code> — чтобы <code>why</code>/<code>fix</code> были при ошибке.
+          </p>
+        </section>
+
+        <section>
+          <h3>Локальный GlitchTip (проверка)</h3>
+          <p>Standalone, отдельно от проекта:</p>
+          <pre><code>docker compose -f docs/observability/glitchtip.compose.yml up -d
+# http://localhost:8000 → регистрация → проект → DSN → в apps/server/.env как GLITCHTIP_DSN
+docker compose -f docs/observability/glitchtip.compose.yml down   # остановить</code></pre>
+          <p class="callout callout-warn">
+            <strong>Грабли.</strong> При <code>Sentry.init</code> <em>не</em> ставить
+            <code>defaultIntegrations: false</code> — с ним <code>@sentry/node</code> перестаёт
+            <em>доставлять</em> события (создаётся, но не уходит). И не возвращать
+            <code>evlog</code>: в pnpm-монорепо он ставится несколькими физическими копиями
+            (peer-варианты) → его global-конфиг не применяется к событиям из другой копии,
+            до бэкенда не доходит ничего.
+          </p>
+        </section>
+
+        <section>
+          <h3>Где что лежит</h3>
+          <ul class="font-mono text-xs">
+            <li><code>packages/observability/src/sentry.ts</code> — initSentry, captureUnexpected, isUnexpectedError</li>
+            <li><code>packages/observability/src/errors.ts</code> — каталог appErrors</li>
+            <li><code>packages/api/src/orpc-base.ts</code> — middleware sentryCapture (тег siteId)</li>
+            <li><code>apps/web/server/plugins/sentry.ts</code> — Nitro error-hook (web)</li>
+            <li><code>apps/admin/sentry.{client,server}.config.ts</code> — @sentry/nuxt</li>
+            <li><code>packages/env/src/server.ts</code> — GLITCHTIP_DSN</li>
+            <li><code>docs/observability.md</code> + <code>docs/observability/glitchtip.compose.yml</code></li>
           </ul>
         </section>
       </article>
