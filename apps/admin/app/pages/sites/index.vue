@@ -48,6 +48,44 @@ const primaryMutation = useMutation({
     queryClient.invalidateQueries({ queryKey: $orpc.sites.key() });
   },
 });
+
+const showDuplicate = ref(false);
+const dupSource = ref<{ id: string; name: string } | null>(null);
+const dupForm = reactive({ name: "", slug: "", cityId: "" });
+
+const { data: citiesData } = useQuery($orpc.cities.list.queryOptions());
+const cityItems = computed(() => [
+  { label: "Без города", value: "" },
+  ...(citiesData.value?.map((c: { id: string; name: string }) => ({ label: c.name, value: c.id })) ?? []),
+]);
+
+function openDuplicate(site: { id: string; name: string }) {
+  dupSource.value = site;
+  dupForm.name = `${site.name} (копия)`;
+  dupForm.slug = "";
+  dupForm.cityId = "";
+  showDuplicate.value = true;
+}
+watch(() => dupForm.name, (v) => { dupForm.slug = slugify(v); });
+
+const duplicateMutation = useMutation({
+  mutationFn: () =>
+    $orpcClient.sites.duplicate({
+      sourceSiteId: dupSource.value!.id,
+      name: dupForm.name,
+      slug: dupForm.slug,
+      cityId: dupForm.cityId || null,
+    }),
+  onSuccess: (created: { id: string }) => {
+    toast.add({ title: "Сайт продублирован", color: "success" });
+    showDuplicate.value = false;
+    queryClient.invalidateQueries({ queryKey: $orpc.sites.key() });
+    navigateTo(`/sites/${created.id}`);
+  },
+  onError: () => {
+    toast.add({ title: "Не удалось продублировать (проверьте slug)", color: "error" });
+  },
+});
 </script>
 
 <template>
@@ -137,6 +175,12 @@ const primaryMutation = useMutation({
               @click="primaryMutation.mutate(item.id)"
             />
             <UButton
+              variant="ghost"
+              icon="i-solar-copy-linear"
+              title="Дублировать"
+              @click="openDuplicate({ id: item.id, name: item.name })"
+            />
+            <UButton
               :to="`/sites/${item.id}`"
               variant="ghost"
               icon="i-solar-pen-new-square-linear"
@@ -171,6 +215,41 @@ const primaryMutation = useMutation({
         </UButton>
       </template>
     </AppEmptyState>
+
+    <UModal v-model:open="showDuplicate" title="Дублировать сайт">
+      <template #body>
+        <div class="space-y-4">
+          <p class="text-sm text-(--ui-text-muted)">
+            Копируется контент-шаблон (страницы, главная, блоки, модалки, контакты,
+            банки/ипотека, новости/акции/документы, SEO). Каталог недвижимости и
+            интеграции НЕ копируются — город синкает свой. Новый сайт создаётся
+            как черновик (неактивен).
+          </p>
+          <UFormField label="Название">
+            <UInput v-model="dupForm.name" placeholder="Название нового сайта" size="sm" />
+          </UFormField>
+          <UFormField label="Slug" description="Уникальный путь сайта">
+            <UInput v-model="dupForm.slug" placeholder="url-slug" size="sm" />
+          </UFormField>
+          <UFormField label="Город">
+            <USelect v-model="dupForm.cityId" :items="cityItems" placeholder="Без города" size="sm" />
+          </UFormField>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex gap-2 justify-end w-full">
+          <UButton variant="outline" @click="showDuplicate = false">Отмена</UButton>
+          <UButton
+            color="primary"
+            :loading="duplicateMutation.isPending.value"
+            :disabled="!dupForm.name.trim() || !dupForm.slug.trim()"
+            @click="duplicateMutation.mutate()"
+          >
+            Дублировать
+          </UButton>
+        </div>
+      </template>
+    </UModal>
 
     <UModal v-model:open="showCreate" title="Новый сайт">
       <template #body>
