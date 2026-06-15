@@ -4,13 +4,13 @@ export const TICKET_FIELD_TYPES = ["name", "phone", "email", "description", "che
 export type TicketFieldType = (typeof TICKET_FIELD_TYPES)[number];
 
 export const ticketFieldSchema = z.object({
-  key: z.string(),
+  key: z.string().max(200),
   type: z.enum(TICKET_FIELD_TYPES),
-  label: z.string(),
-  value: z.union([z.string(), z.boolean()]),
+  label: z.string().max(500),
+  value: z.union([z.string().max(5000), z.boolean()]),
 });
 export type TicketField = z.infer<typeof ticketFieldSchema>;
-export const ticketFieldsSchema = z.array(ticketFieldSchema);
+export const ticketFieldsSchema = z.array(ticketFieldSchema).max(50);
 
 export interface FlatSubmission {
   name?: string | null;

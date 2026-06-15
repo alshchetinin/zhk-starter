@@ -100,7 +100,7 @@ function formatDate(date: string) {
         <div class="border border-(--ui-border) p-6 space-y-3">
           <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Данные заявки</h2>
           <div v-for="(f, i) in fields" :key="i" class="grid grid-cols-[160px_1fr] gap-3 text-sm">
-            <div class="text-(--ui-text-dimmed)" v-html="f.label" />
+            <div class="text-(--ui-text-dimmed)">{{ f.label }}</div>
             <div class="text-(--ui-text-highlighted) break-words">
               <a v-if="f.type === 'phone'" :href="`tel:${f.value.replace(/[^+\d]/g, '')}`" class="text-(--ui-primary) hover:underline">{{ f.value }}</a>
               <a v-else-if="f.type === 'email'" :href="`mailto:${f.value}`" class="text-(--ui-primary) hover:underline">{{ f.value }}</a>

@@ -100,6 +100,10 @@ interface DeliveryContext {
 }
 ```
 
+> **Breaking change для webhook-потребителей:** `ticket.phone` может быть `null`
+> (телефон стал необязательным полем формы). Внешние вебхуки, полагавшиеся на
+> строку, должны учитывать `null` и не падать при его отсутствии.
+
 `buildDeliveryContext` (`services/receivers/payload.ts`) собирает `fields`
 через `ticketDisplayFields` (`packages/api/src/shared/ticket-fields.ts`):
 берёт данные из `ticket.additionalInfo.fields` (полный структурный набор полей
