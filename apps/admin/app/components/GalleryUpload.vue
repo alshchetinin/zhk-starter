@@ -45,8 +45,10 @@ const updateAlt = useMutation($orpc.media.update.mutationOptions());
 const draftAlts = ref<Record<string, string>>({});
 function seedDrafts() {
   for (const it of items.value) {
-    if (!(it.url in draftAlts.value)) {
-      draftAlts.value[it.url] = it.alt ?? altMap.value?.[it.url] ?? "";
+    const source = it.alt ?? altMap.value?.[it.url] ?? "";
+    // первый раз ИЛИ черновик пуст, а источник подъехал (altMap догрузилась)
+    if (!(it.url in draftAlts.value) || (draftAlts.value[it.url] === "" && source !== "")) {
+      draftAlts.value[it.url] = source;
     }
   }
 }
@@ -56,14 +58,13 @@ function commitAlt(index: number) {
   const item = items.value[index];
   if (!item) return;
   const value = draftAlts.value[item.url] ?? "";
-  const raw = model.value[index];
-  if ((raw && typeof raw === "object") || props.perUsage) {
-    // объект ИЛИ perUsage → per-usage в данные
+  if (props.perUsage) {
+    // блочное image/images-поле → per-usage alt в данные блока
     const next = [...items.value];
     next[index] = { ...item, alt: value || null };
     model.value = next;
   } else {
-    // строка без perUsage → central media.update
+    // строковые галереи И with-captions (apartment-layouts) → central media.alt
     updateAlt.mutate(
       { url: item.url, alt: value },
       { onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }) },
