@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { tickets, ticketTypeEnum } from "@zhk/db/schema";
+import { tickets, ticketTypeEnum, formDeliveries } from "@zhk/db/schema";
 import { and, count, eq, ilike } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
+import { processTicketDeliveries } from "../services/receivers";
 
 export const ticketsRouter = {
   list: protectedProcedure
@@ -40,7 +41,10 @@ export const ticketsRouter = {
     .handler(async ({ input }) => {
       const item = await db.query.tickets.findFirst({
         where: eq(tickets.id, input.id),
-        with: { apartment: { columns: { id: true } } },
+        with: {
+          apartment: { columns: { id: true } },
+          deliveries: { orderBy: (d, { asc }) => [asc(d.createdAt)] },
+        },
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Ticket not found" });
@@ -59,5 +63,19 @@ export const ticketsRouter = {
         throw new ORPCError("NOT_FOUND", { message: "Ticket not found" });
       }
       return { success: true };
+    }),
+
+  retryDelivery: protectedProcedure
+    .input(z.object({ ticketId: z.string(), deliveryId: z.string().optional() }))
+    .handler(async ({ input }) => {
+      await processTicketDeliveries(
+        input.ticketId,
+        input.deliveryId ? [input.deliveryId] : undefined,
+      );
+      const deliveries = await db.query.formDeliveries.findMany({
+        where: eq(formDeliveries.ticketId, input.ticketId),
+        orderBy: (d, { asc }) => [asc(d.createdAt)],
+      });
+      return { deliveries };
     }),
 };
