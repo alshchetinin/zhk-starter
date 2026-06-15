@@ -1,57 +1,16 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
-import { tickets, ticketTypeEnum } from "@zhk/db/schema";
+import { tickets, ticketTypeEnum, modals, formReceivers } from "@zhk/db/schema";
+import { and, eq } from "drizzle-orm";
 import { publicActiveSiteProcedure } from "../../index";
 import { rateLimit } from "../../middleware/rate-limit";
+import { resolveReceiverIds, createPendingDeliveries, processTicketDeliveries } from "../../services/receivers";
 
-async function sendTelegramNotification(
-  botToken: string,
-  chatId: string,
-  ticket: {
-    name?: string | null;
-    phone: string;
-    email?: string | null;
-    message?: string | null;
-    type: string;
-    source?: string | null;
-    url?: string | null;
-  },
-) {
-  const typeLabels: Record<string, string> = {
-    lead: "Заявка",
-    callback: "Обратный звонок",
-    question: "Вопрос",
-  };
-
-  const lines = [
-    `📩 <b>${typeLabels[ticket.type] ?? ticket.type}</b>`,
-    "",
-    `📞 <b>${ticket.phone}</b>`,
-  ];
-  if (ticket.name) lines.push(`👤 ${ticket.name}`);
-  if (ticket.email) lines.push(`✉️ ${ticket.email}`);
-  if (ticket.message) lines.push(`💬 ${ticket.message}`);
-  if (ticket.source) lines.push(`📍 Источник: ${ticket.source}`);
-  if (ticket.url) lines.push(`🔗 ${ticket.url}`);
-
-  const text = lines.join("\n");
-
-  try {
-    await fetch(
-      `https://api.telegram.org/bot${botToken}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-          parse_mode: "HTML",
-        }),
-      },
-    );
-  } catch (err) {
-    console.error("[telegram] Failed to send notification:", err);
-  }
+/** Извлекает slug модалки из source вида "modal:{slug}". */
+function modalSlugFromSource(source: string | undefined): string | null {
+  if (!source) return null;
+  const m = /^modal:(.+)$/.exec(source);
+  return m ? m[1]! : null;
 }
 
 export const publicTicketsRouter = {
@@ -75,35 +34,52 @@ export const publicTicketsRouter = {
         apartmentId: z.string().optional(),
       }),
     )
-    .handler(async ({ input }) => {
-      const [created, settings] = await Promise.all([
-        db
-          .insert(tickets)
-          .values({
-            name: input.name ?? null,
-            phone: input.phone,
-            email: input.email || null,
-            message: input.message ?? null,
-            type: input.type,
-            source: input.source ?? null,
-            url: input.url ?? null,
-            utm: input.utm ?? null,
-            apartmentId: input.apartmentId ?? null,
-          })
-          .returning()
-          .then((r) => r[0]!),
-        db.query.ticketSettings.findFirst(),
-      ]);
+    .handler(async ({ input, context }) => {
+      const siteId = context.siteId;
 
-      // Send Telegram notification (non-blocking)
-      if (settings?.telegramBotToken && settings.telegramChatId) {
-        sendTelegramNotification(
-          settings.telegramBotToken,
-          settings.telegramChatId,
-          created,
+      const created = await db
+        .insert(tickets)
+        .values({
+          siteId,
+          name: input.name ?? null,
+          phone: input.phone,
+          email: input.email || null,
+          message: input.message ?? null,
+          type: input.type,
+          source: input.source ?? null,
+          url: input.url ?? null,
+          utm: input.utm ?? null,
+          apartmentId: input.apartmentId ?? null,
+        })
+        .returning()
+        .then((r) => r[0]!);
+
+      // Резолв приёмщиков: форма (модалка по slug) → её receiverIds, иначе все enabled.
+      const enabled = await db.query.formReceivers.findMany({
+        where: and(eq(formReceivers.siteId, siteId), eq(formReceivers.enabled, true)),
+        orderBy: (r, { asc }) => [asc(r.sortOrder), asc(r.createdAt)],
+      });
+
+      const slug = modalSlugFromSource(input.source);
+      const form = slug
+        ? await db.query.modals.findFirst({
+            where: and(eq(modals.siteId, siteId), eq(modals.slug, slug)),
+            columns: { receiverIds: true },
+          })
+        : null;
+
+      const targetIds = resolveReceiverIds(form ?? null, enabled);
+      const targets = enabled.filter((r) => targetIds.includes(r.id));
+
+      if (targets.length > 0) {
+        const deliveryIds = await createPendingDeliveries(
+          created.id,
+          targets.map((r) => ({ id: r.id, type: r.type, name: r.name })),
         );
+        // Фоновая доставка — не блокирует ответ. pending-строки уже в БД (durable).
+        void processTicketDeliveries(created.id, deliveryIds);
       }
 
-      return { success: true, id: created!.id };
+      return { success: true, id: created.id };
     }),
 };
