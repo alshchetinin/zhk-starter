@@ -31,7 +31,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
       <UInput :model-value="item.title" @update:model-value="update('title', $event)" />
     </UFormField>
     <UFormField label="Изображение" required>
-      <ImageUpload :model-value="item.image" @update:model-value="update('image', $event)" folder="blocks" />
+      <ImageUpload :model-value="item.image" @update:model-value="update('image', $event)" folder="blocks" :per-usage="true" />
     </UFormField>
           </div>
         </template>

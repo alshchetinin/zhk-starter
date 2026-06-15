@@ -28,7 +28,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
       <UInput :model-value="model.buttonUrl" @update:model-value="set('buttonUrl', $event)" type="url" placeholder="https://..." />
     </UFormField>
     <UFormField label="Изображение" required>
-      <ImageUpload :model-value="model.image" @update:model-value="set('image', $event)" folder="blocks" />
+      <ImageUpload :model-value="model.image" @update:model-value="set('image', $event)" folder="blocks" :per-usage="true" />
     </UFormField>
     <UFormField label="Статистика" required>
       <RepeaterField

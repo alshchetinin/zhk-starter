@@ -13,11 +13,13 @@ const props = withDefaults(
     folder?: string;
     withCaptions?: boolean;
     disabled?: boolean;
+    perUsage?: boolean;
   }>(),
   {
     folder: "uploads/gallery",
     withCaptions: false,
     disabled: false,
+    perUsage: false,
   },
 );
 
@@ -55,13 +57,13 @@ function commitAlt(index: number) {
   if (!item) return;
   const value = draftAlts.value[item.url] ?? "";
   const raw = model.value[index];
-  if (raw && typeof raw === "object") {
-    // уже объект (apartment-layouts) → per-usage в данные
+  if ((raw && typeof raw === "object") || props.perUsage) {
+    // объект ИЛИ perUsage → per-usage в данные
     const next = [...items.value];
     next[index] = { ...item, alt: value || null };
     model.value = next;
   } else {
-    // строка (галерея проекта, блочные images) → central media.update
+    // строка без perUsage → central media.update
     updateAlt.mutate(
       { url: item.url, alt: value },
       { onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }) },
@@ -70,7 +72,7 @@ function commitAlt(index: number) {
 }
 
 function wrap(url: string): string | GalleryItem {
-  return props.withCaptions ? { url } : url;
+  return props.withCaptions || props.perUsage ? { url } : url;
 }
 
 function appendUrls(urls: string[]) {

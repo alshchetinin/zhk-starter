@@ -28,7 +28,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
       <UTextarea :model-value="model.description" @update:model-value="set('description', $event)" :rows="4" />
     </UFormField>
     <UFormField label="Фоновые изображения" required>
-      <GalleryUpload :model-value="model.images" @update:model-value="set('images', $event)" />
+      <GalleryUpload :model-value="model.images" @update:model-value="set('images', $event)" :per-usage="true" />
     </UFormField>
     <UFormField label="Адрес" required>
       <UInput :model-value="model.address" @update:model-value="set('address', $event)" />

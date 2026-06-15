@@ -9,10 +9,12 @@ const props = withDefaults(
   defineProps<{
     folder?: string;
     label?: string;
+    perUsage?: boolean;
   }>(),
   {
     folder: "uploads",
     label: "Нажмите или перетащите изображение",
+    perUsage: false,
   },
 );
 
@@ -30,11 +32,12 @@ const currentUrl = computed(() =>
   typeof model.value === "string" ? model.value : (model.value?.url ?? null),
 );
 const isObjectModel = computed(() => !!model.value && typeof model.value === "object");
+const objectMode = computed(() => props.perUsage || isObjectModel.value);
 
 // central-карта (для префилла строкового режима)
 const { data: altMap } = useQuery({
   ...$orpc.media.altMap.queryOptions(),
-  enabled: computed(() => !!currentUrl.value && !isObjectModel.value),
+  enabled: computed(() => !!currentUrl.value && !objectMode.value),
 });
 
 const updateAlt = useMutation($orpc.media.update.mutationOptions());
@@ -54,7 +57,7 @@ watch(debouncedAlt, (v) => {
   const url = currentUrl.value;
   if (!url) return;
   if (v === altText.value) return; // нет изменений относительно источника — не пишем
-  if (isObjectModel.value) {
+  if (objectMode.value) {
     model.value = { url, alt: v || null };
   } else {
     updateAlt.mutate(
@@ -65,7 +68,7 @@ watch(debouncedAlt, (v) => {
 });
 
 function onPick(url: string) {
-  model.value = isObjectModel.value ? { url, alt: null } : url;
+  model.value = objectMode.value ? { url, alt: null } : url;
   showMediaPicker.value = false;
 }
 
@@ -111,7 +114,7 @@ async function processFile(file: File) {
     await promise;
     currentAbort = null;
 
-    model.value = isObjectModel.value ? { url: publicUrl, alt: null } : publicUrl;
+    model.value = objectMode.value ? { url: publicUrl, alt: null } : publicUrl;
   } catch (error: any) {
     toast.add({
       title: "Ошибка загрузки",
