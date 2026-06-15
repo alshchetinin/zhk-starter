@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
 import type { AllowedImageType } from "~/utils/upload";
 import type { GalleryItem } from "~/types/gallery";
@@ -20,8 +21,9 @@ const props = withDefaults(
   },
 );
 
-const { $orpcClient } = useNuxtApp();
+const { $orpcClient, $orpc } = useNuxtApp();
 const toast = useToast();
+const queryClient = useQueryClient();
 
 const uploading = ref(false);
 const uploadProgress = ref<Record<string, number>>({});
@@ -33,6 +35,39 @@ function toItem(x: string | GalleryItem): GalleryItem {
 }
 
 const items = computed<GalleryItem[]>(() => model.value.map(toItem));
+
+const { data: altMap } = useQuery($orpc.media.altMap.queryOptions());
+const updateAlt = useMutation($orpc.media.update.mutationOptions());
+
+// локальные черновики alt по url (плавный ввод, коммит на blur/change)
+const draftAlts = ref<Record<string, string>>({});
+function seedDrafts() {
+  for (const it of items.value) {
+    if (!(it.url in draftAlts.value)) {
+      draftAlts.value[it.url] = it.alt ?? altMap.value?.[it.url] ?? "";
+    }
+  }
+}
+watch([items, altMap], seedDrafts, { immediate: true, deep: true });
+
+function commitAlt(index: number) {
+  const item = items.value[index];
+  if (!item) return;
+  const value = draftAlts.value[item.url] ?? "";
+  const raw = model.value[index];
+  if (raw && typeof raw === "object") {
+    // уже объект (apartment-layouts) → per-usage в данные
+    const next = [...items.value];
+    next[index] = { ...item, alt: value || null };
+    model.value = next;
+  } else {
+    // строка (галерея проекта, блочные images) → central media.update
+    updateAlt.mutate(
+      { url: item.url, alt: value },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }) },
+    );
+  }
+}
 
 function wrap(url: string): string | GalleryItem {
   return props.withCaptions ? { url } : url;
@@ -167,6 +202,16 @@ function updateCaption(
             <UIcon name="i-solar-close-circle-linear" class="size-4 text-white" />
           </button>
         </div>
+
+        <UInput
+          v-if="!disabled"
+          :model-value="draftAlts[item.url] ?? ''"
+          placeholder="alt-текст (описание для SEO и доступности)"
+          size="sm"
+          class="w-full"
+          @update:model-value="(v: string | number) => (draftAlts[item.url] = String(v))"
+          @change="commitAlt(i)"
+        />
 
         <div v-if="withCaptions" class="space-y-1.5">
           <UInput
