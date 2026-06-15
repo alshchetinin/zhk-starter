@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
 import type { AllowedImageType } from "~/utils/upload";
+import { formatFileSize } from "~/utils/format";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -139,12 +140,6 @@ function handleFileInput(event: Event) {
   input.value = "";
 }
 
-function formatFileSize(bytes: number | null | undefined): string {
-  if (!bytes) return "--";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 </script>
 
 <template>
