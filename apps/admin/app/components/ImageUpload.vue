@@ -45,20 +45,24 @@ const altText = computed<string>(() => {
   return (url && altMap.value?.[url]) || "";
 });
 
-function setAlt(value: string) {
+// Локальный черновик alt для плавного ввода; источник — altText (объект или central-карта)
+const draftAlt = ref("");
+watch(altText, (v) => { draftAlt.value = v; }, { immediate: true });
+
+const debouncedAlt = refDebounced(draftAlt, 400);
+watch(debouncedAlt, (v) => {
   const url = currentUrl.value;
   if (!url) return;
+  if (v === altText.value) return; // нет изменений относительно источника — не пишем
   if (isObjectModel.value) {
-    model.value = { url, alt: value || null };
+    model.value = { url, alt: v || null };
   } else {
     updateAlt.mutate(
-      { url, alt: value },
-      {
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }),
-      },
+      { url, alt: v },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }) },
     );
   }
-}
+});
 
 function onPick(url: string) {
   model.value = isObjectModel.value ? { url, alt: null } : url;
@@ -208,14 +212,13 @@ function remove() {
     <!-- Alt text input -->
     <div v-if="currentUrl" class="mt-2 space-y-1">
       <UInput
-        :model-value="altText"
+        v-model="draftAlt"
         placeholder="alt-текст (описание изображения)"
         size="sm"
         class="w-full"
         icon="i-solar-text-field-linear"
-        @update:model-value="(v: string | number) => setAlt(String(v))"
       />
-      <p v-if="!altText" class="text-xs text-(--ui-text-dimmed)">
+      <p v-if="!draftAlt" class="text-xs text-(--ui-text-dimmed)">
         Опишите изображение для SEO и доступности. Декоративную картинку оставьте без alt.
       </p>
     </div>
