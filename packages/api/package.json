@@ -28,9 +28,11 @@
     "@zhk/ratelimit": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
+    "nodemailer": "^9.0.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/nodemailer": "^8.0.1",
     "@zhk/config": "workspace:*",
     "hono": "catalog:",
     "typescript": "catalog:"
