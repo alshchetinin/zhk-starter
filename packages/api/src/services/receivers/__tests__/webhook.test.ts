@@ -14,7 +14,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("signBody", () => {
   it("детерминированная HMAC-SHA256 hex с префиксом sha256=", () => {
     const sig = signBody("{}", "secret");
-    expect(sig).toBe("sha256=" + signBody("{}", "secret").slice(7));
+    expect(sig).toBe("sha256=77325902caca812dc259733aacd046b73817372c777b8d95b402647474516e13");
     expect(sig).toMatch(/^sha256=[0-9a-f]{64}$/);
   });
 });

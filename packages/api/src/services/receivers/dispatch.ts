@@ -48,7 +48,11 @@ export async function processTicketDeliveries(
 
   const rows = await db.query.formDeliveries.findMany({
     where: deliveryIds
-      ? and(eq(formDeliveries.ticketId, ticketId), inArray(formDeliveries.id, deliveryIds))
+      ? and(
+          eq(formDeliveries.ticketId, ticketId),
+          inArray(formDeliveries.id, deliveryIds),
+          inArray(formDeliveries.status, ["pending", "error"]),
+        )
       : and(
           eq(formDeliveries.ticketId, ticketId),
           inArray(formDeliveries.status, ["pending", "error"]),
@@ -67,9 +71,13 @@ export async function processTicketDeliveries(
       } else if (!deliverer) {
         result = { ok: false, error: `Нет обработчика для типа ${row.receiverType}` };
       } else {
-        const def = receiverDefByType.get(row.receiverType);
-        const config = def ? def.configSchema.parse(receiver.config) : receiver.config;
-        result = await deliverer(ctx, config);
+        try {
+          const def = receiverDefByType.get(row.receiverType);
+          const config = def ? def.configSchema.parse(receiver.config) : receiver.config;
+          result = await deliverer(ctx, config);
+        } catch (err) {
+          result = { ok: false, error: err instanceof Error ? err.message : String(err) };
+        }
       }
       await db
         .update(formDeliveries)

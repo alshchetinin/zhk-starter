@@ -3,6 +3,8 @@ import { env } from "@zhk/env/server";
 
 let cached: Transporter | null | undefined;
 
+// Кеш намеренно не сбрасывается при изменении env (нужен рестарт сервера).
+// В тестах — vi.resetModules() или vi.doMock('../smtp').
 /** Возвращает singleton-транспорт или null, если SMTP не сконфигурен. */
 export function getMailer(): Transporter | null {
   if (cached !== undefined) return cached;

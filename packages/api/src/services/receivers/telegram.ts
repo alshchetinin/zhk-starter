@@ -1,5 +1,6 @@
 import type { Deliverer, DeliveryContext } from "../../shared/receivers";
 import type { TelegramConfig } from "../../shared/receivers";
+import { escapeHtml } from "./escape";
 
 const TYPE_LABELS: Record<string, string> = {
   lead: "Заявка",
@@ -8,13 +9,9 @@ const TYPE_LABELS: Record<string, string> = {
   booking: "Бронирование",
 };
 
-function escapeHtml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 export function formatTelegramMessage(ctx: DeliveryContext): string {
   const lines = [
-    `📩 <b>${TYPE_LABELS[ctx.ticket.type] ?? ctx.ticket.type}</b> — ${escapeHtml(ctx.site.name)}`,
+    `📩 <b>${TYPE_LABELS[ctx.ticket.type] ?? escapeHtml(ctx.ticket.type)}</b> — ${escapeHtml(ctx.site.name)}`,
     "",
   ];
   for (const f of ctx.fields) {

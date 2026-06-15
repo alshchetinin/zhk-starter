@@ -1,6 +1,7 @@
 import type { Deliverer, DeliveryContext } from "../../shared/receivers";
 import type { EmailConfig } from "../../shared/receivers";
 import { getMailer, getFrom } from "./smtp";
+import { escapeHtml } from "./escape";
 
 const TYPE_LABELS: Record<string, string> = {
   lead: "Заявка",
@@ -22,11 +23,11 @@ function renderText(ctx: DeliveryContext): string {
 
 function renderHtml(ctx: DeliveryContext): string {
   const rows = ctx.fields
-    .map((f) => `<tr><td style="padding:4px 8px;color:#666">${f.label}</td><td style="padding:4px 8px"><b>${f.value}</b></td></tr>`)
+    .map((f) => `<tr><td style="padding:4px 8px;color:#666">${escapeHtml(f.label)}</td><td style="padding:4px 8px"><b>${escapeHtml(f.value)}</b></td></tr>`)
     .join("");
-  return `<h2>${TYPE_LABELS[ctx.ticket.type] ?? ctx.ticket.type} — ${ctx.site.name}</h2><table>${rows}</table>` +
-    (ctx.ticket.source ? `<p>Источник: ${ctx.ticket.source}</p>` : "") +
-    (ctx.ticket.url ? `<p>Страница: <a href="${ctx.ticket.url}">${ctx.ticket.url}</a></p>` : "");
+  return `<h2>${TYPE_LABELS[ctx.ticket.type] ?? escapeHtml(ctx.ticket.type)} — ${escapeHtml(ctx.site.name)}</h2><table>${rows}</table>` +
+    (ctx.ticket.source ? `<p>Источник: ${escapeHtml(ctx.ticket.source)}</p>` : "") +
+    (ctx.ticket.url ? `<p>Страница: <a href="${escapeHtml(ctx.ticket.url)}">${escapeHtml(ctx.ticket.url)}</a></p>` : "");
 }
 
 export const deliverEmail: Deliverer<EmailConfig> = async (ctx, config) => {

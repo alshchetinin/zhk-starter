@@ -35,4 +35,18 @@ describe("deliverEmail", () => {
     expect(arg.from).toBe("noreply@a.ru");
     expect(arg.text).toContain("Иван");
   });
+
+  it("экранирует HTML в значениях полей (защита от инъекции)", async () => {
+    const sendMail = vi.fn().mockResolvedValue({ messageId: "1" });
+    vi.doMock("../smtp", () => ({ getMailer: () => ({ sendMail }), getFrom: () => "noreply@a.ru" }));
+    const { deliverEmail } = await import("../email");
+    const xssCtx = {
+      ...ctx,
+      fields: [{ label: "Имя", value: "<script>alert(1)</script>" }],
+    } satisfies DeliveryContext;
+    await deliverEmail(xssCtx, { to: "sales@a.ru" });
+    const arg = sendMail.mock.calls[0]![0];
+    expect(arg.html).not.toContain("<script>");
+    expect(arg.html).toContain("&lt;script&gt;");
+  });
 });
