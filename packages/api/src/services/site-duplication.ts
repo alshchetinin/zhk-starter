@@ -158,7 +158,13 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   );
   await copyRows(tx, socialLinks, input.sourceSiteId, newSiteId);
   await copyRows(tx, purchaseMethods, input.sourceSiteId, newSiteId);
-  await copyRows(tx, modals, input.sourceSiteId, newSiteId);
+  // Модалки: обнуляем receiverIds — приёмщики (form_receivers) per-site и НЕ
+  // копируются, поэтому ссылки на приёмщики сайта-источника невалидны для клона.
+  // Новый город настраивает приёмщики и привязывает их к формам заново.
+  await copyRows(tx, modals, input.sourceSiteId, newSiteId, (row) => ({
+    ...row,
+    receiverIds: [],
+  }));
 
   // 3. Зависимые FK.
   await copyRows(tx, mortgagePrograms, input.sourceSiteId, newSiteId, (row) => ({
