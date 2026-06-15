@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imageValue } from "./_core";
 
 export const temasBlock = defineBlock({
   type: "temas",
@@ -40,7 +40,7 @@ export const temasBlock = defineBlock({
     title: z.string().min(1),
     member: z.array(z.object({
     name: z.string().min(1),
-    avatar: z.string().url(),
+    avatar: imageValue,
   })).min(2).max(4),
   }),
   defaultData: {

@@ -37,7 +37,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
       <UTextarea :model-value="item.description" @update:model-value="update('description', $event)" :rows="4" />
     </UFormField>
     <UFormField label="Слайдер изображений" required>
-      <GalleryUpload :model-value="item.images" @update:model-value="update('images', $event)" />
+      <GalleryUpload :model-value="item.images" @update:model-value="update('images', $event)" :per-usage="true" />
     </UFormField>
           </div>
         </template>

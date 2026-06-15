@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imagesValue } from "./_core";
 
 export const heroFullscreenBlock = defineBlock({
   type: "hero-fullscreen",
@@ -99,7 +99,7 @@ export const heroFullscreenBlock = defineBlock({
   dataSchema: z.object({
     title: z.string().min(1),
     description: z.string().optional(),
-    images: z.array(z.string().url()),
+    images: imagesValue,
     address: z.string().min(1),
     district: z.string().optional(),
     walkTime: z.string().optional(),

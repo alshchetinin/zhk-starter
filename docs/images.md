@@ -48,6 +48,41 @@ const bg = optimize(block.image, { width: 1600 });
 
 При `IMG_PROXY_ENABLED=false` возвращает исходный URL без изменений.
 
+## Alt-теги
+
+Два источника alt с явным приоритетом — `AppImage` сам резолвит итоговый текст:
+
+```
+per-usage (объект в данных блока)  →  central (media.alt по url)  →  alt, переданный рендерером (title/name)  →  ""
+```
+
+### Central — один alt на файл
+
+Колонка `media.alt` (по `url`). Редактируется **в самих загрузчиках**
+(`ImageUpload`/`GalleryUpload`) — поле alt под превью. Покрывает все картинки,
+залитые через эти компоненты (обложки, аватары, галерея проекта и т.д.), без
+изменения их колонок. Запись — ручка `media.update({ url, alt })` (дебаунс/blur);
+чтение на web — публичная `media.altMap()` → карта `url → alt`.
+
+- web: плагин `apps/web/app/plugins/alt-map.ts` один раз грузит карту в
+  `useState` (`useAltMap`), composable `useImageAlt(url)` отдаёт central-alt.
+- `AppImage` принимает `src: string | { url; alt? }`, извлекает url и резолвит
+  alt по цепочке (`apps/web/app/utils/image-value.ts`: `imageUrl`,
+  `resolveImageAlt`). Рендереры с `:src="image"` и `:alt="title"` менять не нужно —
+  `:alt` становится последним фолбэком.
+
+### Per-usage — свой alt в конкретном блоке
+
+Для image/images-полей блоков значение может быть объектом `{ url, alt }`
+(Zod-хелперы `imageValue`/`imagesValue` в `blocks/_core.ts`). Включается пропом
+`:per-usage="true"` на `ImageUpload`/`GalleryUpload` — его эмитит генератор блоков
+для image/images-полей, поэтому в блочных редакторах alt пишется в данные блока
+(а не в central). Non-блочные потребители проп не передают → central.
+
+> При вёрстке нового блока с картинкой `:src` оставляй как есть (`AppImage`
+> union-aware). Если значение картинки используется как **строка** (ключ `:key`,
+> `useOptimizedImage`, background) — оборачивай в `imageUrl(value)`.
+
 ## Архитектура
 
 ```

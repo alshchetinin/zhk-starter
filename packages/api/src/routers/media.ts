@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { media } from "@zhk/db/schema";
-import { and, count, eq, like, ilike } from "drizzle-orm";
+import { and, count, eq, like, ilike, isNotNull, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
-import { protectedProcedure } from "../index";
+import { protectedProcedure, publicProcedure } from "../index";
+import { rateLimit } from "../middleware/rate-limit";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { deleteS3Object } from "../s3";
 
@@ -36,6 +37,29 @@ export const mediaRouter = {
       ]);
 
       return { data, total: countResult[0]!.total, page, pageSize };
+    }),
+
+  update: protectedProcedure
+    .input(z.object({ url: z.string().url(), alt: z.string().max(500) }))
+    .handler(async ({ input }) => {
+      // url де-факто уникален (key содержит uuid). Пустой alt → null.
+      await db
+        .update(media)
+        .set({ alt: input.alt.trim() || null })
+        .where(eq(media.url, input.url));
+      return { success: true };
+    }),
+
+  altMap: publicProcedure
+    .use(rateLimit("publicRead", { keyBy: "ip" }))
+    .handler(async () => {
+      const rows = await db
+        .select({ url: media.url, alt: media.alt })
+        .from(media)
+        .where(and(isNotNull(media.alt), ne(media.alt, "")));
+      const map: Record<string, string> = {};
+      for (const r of rows) if (r.alt) map[r.url] = r.alt;
+      return map;
     }),
 
   delete: protectedProcedure

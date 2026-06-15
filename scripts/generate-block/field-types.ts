@@ -121,26 +121,26 @@ export const FIELD_TYPES: Record<BlockFieldType, FieldType> = {
 
   image: {
     label: "Изображение (image URL)",
-    zodType: "z.string().url()",
-    tsType: "string | null",
+    zodType: "imageValue",
+    tsType: "string | { url: string; alt?: string | null } | null",
     defaultValue: "null",
     nullableWhenOptional: true,
     vueTemplate: (ctx) => {
       const m = ctx.modelPrefix ?? "model";
       const u = ctx.updateFn ?? "set";
-      return `    ${formFieldOpen(ctx)}\n      <ImageUpload :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" folder="blocks" />\n    </UFormField>`;
+      return `    ${formFieldOpen(ctx)}\n      <ImageUpload :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" folder="blocks" :per-usage="true" />\n    </UFormField>`;
     },
   },
 
   images: {
     label: "Галерея изображений (array of URLs)",
-    zodType: "z.array(z.string().url())",
-    tsType: "string[]",
+    zodType: "imagesValue",
+    tsType: "Array<string | { url: string; alt?: string | null }>",
     defaultValue: "[]",
     vueTemplate: (ctx) => {
       const m = ctx.modelPrefix ?? "model";
       const u = ctx.updateFn ?? "set";
-      return `    ${formFieldOpen(ctx)}\n      <GalleryUpload :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" />\n    </UFormField>`;
+      return `    ${formFieldOpen(ctx)}\n      <GalleryUpload :model-value="${m}.${ctx.fieldName}" @update:model-value="${u}('${ctx.fieldName}', $event)" :per-usage="true" />\n    </UFormField>`;
     },
   },
 

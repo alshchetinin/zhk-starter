@@ -59,6 +59,19 @@ function emitFieldLiteral(f: FieldInfo, indent: string): string {
   return lines.join("\n");
 }
 
+function usedImageHelpers(fields: FieldInfo[]): string[] {
+  const set = new Set<string>();
+  const walk = (fs: FieldInfo[]) => {
+    for (const f of fs) {
+      if (f.type === "image") set.add("imageValue");
+      if (f.type === "images") set.add("imagesValue");
+      if (f.type === "repeater" && f.subFields) walk(f.subFields);
+    }
+  };
+  walk(fields);
+  return [...set].sort();
+}
+
 export function buildBlockDefinitionSource(block: BlockInfo): string {
   const camel = toCamelCase(block.name);
 
@@ -76,9 +89,11 @@ export function buildBlockDefinitionSource(block: BlockInfo): string {
 
   const categoryLine = block.category ? `  category: "${block.category}",\n` : "";
 
+  const coreImport = `import { ${["defineBlock", ...usedImageHelpers(block.fields)].join(", ")} } from "./_core";`;
+
   return [
     `import { z } from "zod";`,
-    `import { defineBlock } from "./_core";`,
+    coreImport,
     ``,
     `export const ${camel}Block = defineBlock({`,
     `  type: "${block.name}",`,

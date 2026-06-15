@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { imageUrl, type ImageValue } from "~/utils/image-value";
+
 const props = defineProps<{
   title: string;
   description?: string;
-  images: string[];
+  images: ImageValue[];
   address: string;
   district?: string;
   walkTime?: string;
@@ -43,7 +45,7 @@ onUnmounted(() => clearInterval(interval));
         <AppImage
           v-for="(src, i) in images"
           v-show="i === currentSlide"
-          :key="src"
+          :key="imageUrl(src)"
           :src="src"
           :alt="title"
           :width="1920"

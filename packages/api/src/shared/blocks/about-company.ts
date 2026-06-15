@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imageValue } from "./_core";
 
 export const aboutCompanyBlock = defineBlock({
   type: "about-company",
@@ -65,7 +65,7 @@ export const aboutCompanyBlock = defineBlock({
     description: z.string().optional(),
     buttonLabel: z.string().optional(),
     buttonUrl: z.union([z.string().url(), z.literal("")]).optional(),
-    image: z.string().url(),
+    image: imageValue,
     stats: z.array(z.object({
     value: z.string().min(1),
     label: z.string().min(1),

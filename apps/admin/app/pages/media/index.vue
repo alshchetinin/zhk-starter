@@ -42,6 +42,37 @@ const deleteMutation = useMutation({
   },
 });
 
+// Инлайн-редактирование центрального alt (media.alt по url)
+const updateAltMutation = useMutation({
+  mutationFn: (input: { url: string; alt: string }) =>
+    $orpcClient.media.update(input),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: $orpc.media.list.key() });
+  },
+  onError: () => {
+    toast.add({ title: "Ошибка сохранения alt", color: "error" });
+  },
+});
+
+// локальные черновики alt по id (плавный ввод, коммит на blur)
+const altDrafts = ref<Record<string, string>>({});
+watch(
+  items,
+  (list) => {
+    for (const it of list) {
+      const source = it.alt ?? "";
+      if (!(it.id in altDrafts.value) || (altDrafts.value[it.id] === "" && source !== "")) {
+        altDrafts.value[it.id] = source;
+      }
+    }
+  },
+  { immediate: true },
+);
+
+function commitAlt(item: { id: string; url: string }) {
+  updateAltMutation.mutate({ url: item.url, alt: altDrafts.value[item.id] ?? "" });
+}
+
 const uploading = ref(false);
 const uploadProgress = ref(0);
 const dropZoneRef = ref<HTMLDivElement>();
@@ -244,6 +275,17 @@ function formatFileSize(bytes: number | null | undefined): string {
               {{ item.folder }}
             </UBadge>
           </div>
+
+          <UInput
+            v-if="item.contentType?.startsWith('image/')"
+            :model-value="altDrafts[item.id] ?? ''"
+            placeholder="alt-текст"
+            size="xs"
+            class="w-full"
+            icon="i-solar-text-field-linear"
+            @update:model-value="(v: string | number) => (altDrafts[item.id] = String(v))"
+            @change="commitAlt(item)"
+          />
         </div>
 
         <button
