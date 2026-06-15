@@ -65,6 +65,9 @@ export const formReceiversRouter = {
           throw new ORPCError("BAD_REQUEST", { message: "Некорректная конфигурация приёмщика" });
         }
       }
+      if (Object.keys(updates).length === 0) {
+        return existing;
+      }
       const [updated] = await db
         .update(formReceivers)
         .set(updates)

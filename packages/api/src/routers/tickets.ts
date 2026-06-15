@@ -68,6 +68,11 @@ export const ticketsRouter = {
   retryDelivery: protectedProcedure
     .input(z.object({ ticketId: z.string(), deliveryId: z.string().optional() }))
     .handler(async ({ input }) => {
+      const ticket = await db.query.tickets.findFirst({
+        where: eq(tickets.id, input.ticketId),
+        columns: { id: true },
+      });
+      if (!ticket) throw new ORPCError("NOT_FOUND", { message: "Ticket not found" });
       await processTicketDeliveries(
         input.ticketId,
         input.deliveryId ? [input.deliveryId] : undefined,

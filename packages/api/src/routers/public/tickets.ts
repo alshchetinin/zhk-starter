@@ -2,6 +2,7 @@ import { z } from "zod";
 import { db } from "@zhk/db";
 import { tickets, ticketTypeEnum, modals, formReceivers } from "@zhk/db/schema";
 import { and, eq } from "drizzle-orm";
+import { captureUnexpected } from "@zhk/observability";
 import { publicActiveSiteProcedure } from "../../index";
 import { rateLimit } from "../../middleware/rate-limit";
 import { resolveReceiverIds, createPendingDeliveries, processTicketDeliveries } from "../../services/receivers";
@@ -77,7 +78,9 @@ export const publicTicketsRouter = {
           targets.map((r) => ({ id: r.id, type: r.type, name: r.name })),
         );
         // Фоновая доставка — не блокирует ответ. pending-строки уже в БД (durable).
-        void processTicketDeliveries(created.id, deliveryIds);
+        void processTicketDeliveries(created.id, deliveryIds).catch((err) =>
+          captureUnexpected(err, { operation: "tickets.deliver", siteId }),
+        );
       }
 
       return { success: true, id: created.id };
