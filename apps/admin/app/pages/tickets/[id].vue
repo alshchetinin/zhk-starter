@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { ticketDisplayFields } from "@zhk/api/shared/ticket-fields";
 
 const route = useRoute();
 const router = useRouter();
@@ -17,9 +18,11 @@ const { data: ticket, isPending } = useQuery(
 
 useHead({
   title: computed(() =>
-    ticket.value ? `Заявка ${ticket.value.phone}` : undefined,
+    ticket.value ? `Заявка ${ticket.value.phone ?? ticket.value.email ?? ticket.value.name ?? ""}` : undefined,
   ),
 });
+
+const fields = computed(() => (ticket.value ? ticketDisplayFields(ticket.value as any) : []));
 
 const deleteMutation = useMutation({
   mutationFn: () => $orpcClient.tickets.delete({ id: id.value }),
@@ -72,7 +75,7 @@ function formatDate(date: string) {
           <NuxtLink to="/tickets">
             <UButton variant="ghost" icon="i-solar-arrow-left-linear" size="sm" />
           </NuxtLink>
-          <h1 class="text-2xl font-bold">{{ ticket.phone }}</h1>
+          <h1 class="text-2xl font-bold">{{ ticket.phone ?? ticket.email ?? ticket.name ?? "Заявка" }}</h1>
           <UBadge
             :color="ticketTypeColors[ticket.type as TicketType]"
             variant="subtle"
@@ -93,31 +96,18 @@ function formatDate(date: string) {
       </div>
 
       <div class="max-w-2xl space-y-6">
-        <!-- Контактные данные -->
-        <div class="border border-(--ui-border) p-6 space-y-4">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">
-            Контактные данные
-          </h2>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-sm text-(--ui-text-dimmed)">Телефон</div>
-              <div class="font-medium text-(--ui-text-highlighted)">{{ ticket.phone }}</div>
-            </div>
-            <div v-if="ticket.name">
-              <div class="text-sm text-(--ui-text-dimmed)">Имя</div>
-              <div class="text-(--ui-text-highlighted)">{{ ticket.name }}</div>
-            </div>
-            <div v-if="ticket.email">
-              <div class="text-sm text-(--ui-text-dimmed)">Email</div>
-              <div class="text-(--ui-text-highlighted)">{{ ticket.email }}</div>
+        <!-- Данные заявки -->
+        <div class="border border-(--ui-border) p-6 space-y-3">
+          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Данные заявки</h2>
+          <div v-for="(f, i) in fields" :key="i" class="grid grid-cols-[160px_1fr] gap-3 text-sm">
+            <div class="text-(--ui-text-dimmed)" v-html="f.label" />
+            <div class="text-(--ui-text-highlighted) break-words">
+              <a v-if="f.type === 'phone'" :href="`tel:${f.value.replace(/[^+\d]/g, '')}`" class="text-(--ui-primary) hover:underline">{{ f.value }}</a>
+              <a v-else-if="f.type === 'email'" :href="`mailto:${f.value}`" class="text-(--ui-primary) hover:underline">{{ f.value }}</a>
+              <span v-else class="whitespace-pre-wrap">{{ f.value }}</span>
             </div>
           </div>
-        </div>
-
-        <!-- Сообщение -->
-        <div v-if="ticket.message" class="border border-(--ui-border) p-6 space-y-2">
-          <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Сообщение</h2>
-          <p class="text-(--ui-text-muted) whitespace-pre-wrap">{{ ticket.message }}</p>
+          <p v-if="!fields.length" class="text-sm text-(--ui-text-muted)">Нет данных</p>
         </div>
 
         <!-- Детали -->
