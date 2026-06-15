@@ -28,7 +28,7 @@ app.use(
     // Детали и обоснование безопасности — в ./cors.
     origin: (origin, c) => resolveCorsOrigin(origin, c.req.path, env.CORS_ORIGINS),
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "x-site-id", "x-site-slug", "x-forwarded-host"],
+    allowHeaders: ["Content-Type", "Authorization", "x-site-id", "x-site-slug", "x-forwarded-host", "x-site-unlock"],
     credentials: true,
   }),
 );
