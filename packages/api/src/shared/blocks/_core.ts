@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+/** Значение картинки: legacy-строка url ИЛИ объект с per-usage alt. */
+export const imageValue = z.union([
+  z.string().url(),
+  z.object({ url: z.string().url(), alt: z.string().optional() }),
+]);
+
+export const imagesValue = z.array(imageValue);
+
 export type BlockCategory = "content" | "project";
 
 export const BLOCK_FIELD_TYPES = [
