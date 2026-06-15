@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
 import type { AllowedImageType } from "~/utils/upload";
+import type { ImageValue } from "~/types/image";
 
-const model = defineModel<string | null>({ default: null });
+const model = defineModel<ImageValue | null>({ default: null });
 const props = withDefaults(
   defineProps<{
     folder?: string;
@@ -14,16 +16,52 @@ const props = withDefaults(
   },
 );
 
-const { $orpcClient } = useNuxtApp();
+const { $orpcClient, $orpc } = useNuxtApp();
 const toast = useToast();
+const queryClient = useQueryClient();
 
 const uploading = ref(false);
 const uploadProgress = ref(0);
 const dropZoneRef = ref<HTMLLabelElement>();
 const showMediaPicker = ref(false);
 
+// текущий url и режим хранения alt
+const currentUrl = computed(() =>
+  typeof model.value === "string" ? model.value : (model.value?.url ?? null),
+);
+const isObjectModel = computed(() => !!model.value && typeof model.value === "object");
+
+// central-карта (для префилла строкового режима)
+const { data: altMap } = useQuery({
+  ...$orpc.media.altMap.queryOptions(),
+  enabled: computed(() => !!currentUrl.value && !isObjectModel.value),
+});
+
+const updateAlt = useMutation($orpc.media.update.mutationOptions());
+
+const altText = computed<string>(() => {
+  if (isObjectModel.value) return (model.value as { alt?: string | null }).alt ?? "";
+  const url = currentUrl.value;
+  return (url && altMap.value?.[url]) || "";
+});
+
+function setAlt(value: string) {
+  const url = currentUrl.value;
+  if (!url) return;
+  if (isObjectModel.value) {
+    model.value = { url, alt: value || null };
+  } else {
+    updateAlt.mutate(
+      { url, alt: value },
+      {
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }),
+      },
+    );
+  }
+}
+
 function onPick(url: string) {
-  model.value = url;
+  model.value = isObjectModel.value ? { url, alt: null } : url;
   showMediaPicker.value = false;
 }
 
@@ -69,7 +107,7 @@ async function processFile(file: File) {
     await promise;
     currentAbort = null;
 
-    model.value = publicUrl;
+    model.value = isObjectModel.value ? { url: publicUrl, alt: null } : publicUrl;
   } catch (error: any) {
     toast.add({
       title: "Ошибка загрузки",
@@ -98,10 +136,10 @@ function remove() {
   <div>
     <!-- Preview -->
     <div
-      v-if="model"
+      v-if="currentUrl"
       class="group relative aspect-video w-full overflow-hidden rounded-lg border border-(--ui-border)"
     >
-      <img :src="model" class="h-full w-full object-cover" />
+      <img :src="currentUrl" class="h-full w-full object-cover" />
       <button
         class="absolute right-2 top-2 rounded-full bg-black/50 p-1 opacity-0 transition-opacity group-hover:opacity-100"
         @click="remove"
@@ -155,7 +193,7 @@ function remove() {
       />
     </label>
 
-    <div v-if="!model" class="mt-2 flex justify-center">
+    <div v-if="!currentUrl" class="mt-2 flex justify-center">
       <UButton
         variant="ghost"
         size="xs"
@@ -165,6 +203,21 @@ function remove() {
       >
         Выбрать из библиотеки
       </UButton>
+    </div>
+
+    <!-- Alt text input -->
+    <div v-if="currentUrl" class="mt-2 space-y-1">
+      <UInput
+        :model-value="altText"
+        placeholder="alt-текст (описание изображения)"
+        size="sm"
+        class="w-full"
+        icon="i-solar-text-field-linear"
+        @update:model-value="(v: string | number) => setAlt(String(v))"
+      />
+      <p v-if="!altText" class="text-xs text-(--ui-text-dimmed)">
+        Опишите изображение для SEO и доступности. Декоративную картинку оставьте без alt.
+      </p>
     </div>
 
     <MediaPickerModal
