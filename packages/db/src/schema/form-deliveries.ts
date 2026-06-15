@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { deliveryStatusEnum } from "./_enums";
 import { tickets } from "./tickets";
 import { formReceivers } from "./form-receivers";
@@ -25,7 +25,9 @@ export const formDeliveries = pgTable("form_deliveries", {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-});
+}, (t) => [
+  index("form_deliveries_ticket_id_idx").on(t.ticketId),
+]);
 
 export const formDeliveriesRelations = relations(formDeliveries, ({ one }) => ({
   ticket: one(tickets, {
