@@ -31,6 +31,7 @@ import { usersRouter } from "./users";
 import { versionsRouter } from "./versions";
 import { devRouter } from "./dev/index";
 import { modalsRouter } from "./modals";
+import { formReceiversRouter } from "./form-receivers";
 import { mediaRouter } from "./media";
 import { tagsRouter } from "./tags";
 import { pageCategoriesRouter } from "./page-categories";
@@ -66,6 +67,7 @@ export const appRouter = {
   constructionProgress: constructionProgressRouter,
   tickets: ticketsRouter,
   ticketSettings: ticketSettingsRouter,
+  formReceivers: formReceiversRouter,
   sites: sitesRouter,
   users: usersRouter,
   versions: versionsRouter,
