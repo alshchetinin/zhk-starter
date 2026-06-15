@@ -11,6 +11,7 @@ import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
 import { startScheduler } from "./scheduler";
 import { rateLimitCeiling } from "./middleware/rate-limit";
+import { resolveCorsOrigin } from "./cors";
 
 // Инициализируем Sentry до создания приложения (idempotent, no-op без DSN).
 initObservability("zhk-server");
@@ -22,9 +23,12 @@ app.use(logger());
 app.use(
   "/*",
   cors({
-    origin: env.CORS_ORIGINS,
+    // Контент-API (/rpc/*) читается с любых доменов/поддоменов сайтов
+    // (мультитенант), /api/auth/* и прочее — только из allowlist CORS_ORIGINS.
+    // Детали и обоснование безопасности — в ./cors.
+    origin: (origin, c) => resolveCorsOrigin(origin, c.req.path, env.CORS_ORIGINS),
     allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "x-site-id", "x-site-slug", "x-forwarded-host"],
+    allowHeaders: ["Content-Type", "Authorization", "x-site-id", "x-site-slug", "x-forwarded-host", "x-site-unlock"],
     credentials: true,
   }),
 );

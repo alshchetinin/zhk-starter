@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { SITE_UNLOCK_COOKIE_PREFIX } from "../shared/site-gate";
 
-const COOKIE_PREFIX = "zhk_site_unlock_";
+const COOKIE_PREFIX = SITE_UNLOCK_COOKIE_PREFIX;
 const COOKIE_MAX_AGE_DAYS = 30;
 
 function getSecret(): string {
@@ -52,13 +53,29 @@ export function buildUnlockClearCookie(siteId: string): string {
   return `${unlockCookieName(siteId)}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`;
 }
 
+/**
+ * Валиден ли токен анлока (из куки ИЛИ из заголовка x-site-unlock) для сайта.
+ * Сайт без пароля гейта не имеет → всегда true.
+ */
+export function isUnlockTokenValid(
+  token: string | null | undefined,
+  siteId: string,
+  password: string | null,
+): boolean {
+  if (!password) return true;
+  if (!token) return false;
+  return cookiesMatch(token, computeUnlockToken(siteId, password));
+}
+
 export function isSiteUnlockValid(
   cookieHeader: string,
   siteId: string,
   password: string | null,
 ): boolean {
   if (!password) return true;
-  const value = readCookie(cookieHeader, unlockCookieName(siteId));
-  if (!value) return false;
-  return cookiesMatch(value, computeUnlockToken(siteId, password));
+  return isUnlockTokenValid(
+    readCookie(cookieHeader, unlockCookieName(siteId)),
+    siteId,
+    password,
+  );
 }

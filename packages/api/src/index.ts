@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { SITE_GATE_ERROR } from "./utils/site-gate-errors";
-import { isSiteUnlockValid } from "./utils/site-unlock";
+import { isSiteUnlockValid, isUnlockTokenValid } from "./utils/site-unlock";
 import { o, publicProcedure } from "./orpc-base";
 import { rateLimit } from "./middleware/rate-limit";
 export { o, publicProcedure } from "./orpc-base";
@@ -27,7 +27,12 @@ const requireActiveSite = o.middleware(async ({ context, next }) => {
   if (!site.isActive) {
     throw new ORPCError("FORBIDDEN", { message: SITE_GATE_ERROR.INACTIVE });
   }
-  if (!isSiteUnlockValid(context.cookieHeader, site.id, site.accessPassword)) {
+  // Анлок принимаем из куки (SSR форвардит) ИЛИ из заголовка x-site-unlock
+  // (клиентский кросс-доменный запрос — куку не несёт).
+  const unlocked =
+    isSiteUnlockValid(context.cookieHeader, site.id, site.accessPassword) ||
+    isUnlockTokenValid(context.siteUnlockToken, site.id, site.accessPassword);
+  if (!unlocked) {
     throw new ORPCError("FORBIDDEN", { message: SITE_GATE_ERROR.LOCKED });
   }
   return next({ context: { siteId: site.id, site } });

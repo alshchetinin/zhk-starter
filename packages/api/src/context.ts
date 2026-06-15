@@ -5,6 +5,7 @@ import { getClientIp } from "@zhk/ratelimit";
 import { sites } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { resolveSiteFromHost } from "./utils/resolve-site";
+import { SITE_UNLOCK_HEADER } from "./shared/site-gate";
 
 export type CreateContextOptions = {
   context: HonoContext;
@@ -39,6 +40,9 @@ export async function createContext({ context }: CreateContextOptions) {
 
   const site = await resolveSite(context);
   const cookieHeader = context.req.header("cookie") ?? "";
+  // Токен анлока сайта дублируется заголовком для кросс-доменных клиентских
+  // запросов (кука анлока живёт на web-origin и в API не доходит). См. shared/site-gate.
+  const siteUnlockToken = context.req.header(SITE_UNLOCK_HEADER) ?? null;
   const clientIp = getClientIp(context.req.raw.headers);
   const responseHeaders = new Headers();
 
@@ -47,6 +51,7 @@ export async function createContext({ context }: CreateContextOptions) {
     siteId: site?.id ?? null,
     site,
     cookieHeader,
+    siteUnlockToken,
     clientIp,
     responseHeaders,
   };

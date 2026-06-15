@@ -11,6 +11,7 @@ import {
   buildUnlockSetCookie,
   computeUnlockToken,
   isSiteUnlockValid,
+  isUnlockTokenValid,
 } from "../../utils/site-unlock";
 
 type SiteRow = typeof sites.$inferSelect;
@@ -60,13 +61,14 @@ export const publicSiteRouter = {
     if (!site) throw new ORPCError("NOT_FOUND");
 
     const requiresPassword = !!site.accessPassword;
+    // Анлок из куки (SSR) ИЛИ из заголовка x-site-unlock (клиентский кросс-домен).
+    const unlocked =
+      isSiteUnlockValid(context.cookieHeader, site.id, site.accessPassword) ||
+      isUnlockTokenValid(context.siteUnlockToken, site.id, site.accessPassword);
     let status: "active" | "inactive" | "locked";
     if (!site.isActive) {
       status = "inactive";
-    } else if (
-      requiresPassword &&
-      !isSiteUnlockValid(context.cookieHeader, site.id, site.accessPassword)
-    ) {
+    } else if (requiresPassword && !unlocked) {
       status = "locked";
     } else {
       status = "active";
