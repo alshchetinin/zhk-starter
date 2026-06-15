@@ -26,6 +26,7 @@ export const modals = pgTable("modals", {
   image: text("image"),
   successMessage: text("success_message"),
   fields: jsonb("fields").$type<ModalFieldJson[]>().default([]),
+  receiverIds: text("receiver_ids").array().notNull().default([]),
   status: modalStatusEnum("status").notNull().default("draft"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
