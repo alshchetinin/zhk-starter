@@ -62,6 +62,13 @@ describe("validateSubmission", () => {
     const r = validateSubmission([F({ key: "e", type: "email", value: "не-почта" })], formDef);
     expect(r.ok).toBe(false);
   });
+  it("required email невалидного формата → ровно один issue (формат, без дубля required)", () => {
+    const r = validateSubmission([F({ key: "e", type: "email", value: "не-почта" })], formDef);
+    expect(r.ok).toBe(false);
+    const issues = (r as { issues: { key: string; message: string }[] }).issues;
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.message).toMatch(/email/i);
+  });
   it("обязательный непоставленный чекбокс → issue", () => {
     const def = [{ id: "c", type: "checkbox", label: "Согласие", required: true }];
     expect(validateSubmission([], def).ok).toBe(false);

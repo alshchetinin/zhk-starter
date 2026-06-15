@@ -109,9 +109,9 @@ export function ticketDisplayFields(ticket: {
   email: string | null;
   message: string | null;
 }): DisplayField[] {
-  const ai = ticket.additionalInfo as { fields?: TicketField[] } | null;
-  if (ai?.fields?.length) {
-    return ai.fields
+  const ai = ticket.additionalInfo as { fields?: unknown } | null;
+  if (Array.isArray(ai?.fields) && ai.fields.length) {
+    return (ai.fields as TicketField[])
       .map((f) => ({
         type: f.type,
         label: f.label,
