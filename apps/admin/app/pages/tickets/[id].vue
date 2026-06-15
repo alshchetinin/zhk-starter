@@ -30,6 +30,20 @@ const deleteMutation = useMutation({
   },
 });
 
+const retryMutation = useMutation({
+  mutationFn: (deliveryId?: string) =>
+    $orpcClient.tickets.retryDelivery({ ticketId: id.value, deliveryId }),
+  onSuccess: () => {
+    toast.add({ title: "Повтор запущен", color: "success" });
+    queryClient.invalidateQueries({ queryKey: $orpc.tickets.getById.queryKey({ input: { id: id.value } }) });
+  },
+});
+
+function formatDateShort(date: string | null) {
+  if (!date) return "—";
+  return new Date(date).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
 function formatDate(date: string) {
   return new Date(date).toLocaleString("ru-RU", {
     day: "numeric",
@@ -144,6 +158,46 @@ function formatDate(date: string) {
               <div class="text-(--ui-text-highlighted) font-mono text-xs">{{ value }}</div>
             </div>
           </div>
+        </div>
+
+        <!-- Доставка -->
+        <div v-if="(ticket as any).deliveries?.length" class="border border-(--ui-border) p-6 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-(--ui-text-highlighted)">Доставка</h2>
+            <UButton
+              v-if="(ticket as any).deliveries.some((d: any) => d.status === 'error')"
+              variant="outline"
+              size="xs"
+              icon="i-solar-refresh-linear"
+              :loading="retryMutation.isPending.value"
+              @click="retryMutation.mutate(undefined)"
+            >
+              Повторить ошибки
+            </UButton>
+          </div>
+          <div
+            v-for="d in (ticket as any).deliveries"
+            :key="d.id"
+            class="flex items-center gap-3 text-sm"
+          >
+            <UIcon :name="receiverTypeIcons[d.receiverType] ?? 'i-solar-bell-linear'" class="text-(--ui-text-muted)" />
+            <span class="flex-1 text-(--ui-text-highlighted)">{{ d.receiverName }}</span>
+            <UBadge :color="deliveryStatusColors[d.status]" variant="subtle" size="xs">
+              {{ deliveryStatusLabels[d.status] }}
+            </UBadge>
+            <span class="text-xs text-(--ui-text-dimmed) tabular-nums">{{ formatDateShort(d.lastAttemptAt) }}</span>
+            <UButton
+              v-if="d.status === 'error'"
+              variant="ghost"
+              size="xs"
+              icon="i-solar-refresh-linear"
+              :loading="retryMutation.isPending.value"
+              @click="retryMutation.mutate(d.id)"
+            />
+          </div>
+          <p v-for="d in (ticket as any).deliveries.filter((x: any) => x.error)" :key="d.id + '-err'" class="text-xs text-red-500">
+            {{ d.receiverName }}: {{ d.error }}
+          </p>
         </div>
       </div>
     </template>
