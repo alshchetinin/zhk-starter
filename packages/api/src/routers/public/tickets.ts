@@ -110,6 +110,7 @@ export const publicTicketsRouter = {
           created.id,
           targets.map((r) => ({ id: r.id, type: r.type, name: r.name })),
         );
+        // Фоновая доставка — не блокирует ответ. pending-строки уже в БД (durable).
         void processTicketDeliveries(created.id, deliveryIds).catch((err) =>
           captureUnexpected(err, { operation: "tickets.deliver", siteId }),
         );

@@ -63,7 +63,16 @@ export type ValidationResult = { ok: true } | { ok: false; issues: { key: string
 
 const emailOk = (v: string) => z.string().email().safeParse(v).success;
 
-/** Валидация по определению формы; без формы — мягкий минимум (телефон ИЛИ почта). */
+/**
+ * Валидация по определению формы; без формы — мягкий минимум (телефон ИЛИ почта).
+ *
+ * Инвариант: `TicketField.key` отправленного поля должен совпадать с `FormFieldDef.id`
+ * соответствующего поля формы (клиент берёт key из field.id). Иначе required-поле не
+ * найдётся и попадёт в issues.
+ *
+ * Дубля issues для «required email + невалидный формат» не бывает: непустая строка
+ * проходит isFilled (required-блок молчит), формат ловится отдельным проходом.
+ */
 export function validateSubmission(
   fields: TicketField[],
   formDef: FormFieldDef[] | null,
