@@ -48,6 +48,14 @@ better-auth лимитирует sign-in (5/15мин) на том же Redis, Ho
 в `form_deliveries` и запускает доставку фоном. Ретрай — в детали заявки в
 админке (`/tickets/[id]`). Email требует env `SMTP_HOST/PORT/USER/PASS/FROM/SECURE`.
 
+**Поля заявки:** хранятся структурно в `tickets.additionalInfo.fields` (`TicketField[]`) —
+полный набор в порядке отправки (включая повторяющиеся типы и кастомные поля); первичные
+колонки `name`/`phone`/`email`/`message` дублируются для SQL-фильтрации (`phone` nullable).
+Обязательность задаётся в определении формы (`modals.fields`) и валидируется сервером
+по нему — телефон не является универсально обязательным. Чистый слой с чистыми функциями
+без зависимостей: `packages/api/src/shared/ticket-fields.ts`
+(`normalizeSubmission`, `deriveTicketColumns`, `validateSubmission`, `ticketDisplayFields`).
+
 Подробности: [`docs/receivers.md`](docs/receivers.md).
 
 ## Наблюдаемость

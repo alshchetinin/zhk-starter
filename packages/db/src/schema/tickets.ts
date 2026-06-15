@@ -15,7 +15,7 @@ export const tickets = pgTable("tickets", {
     .default("default")
     .references(() => sites.id),
   name: text("name"),
-  phone: text("phone").notNull(),
+  phone: text("phone"),
   email: text("email"),
   message: text("message"),
   comment: text("comment"),
@@ -24,7 +24,9 @@ export const tickets = pgTable("tickets", {
   source: text("source"),
   url: text("url"),
   utm: jsonb("utm").$type<Record<string, string>>(),
-  additionalInfo: jsonb("additional_info"),
+  additionalInfo: jsonb("additional_info").$type<{
+    fields: { key: string; type: string; label: string; value: string | boolean }[];
+  } | null>(),
   apartmentId: text("apartment_id").references(() => apartments.id),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),

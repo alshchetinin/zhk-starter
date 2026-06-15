@@ -116,26 +116,19 @@ function setFieldValue(field: ModalField, value: string | boolean | "indetermina
   formValues.value[field.id] = value === "indeterminate" ? false : value;
 }
 
-function collectTicketPayload() {
-  const payload: { name?: string; phone: string; email?: string; message?: string } = {
-    phone: "",
-  };
-  const extras: string[] = [];
+function collectFields() {
+  const fields: { key: string; type: string; label: string; value: string | boolean }[] = [];
   for (const field of effectiveFields.value) {
     const raw = formValues.value[field.id];
-    if (field.type === "checkbox") continue;
+    if (field.type === "checkbox") {
+      if (raw === true) fields.push({ key: field.id, type: field.type, label: field.label, value: true });
+      continue;
+    }
     const value = typeof raw === "string" ? raw.trim() : "";
     if (!value) continue;
-    if (field.type === "name") payload.name = value;
-    else if (field.type === "phone") payload.phone = value;
-    else if (field.type === "email") payload.email = value;
-    else if (field.type === "description") payload.message = value;
-    else extras.push(`${field.label}: ${value}`);
+    fields.push({ key: field.id, type: field.type, label: field.label, value });
   }
-  if (extras.length) {
-    payload.message = payload.message ? `${payload.message}\n${extras.join("\n")}` : extras.join("\n");
-  }
-  return payload;
+  return fields;
 }
 
 async function handleSubmit() {
@@ -146,9 +139,9 @@ async function handleSubmit() {
   clearSubmitTimers();
 
   try {
-    const payload = collectTicketPayload();
+    const fields = collectFields();
     await $orpcClient.public.tickets.create({
-      ...payload,
+      fields,
       type: "callback",
       source: `modal:${activeModalSlug.value ?? ""}`,
       url: typeof window !== "undefined" ? window.location.href : undefined,

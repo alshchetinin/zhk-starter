@@ -5,7 +5,7 @@ export interface DeliveryContext {
   ticket: {
     id: string;
     name: string | null;
-    phone: string;
+    phone: string | null;
     email: string | null;
     message: string | null;
     type: string;

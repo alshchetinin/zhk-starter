@@ -76,8 +76,10 @@ const columns: TableColumn<any>[] = [
   {
     accessorKey: "phone",
     header: ({ column }) => sortableHeader(column, "Телефон"),
-    cell: ({ row }) =>
-      h("span", { class: "font-medium text-(--ui-text-highlighted)" }, row.getValue("phone")),
+    cell: ({ row }) => {
+      const r = row.original as { phone?: string; email?: string; name?: string };
+      return h("span", { class: "font-medium text-(--ui-text-highlighted)" }, r.phone || r.email || r.name || "—");
+    },
   },
   {
     accessorKey: "name",

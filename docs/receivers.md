@@ -85,7 +85,7 @@ interface DeliveryContext {
   ticket: {
     id: string;
     name: string | null;
-    phone: string;
+    phone: string | null;  // nullable: форма может не иметь phone-поля
     email: string | null;
     message: string | null;
     type: string;          // lead / callback / question / booking
@@ -95,13 +95,45 @@ interface DeliveryContext {
   };
   utm: Record<string, string> | null;
   site: { id: string; name: string };
-  /** Непустые стандартные поля с RU-лейблами — для форматирования сообщений. */
+  /** Непустые поля формы с RU-лейблами — для форматирования сообщений. */
   fields: Array<{ label: string; value: string }>;
 }
 ```
 
+> **Breaking change для webhook-потребителей:** `ticket.phone` может быть `null`
+> (телефон стал необязательным полем формы). Внешние вебхуки, полагавшиеся на
+> строку, должны учитывать `null` и не падать при его отсутствии.
+
 `buildDeliveryContext` (`services/receivers/payload.ts`) собирает `fields`
-только из непустых полей: Имя, Телефон, Email, Сообщение.
+через `ticketDisplayFields` (`packages/api/src/shared/ticket-fields.ts`):
+берёт данные из `ticket.additionalInfo.fields` (полный структурный набор полей
+формы, включая дубликаты и кастомные поля типа `description`/`checkbox`), фильтрует
+пустые значения. Для старых заявок без `additionalInfo.fields` — fallback на
+колонки `name`/`phone`/`email`/`message`.
+
+## Поля заявки
+
+Подробный дизайн: [`docs/superpowers/specs/2026-06-15-flexible-ticket-fields-design.md`](superpowers/specs/2026-06-15-flexible-ticket-fields-design.md).
+
+Поля формы хранятся структурно в `tickets.additionalInfo.fields` (`TicketField[]`) —
+полный набор в порядке отправки, включая повторяющиеся типы (два телефона, несколько
+чекбоксов) и кастомные `description`-поля. Первичные колонки (`tickets.name`,
+`tickets.phone`, `tickets.email`, `tickets.message`) дублируют данные для удобства
+SQL-фильтрации — деривируются функцией `deriveTicketColumns` из того же набора.
+`tickets.phone` **nullable**: форма не обязана содержать поле типа `phone`.
+
+Чистый слой — `packages/api/src/shared/ticket-fields.ts`:
+
+| Функция | Назначение |
+|---|---|
+| `normalizeSubmission(input)` | Принимает `{ fields?, name?, phone?, email?, message? }` → `TicketField[]`. Если `fields` не пуст — берёт их, иначе синтез из flat-колонок (backward compat). |
+| `deriveTicketColumns(fields)` | Деривирует первичные колонки из `TicketField[]` (первый непустой матч по типу). |
+| `validateSubmission(fields, formDef)` | Валидация: если есть `formDef` — проверяет required по определению формы; иначе мягкий минимум (телефон ИЛИ почта). Формат email проверяется всегда. |
+| `ticketDisplayFields(ticket)` | Поля для отображения: `additionalInfo.fields` ИЛИ fallback на колонки. |
+
+Обязательность полей задаётся в конструкторе модалки (`modals.fields: FormFieldDef[]`)
+и валидируется сервером по этому определению. Телефон — НЕ универсально обязателен;
+обязателен только если так настроена конкретная форма.
 
 ## Три стартовых типа
 

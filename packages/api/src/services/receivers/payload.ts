@@ -1,5 +1,6 @@
 import type { tickets } from "@zhk/db/schema";
 import type { DeliveryContext } from "../../shared/receivers";
+import { ticketDisplayFields } from "../../shared/ticket-fields";
 
 type TicketRow = typeof tickets.$inferSelect;
 
@@ -7,17 +8,13 @@ export function buildDeliveryContext(
   ticket: TicketRow,
   site: { id: string; name: string },
 ): DeliveryContext {
-  const fields: Array<{ label: string; value: string }> = [];
-  if (ticket.name) fields.push({ label: "Имя", value: ticket.name });
-  fields.push({ label: "Телефон", value: ticket.phone });
-  if (ticket.email) fields.push({ label: "Email", value: ticket.email });
-  if (ticket.message) fields.push({ label: "Сообщение", value: ticket.message });
+  const fields = ticketDisplayFields(ticket).map((f) => ({ label: f.label, value: f.value }));
 
   return {
     ticket: {
       id: ticket.id,
       name: ticket.name ?? null,
-      phone: ticket.phone,
+      phone: ticket.phone ?? null,
       email: ticket.email ?? null,
       message: ticket.message ?? null,
       type: ticket.type,
