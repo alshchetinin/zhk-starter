@@ -452,39 +452,24 @@ git commit -m "feat(admin): alt-инпут в ImageUpload (central/per-usage) (#
 
 ---
 
-### Task 6: Admin — alt на элемент галереи в `GalleryUpload`
+### Task 6: Admin — alt на элемент галереи в `GalleryUpload` (central-only, Фаза 1)
 
 **Files:**
-- Modify: `apps/admin/app/types/gallery.ts`
 - Modify: `apps/admin/app/components/GalleryUpload.vue`
 
-Поведение: каждый элемент получает alt-инпут. Если элемент — объект (`withCaptions` или per-usage) → alt в объекте; если строка → central через `media.update`. Новый проп `withAlt` (default `true`) включает alt-инпут независимо от подписей; при `withAlt` элементы оборачиваются в объект.
+> **Корректировка по факту кода (важно).** В Фазе 1 НЕЛЬЗЯ оборачивать строки в объекты:
+> галерея проекта — Postgres-колонка `text[]` (`projects.gallery`, схема `z.array(z.string().url())`),
+> блочные `images` — `z.array(z.string().url())`. Объекты их сломают. Поэтому в Фазе 1
+> **alt каждого элемента пишется ТОЛЬКО в central `media.update` по url** — равномерно и безопасно,
+> без изменения схем и без `GalleryItem.alt`. Per-usage для блочных `images` (объекты) добавляется
+> в Фазе 2 (Task 12: `imagesValue` + объектная ветка в GalleryUpload). Тип `GalleryItem.alt`
+> и объектную ветку тоже добавляем в Фазе 2.
 
-- [ ] **Step 1: Расширить тип**
+Поведение: каждый элемент получает alt-инпут. Значение префиллится из `media.altMap` (или из `item.alt`, если элемент уже объект — apartment-layouts). Запись central — по blur (`@change`), через локальный draft (плавный ввод, без записи на каждую клавишу).
 
-```ts
-// apps/admin/app/types/gallery.ts
-export type GalleryItem = {
-  url: string;
-  alt?: string | null;
-  title?: string | null;
-  description?: string | null;
-};
-```
+- [ ] **Step 1: central-карта + мутация + локальные drafts**
 
-- [ ] **Step 2: Добавить проп `withAlt` и обновить `wrap()`**
-
-В `defineProps` добавить `withAlt?: boolean;` с дефолтом `true` в `withDefaults`. Заменить `wrap`:
-
-```ts
-function wrap(url: string): string | GalleryItem {
-  return props.withCaptions || props.withAlt ? { url } : url;
-}
-```
-
-- [ ] **Step 3: central-карта + мутация (для строковых элементов)**
-
-В `<script setup>` добавить (рядом с `$orpcClient`):
+В `<script setup>` добавить (рядом с существующим `$orpcClient`/`toast`):
 
 ```ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
@@ -493,53 +478,79 @@ const queryClient = useQueryClient();
 const { data: altMap } = useQuery($orpc.media.altMap.queryOptions());
 const updateAlt = useMutation($orpc.media.update.mutationOptions());
 
-function altFor(item: GalleryItem): string {
-  return item.alt ?? altMap.value?.[item.url] ?? "";
+// локальные черновики alt по url (плавный ввод, коммит на blur)
+const draftAlts = ref<Record<string, string>>({});
+function seedDrafts() {
+  for (const it of items.value) {
+    if (!(it.url in draftAlts.value)) {
+      draftAlts.value[it.url] = it.alt ?? altMap.value?.[it.url] ?? "";
+    }
+  }
 }
+watch([items, altMap], seedDrafts, { immediate: true, deep: true });
 
-function setAlt(index: number, value: string) {
-  const current = items.value[index];
-  if (!current) return;
+function commitAlt(index: number) {
+  const item = items.value[index];
+  if (!item) return;
+  const value = draftAlts.value[item.url] ?? "";
   const raw = model.value[index];
   if (raw && typeof raw === "object") {
+    // объект (apartment-layouts) → per-usage в данные
     const next = [...items.value];
-    next[index] = { ...current, alt: value || null };
+    next[index] = { ...item, alt: value || null };
     model.value = next;
   } else {
+    // строка (галерея проекта, блочные images) → central media.update
     updateAlt.mutate(
-      { url: current.url, alt: value },
+      { url: item.url, alt: value },
       { onSuccess: () => queryClient.invalidateQueries({ queryKey: $orpc.media.altMap.key() }) },
     );
   }
 }
 ```
 
-- [ ] **Step 4: alt-инпут в разметке каждого элемента**
+(`items` — существующий computed `GalleryItem[]`; `toItem` уже возвращает объект с полями url/title/description. Поле `alt` в `GalleryItem` появится в Фазе 2; в Фазе 1 `item.alt` будет `undefined` для строковых — это ок, `?? altMap...` подстрахует. Если TS ругается на `it.alt` — Фаза 1: читать `(it as { alt?: string | null }).alt` ИЛИ временно добавить `alt?` в тип уже сейчас — добавление опционального поля безопасно. Предпочесть добавить `alt?: string | null` в `apps/admin/app/types/gallery.ts` сразу, это не меняет хранение.)
 
-Внутри `v-for` элемента галереи, после блока превью (`</div>` обёртки картинки), перед/рядом с блоком `withCaptions`, добавить:
+- [ ] **Step 2: alt-инпут в разметке каждого элемента**
+
+Внутри `v-for` элемента галереи, после блока-обёртки картинки (после её закрывающего `</div>`), добавить:
 
 ```vue
         <UInput
           v-if="!disabled"
-          :model-value="altFor(item)"
-          placeholder="alt-текст"
+          :model-value="draftAlts[item.url] ?? ''"
+          placeholder="alt-текст (описание для SEO и доступности)"
           size="sm"
           class="w-full"
-          @update:model-value="(v: string | number) => setAlt(i, String(v))"
+          @update:model-value="(v: string | number) => (draftAlts[item.url] = String(v))"
+          @change="commitAlt(i)"
         />
 ```
 
-- [ ] **Step 5: Проверить типы и preview**
+(Если `@change` у `UInput` не срабатывает на blur — использовать `@blur="commitAlt(i)"`. `i` — индекс из `v-for="(item, i) in items"`.)
+
+- [ ] **Step 3: Тип `GalleryItem.alt`** (опциональное поле, хранение не меняет)
+
+```ts
+// apps/admin/app/types/gallery.ts — добавить alt
+export type GalleryItem = {
+  url: string;
+  alt?: string | null;
+  title?: string | null;
+  description?: string | null;
+};
+```
+
+- [ ] **Step 4: Проверить типы**
 
 Run: `pnpm check-types`
-Expected: PASS.
-Admin preview: галерея проекта — ввести alt у фото; для объект-элементов сохраняется в данные, для строковых уходит `media.update`.
+Expected: нет НОВЫХ ошибок (на main 6 предсуществующих в `packages/api` — игнорировать). Admin SFC vue-tsc не покрывает.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
 git add apps/admin/app/types/gallery.ts apps/admin/app/components/GalleryUpload.vue
-git commit -m "feat(admin): alt на элемент галереи в GalleryUpload (#66)"
+git commit -m "feat(admin): central alt на элемент галереи в GalleryUpload (#66)"
 ```
 
 ---
@@ -639,33 +650,35 @@ git commit -m "feat(api): Zod-хелперы imageValue/imagesValue для per-u
 
 ---
 
-### Task 9: Генератор эмитит `imageValue`/`imagesValue`
+### Task 9–11 (объединены): Генератор + перегенерация блоков + тесты
+
+> **Объединение.** Round-trip-тест (`buildBlockDefinitionSource(info)` `toBe` файла) держит определения байт-в-байт, поэтому между правкой генератора и правкой файлов блоков репозиторий «красный». Выполняем как ОДИН проход, в конце — `pnpm test` зелёный, один-два коммита. editor/renderer проверяются снапшотом на `TestCardsBlock` (у него есть image-поле) — изменение `tsType`/`vueTemplate` потребует `vitest -u` (проверить, что дифф снапшота — только `per-usage`/union-тип).
 
 **Files:**
 - Modify: `scripts/generate-block/field-types.ts`
 - Modify: `scripts/generate-block/generators/block-definition.ts`
+- Modify: 6 блоков `packages/api/src/shared/blocks/{about-company,about-features,about-project,hero-fullscreen,infrastructure-tabs,temas}.ts`
+- Modify: снапшоты `scripts/generate-block/__tests__/__snapshots__/*` (через `-u`)
+- Modify (если нужно): `packages/api/src/shared/blocks/__tests__/blocks.test.ts`
 
-Контекст: сейчас `image.zodType = "z.string().url()"`, `images.zodType = "z.array(z.string().url())"` ([field-types.ts](../../../scripts/generate-block/field-types.ts)). `block-definition.ts` собирает import-строку для `defineBlock`.
+Контекст: сейчас `image.zodType = "z.string().url()"`, `images.zodType = "z.array(z.string().url())"` ([field-types.ts:122,135](../../../scripts/generate-block/field-types.ts)). `block-definition.ts` хардкодит `import { defineBlock } from "./_core";` (стр. 81). `resolveDefaultValue` для image оставляет `null as unknown as string` — **defaultData не меняется** (string assignable к union), меняется только dataSchema-строка + импорт.
 
 - [ ] **Step 1: Обновить `field-types.ts` для `image`/`images`**
 
 ```ts
 image: {
-  label: "Изображение (image URL)",
-  zodType: "imageValue",
+  ... zodType: "imageValue",
   tsType: "string | { url: string; alt?: string | null } | null",
-  defaultValue: "null",
-  nullableWhenOptional: true,
-  vueTemplate: (ctx) => { /* без изменений */ },
+  // vueTemplate: добавить :per-usage="true" в <ImageUpload ... :per-usage="true" />
 },
 images: {
-  label: "Галерея изображений (array of URLs)",
-  zodType: "imagesValue",
+  ... zodType: "imagesValue",
   tsType: "Array<string | { url: string; alt?: string | null }>",
-  defaultValue: "[]",
-  vueTemplate: (ctx) => { /* без изменений */ },
+  // vueTemplate: добавить :per-usage="true" в <GalleryUpload ... :per-usage="true" />
 },
 ```
+
+`:per-usage="true"` в vueTemplate переключает блочные редакторы в режим хранения объекта (per-usage). Компоненты получают проп `perUsage` в Task 12. Non-блочные потребители проп не передают → central (Фаза 1).
 
 - [ ] **Step 2: Импорт хелперов в эмиссии определения**
 
@@ -780,27 +793,40 @@ git commit -m "test(api): consistency-тест блоков допускает u
 
 ---
 
-### Task 12: Editor — per-usage alt в редакторах блоков
+### Task 12: `perUsage`-проп в загрузчиках + блочные редакторы
 
 **Files:**
-- Modify: editors блоков с image/images: `apps/admin/app/components/blocks/editors/{AboutCompanyBlock,AboutFeaturesBlock,AboutProjectBlock,HeroFullscreenBlock,InfrastructureTabsBlock,TemasBlock}.vue`
+- Modify: `apps/admin/app/components/ImageUpload.vue`, `apps/admin/app/components/GalleryUpload.vue`
+- Modify: 6 редакторов `apps/admin/app/components/blocks/editors/{AboutCompanyBlock,AboutFeaturesBlock,AboutProjectBlock,HeroFullscreenBlock,InfrastructureTabsBlock,TemasBlock}.vue`
 
-Контекст: editor-SFC — генерируемые артефакты, но их `defineModel<{...}>` типы и биндинг `ImageUpload`/`GalleryUpload` уже работают с union из Task 5/6 (model теперь `string | ImageValue | null`, объект пишется автоматически, т.к. `isObjectModel` определяется по значению). **Per-usage включается тем, что значение становится объектом при первом вводе alt** — отдельных правок биндинга обычно не нужно.
+> **Почему проп.** В Фазе 1 строковое значение → alt пишется в **central** (`isObjectModel=false`).
+> Чтобы блочные редакторы хранили **per-usage** (объект), нужен явный сигнал, что схема потребителя
+> принимает объект (после Task 9–11 image/images-поля = `imageValue`/`imagesValue`). Проп `perUsage`
+> (default `false`) включает объектный режим; блочные редакторы передают `:per-usage="true"` (эмитит
+> генератор из Task 9). Non-блочные потребители проп не передают → central.
 
-- [ ] **Step 1: Проверить типы редакторов**
+- [ ] **Step 1: `ImageUpload` — проп `perUsage` + `objectMode`**
 
-Run: `pnpm check-types`
-Expected: PASS. Если `defineModel<{ image: string | null }>` в editor конфликтует с объектом — расширить тип поля до `string | { url: string; alt?: string | null } | null` (и `images` до `Array<...>`). Править руками только тип в `defineModel`, не трогая разметку.
+В `defineProps` добавить `perUsage?: boolean;` (дефолт `false` в `withDefaults`). Завести:
+```ts
+const objectMode = computed(() => props.perUsage || isObjectModel.value);
+```
+Заменить использование `isObjectModel.value` на `objectMode.value` в: `useQuery enabled` (`!objectMode`), `altText` (читать `(model.value as {alt?})...` когда `isObjectModel` — оставить чтение из объекта как есть, т.е. условие `isObjectModel.value` для ЧТЕНИЯ alt оставить; для ЗАПИСИ — `objectMode`), `watch(debouncedAlt)` запись, `processFile`, `onPick`. В режиме `objectMode` и строковом значении — конвертировать в объект: `model.value = { url, alt: v || null }`.
 
-- [ ] **Step 2: Preview — per-usage в блоке**
+- [ ] **Step 2: `GalleryUpload` — проп `perUsage` + конверсия строковых элементов**
 
-Admin preview: открыть страницу с блоком (напр. About Company), под картинкой ввести alt → значение в данных блока становится объектом `{url, alt}` (проверить, что сохранение страницы проходит, Zod не падает).
+В `defineProps` добавить `perUsage?: boolean;` (дефолт `false`). В `commitAlt`: ветку для строкового `raw` сделать так — если `props.perUsage` → конвертировать элемент в объект (`next[index] = { url: item.url, alt: value || null }; model.value = next;`), иначе → central `updateAlt.mutate` (как в Фазе 1). Объектные элементы — как в Фазе 1 (per-usage). При `perUsage` загрузка новых файлов должна давать объекты: в `wrap()` вернуть объект и при `props.perUsage`.
 
-- [ ] **Step 3: Commit (если правились типы)**
+- [ ] **Step 3: Хенд-правка 6 редакторов — `:per-usage="true"`**
 
+В каждом из 6 editor-SFC добавить `:per-usage="true"` к тегам `<ImageUpload .../>` и `<GalleryUpload .../>` (в т.ч. внутри `RepeaterField`). Эти файлы НЕ сверяются с генератором байт-в-байт (round-trip только для определений), поэтому правим руками. (Если `defineModel<{ image: string | null }>` конфликтует — расширить тип поля до `string | { url: string; alt?: string | null } | null`, `images` до `Array<...>`.)
+
+- [ ] **Step 4: Типы + commit**
+
+Run: `pnpm check-types` (игнорировать 6 предсуществующих ошибок). Затем:
 ```bash
-git add apps/admin/app/components/blocks/editors/*.vue
-git commit -m "feat(admin): per-usage alt в редакторах блоков с картинками (#66)"
+git add apps/admin/app/components/ImageUpload.vue apps/admin/app/components/GalleryUpload.vue apps/admin/app/components/blocks/editors/
+git commit -m "feat(admin): perUsage-проп загрузчиков + per-usage alt в блочных редакторах (#66)"
 ```
 
 ---
