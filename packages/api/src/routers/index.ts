@@ -24,13 +24,13 @@ import { socialLinksRouter } from "./social-links";
 import { homepageRouter } from "./homepage";
 import { constructionProgressRouter } from "./construction-progress";
 import { ticketsRouter } from "./tickets";
-import { ticketSettingsRouter } from "./ticket-settings";
 import { publicRouter } from "./public/index";
 import { sitesRouter } from "./sites";
 import { usersRouter } from "./users";
 import { versionsRouter } from "./versions";
 import { devRouter } from "./dev/index";
 import { modalsRouter } from "./modals";
+import { formReceiversRouter } from "./form-receivers";
 import { mediaRouter } from "./media";
 import { tagsRouter } from "./tags";
 import { pageCategoriesRouter } from "./page-categories";
@@ -65,7 +65,7 @@ export const appRouter = {
   homepage: homepageRouter,
   constructionProgress: constructionProgressRouter,
   tickets: ticketsRouter,
-  ticketSettings: ticketSettingsRouter,
+  formReceivers: formReceiversRouter,
   sites: sitesRouter,
   users: usersRouter,
   versions: versionsRouter,

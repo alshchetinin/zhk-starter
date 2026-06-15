@@ -139,11 +139,11 @@ function onRowClick(_e: Event, row: any) {
     >
       <template #actions>
         <UButton
-          to="/tickets/settings"
-          icon="i-solar-settings-linear"
+          to="/tickets/receivers"
+          icon="i-solar-inbox-in-linear"
           variant="outline"
         >
-          Настройки
+          Приёмщики
         </UButton>
       </template>
     </AppPageHeader>

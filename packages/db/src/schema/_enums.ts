@@ -97,3 +97,9 @@ export const ticketTypeEnum = pgEnum("ticket_type", [
   "question",
   "booking",
 ]);
+
+export const deliveryStatusEnum = pgEnum("delivery_status", [
+  "pending",
+  "ok",
+  "error",
+]);

@@ -14,6 +14,8 @@ const { data: modal, isPending } = useQuery(
   computed(() => $orpc.modals.getById.queryOptions({ input: { id: id.value } })),
 );
 
+const { data: receivers } = useQuery($orpc.formReceivers.list.queryOptions());
+
 useHead({ title: computed(() => modal.value?.title) });
 
 const form = reactive({
@@ -24,6 +26,7 @@ const form = reactive({
   successMessage: "",
   status: "draft" as ModalStatus,
   fields: [] as ModalField[],
+  receiverIds: [] as string[],
 });
 
 const slugManuallyEdited = ref(true);
@@ -38,6 +41,7 @@ whenever(
     form.successMessage = val.successMessage ?? "";
     form.status = val.status;
     form.fields = (val.fields as ModalField[]) ?? [];
+    form.receiverIds = (val.receiverIds as string[]) ?? [];
   },
   { once: true, immediate: true },
 );
@@ -62,6 +66,7 @@ const updateMutation = useMutation({
       successMessage: form.successMessage || null,
       status: form.status,
       fields: form.fields,
+      receiverIds: form.receiverIds,
     }),
   onSuccess: () => {
     toast.add({ title: "Модальное окно обновлено", color: "success" });
@@ -157,6 +162,22 @@ const deleteMutation = useMutation({
             <UFormField label="Изображение" description="Необязательная картинка в шапке модалки">
               <ImageUpload v-model="form.image" folder="modals" />
             </UFormField>
+          </div>
+
+          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-3">
+            <h3 class="text-sm font-semibold">Приёмщики</h3>
+            <p class="text-xs text-(--ui-text-dimmed)">Куда уходит эта форма. Настроить — в разделе «Заявки → Приёмщики».</p>
+            <div v-if="!receivers?.length" class="text-xs text-(--ui-text-muted)">
+              Приёмщиков нет. <NuxtLink to="/tickets/receivers" class="underline">Добавить</NuxtLink>
+            </div>
+            <div v-for="r in receivers" :key="r.id" class="flex items-center gap-2">
+              <UCheckbox
+                :model-value="form.receiverIds.includes(r.id)"
+                :label="r.name"
+                @update:model-value="(v) => { form.receiverIds = v ? [...form.receiverIds, r.id] : form.receiverIds.filter((x) => x !== r.id); }"
+              />
+              <UBadge v-if="!r.enabled" color="neutral" variant="subtle" size="xs">выключен</UBadge>
+            </div>
           </div>
 
           <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6">

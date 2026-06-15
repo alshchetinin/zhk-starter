@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { useMutation } from "@tanstack/vue-query";
+import { useMutation, useQuery } from "@tanstack/vue-query";
 import type { ModalField } from "@zhk/api/shared/modal-fields";
 
-const { $orpcClient } = useNuxtApp();
+const { $orpc, $orpcClient } = useNuxtApp();
+
+const { data: receivers } = useQuery($orpc.formReceivers.list.queryOptions());
 const toast = useToast();
 const router = useRouter();
 
@@ -39,6 +41,7 @@ const createMutation = useMutation({
       successMessage: form.successMessage || undefined,
       status: form.status,
       fields: form.fields,
+      receiverIds: (receivers.value ?? []).filter((r) => r.enabled).map((r) => r.id),
     }),
   onSuccess: () => {
     toast.add({ title: "Модальное окно создано", color: "success" });

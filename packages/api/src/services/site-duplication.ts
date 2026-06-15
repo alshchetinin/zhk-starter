@@ -14,7 +14,6 @@ import {
   documents,
   socialLinks,
   purchaseMethods,
-  ticketSettings,
 } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { allBlocks } from "../shared/blocks";
@@ -109,8 +108,8 @@ export interface DuplicateSiteInput {
 /**
  * Полное дублирование контента сайта в новый сайт (черновик). Копируются
  * контент-шаблонные таблицы (страницы, главная, новости, акции, документы,
- * контакты, банки, ипотека, категории, соцссылки, способы покупки, настройки
- * заявок, модалки) с новыми id; FK-колонки и contacts-ссылки внутри JSONB
+ * контакты, банки, ипотека, категории, соцссылки, способы покупки, модалки)
+ * с новыми id; FK-колонки и contacts-ссылки внутри JSONB
  * блоков ремапятся. Каталог недвижимости, интеграции, история версий и теги
  * НЕ копируются. Вызывать внутри `db.transaction`.
  */
@@ -159,8 +158,13 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   );
   await copyRows(tx, socialLinks, input.sourceSiteId, newSiteId);
   await copyRows(tx, purchaseMethods, input.sourceSiteId, newSiteId);
-  await copyRows(tx, ticketSettings, input.sourceSiteId, newSiteId);
-  await copyRows(tx, modals, input.sourceSiteId, newSiteId);
+  // Модалки: обнуляем receiverIds — приёмщики (form_receivers) per-site и НЕ
+  // копируются, поэтому ссылки на приёмщики сайта-источника невалидны для клона.
+  // Новый город настраивает приёмщики и привязывает их к формам заново.
+  await copyRows(tx, modals, input.sourceSiteId, newSiteId, (row) => ({
+    ...row,
+    receiverIds: [],
+  }));
 
   // 3. Зависимые FK.
   await copyRows(tx, mortgagePrograms, input.sourceSiteId, newSiteId, (row) => ({

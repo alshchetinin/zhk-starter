@@ -1061,7 +1061,7 @@ docker compose -f docs/observability/glitchtip.compose.yml down   # остано
           <p><strong>Копируется</strong> (с ремапом FK на новые id):</p>
           <ul class="font-mono text-xs">
             <li>pages, homepage, modals, page_categories</li>
-            <li>contacts, social_links, ticket_settings</li>
+            <li>contacts, social_links</li>
             <li>banks, mortgage_programs (ремап bankId), purchase_methods</li>
             <li>news, promotions (integrationId → null), documents</li>
             <li>site.settings (SEO/analytics; контакт-id ремап; counterId очищен)</li>

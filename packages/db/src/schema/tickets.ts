@@ -4,6 +4,7 @@ import { ticketTypeEnum } from "./_enums";
 import { sites } from "./sites";
 import { integrations } from "./integrations";
 import { apartments } from "./apartments";
+import { formDeliveries } from "./form-deliveries";
 
 export const tickets = pgTable("tickets", {
   id: text("id")
@@ -36,7 +37,7 @@ export const tickets = pgTable("tickets", {
     .notNull(),
 });
 
-export const ticketsRelations = relations(tickets, ({ one }) => ({
+export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   site: one(sites, {
     fields: [tickets.siteId],
     references: [sites.id],
@@ -49,4 +50,5 @@ export const ticketsRelations = relations(tickets, ({ one }) => ({
     fields: [tickets.integrationId],
     references: [integrations.id],
   }),
+  deliveries: many(formDeliveries),
 }));

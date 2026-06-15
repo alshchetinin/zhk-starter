@@ -60,6 +60,7 @@ export const modalsRouter = {
         successMessage: z.string().optional(),
         status: z.enum(modalStatusEnum.enumValues).default("draft"),
         fields: modalFieldsSchema.optional(),
+        receiverIds: z.array(z.string()).optional(),
       }),
     )
     .handler(async ({ input, context }) => {
@@ -74,6 +75,7 @@ export const modalsRouter = {
           successMessage: input.successMessage ?? null,
           status: input.status,
           fields: input.fields ?? [],
+          receiverIds: input.receiverIds ?? [],
         })
         .returning();
       return created;
@@ -90,6 +92,7 @@ export const modalsRouter = {
         successMessage: z.string().nullable().optional(),
         status: z.enum(modalStatusEnum.enumValues).optional(),
         fields: modalFieldsSchema.optional(),
+        receiverIds: z.array(z.string()).optional(),
       }),
     )
     .handler(async ({ input, context }) => {

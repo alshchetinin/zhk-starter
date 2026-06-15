@@ -170,6 +170,8 @@ async function handleSubmit() {
     if (e?.status === 429 || e?.code === "TOO_MANY_REQUESTS") {
       const sec = e?.data?.retryAfterSec ?? 60;
       submitError.value = `Слишком много попыток. Повторите через ${sec} сек.`;
+    } else {
+      submitError.value = "Не удалось отправить заявку. Проверьте поля и попробуйте ещё раз.";
     }
   }
 }

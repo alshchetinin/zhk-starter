@@ -37,6 +37,19 @@ better-auth лимитирует sign-in (5/15мин) на том же Redis, Ho
 
 Подробности: [`docs/rate-limiting.md`](docs/rate-limiting.md).
 
+## Приёмщики форм
+
+Реестр назначений для доставки заявок из форм (webhook / telegram / email),
+настраиваемых per-site. Метаданные + configSchema — `packages/api/src/shared/receivers/`
+(`defineReceiver`, `allReceivers`, `parseReceiverConfig`); логика доставки (server-only) —
+`packages/api/src/services/receivers/` (`deliverers`, `buildDeliveryContext`,
+`resolveReceiverIds`, диспетчер). `public.tickets.create` резолвит приёмщики
+по `source` (форма → её `receiverIds`; иначе все enabled), пишет `pending`-строки
+в `form_deliveries` и запускает доставку фоном. Ретрай — в детали заявки в
+админке (`/tickets/[id]`). Email требует env `SMTP_HOST/PORT/USER/PASS/FROM/SECURE`.
+
+Подробности: [`docs/receivers.md`](docs/receivers.md).
+
 ## Наблюдаемость
 
 Error-tracking на `@sentry/node` → **GlitchTip Issues** (`packages/observability`,
