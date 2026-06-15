@@ -9,7 +9,7 @@ const model = defineModel<{
   size: string;
   mainProject: string;
   contactList?: string[];
-  items: Array<{ name: string; photo?: string | null }>;
+  items: Array<{ name: string; photo?: string | { url: string; alt?: string | null } | null }>;
 }>({ required: true });
 
 function set<K extends keyof typeof model.value>(key: K, value: typeof model.value[K]) {
@@ -50,7 +50,7 @@ function set<K extends keyof typeof model.value>(key: K, value: typeof model.val
       <UInput :model-value="item.name" @update:model-value="update('name', $event)" />
     </UFormField>
     <UFormField label="Фото">
-      <ImageUpload :model-value="item.photo" @update:model-value="update('photo', $event)" folder="blocks" />
+      <ImageUpload :model-value="item.photo" @update:model-value="update('photo', $event)" folder="blocks" :per-usage="true" />
     </UFormField>
           </div>
         </template>
@@ -70,7 +70,7 @@ defineProps<{
   size: string;
   mainProject: string;
   contactList?: string[];
-  items: Array<{ name: string; photo?: string | null }>;
+  items: Array<{ name: string; photo?: string | { url: string; alt?: string | null } | null }>;
 }>();
 
 const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
@@ -115,7 +115,7 @@ const { fadeUp, staggerContainer, staggerChild } = useMotionPresets();
 
 exports[`generateBlockDefinition > эмитит fields, dataSchema, defaultData и регистрирует в index.ts 1`] = `
 "import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imageValue } from "./_core";
 
 export const testCardsBlock = defineBlock({
   type: "test-cards",
@@ -194,7 +194,7 @@ export const testCardsBlock = defineBlock({
     contactList: z.array(z.string()).optional(),
     items: z.array(z.object({
     name: z.string().min(1),
-    photo: z.string().url().nullable(),
+    photo: imageValue.nullable(),
   })).min(1).max(6),
   }),
   defaultData: {

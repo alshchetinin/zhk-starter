@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imageValue } from "./_core";
 
 export const infrastructureTabsBlock = defineBlock({
   type: "infrastructure-tabs",
@@ -61,7 +61,7 @@ export const infrastructureTabsBlock = defineBlock({
     label: z.string().min(1),
     title: z.string().min(1),
     description: z.string().optional(),
-    image: z.string().url(),
+    image: imageValue,
   })).min(2).max(8),
   }),
   defaultData: {

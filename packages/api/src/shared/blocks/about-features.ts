@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineBlock } from "./_core";
+import { defineBlock, imageValue } from "./_core";
 
 export const aboutFeaturesBlock = defineBlock({
   type: "about-features",
@@ -47,7 +47,7 @@ export const aboutFeaturesBlock = defineBlock({
     description: z.string().optional(),
     items: z.array(z.object({
     title: z.string().min(1),
-    image: z.string().url(),
+    image: imageValue,
   })).min(2).max(6),
   }),
   defaultData: {
