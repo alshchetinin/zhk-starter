@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { db } from "@zhk/db";
 import { sites } from "@zhk/db/schema";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, ne } from "drizzle-orm";
 import { ORPCError } from "@orpc/server";
 import { adminProcedure, protectedProcedure } from "../index";
 import { duplicateSite } from "../services/site-duplication";
 import { resolveSiteFromHost } from "../utils/resolve-site";
 import { METRIKA_COUNTER_ID_REGEX } from "../shared/tracking";
 import { siteNavigationSchema } from "../shared/navigation";
+import { isSiteArchived, canArchiveSite, canRestoreSite } from "../shared/site-archive";
 
 const slugSchema = z
   .string()
@@ -66,7 +67,15 @@ const settingsSchema = z
 export const sitesRouter = {
   list: protectedProcedure.handler(async () => {
     return db.query.sites.findMany({
+      where: isNull(sites.archivedAt),
       orderBy: (s, { desc, asc }) => [desc(s.isPrimary), asc(s.name)],
+    });
+  }),
+
+  listArchived: protectedProcedure.handler(async () => {
+    return db.query.sites.findMany({
+      where: isNotNull(sites.archivedAt),
+      orderBy: (s, { desc }) => [desc(s.archivedAt)],
     });
   }),
 
@@ -91,12 +100,16 @@ export const sitesRouter = {
     )
     .handler(async ({ input }) => {
       const existing = await db
-        .select({ id: sites.id })
+        .select({ id: sites.id, archivedAt: sites.archivedAt })
         .from(sites)
         .where(eq(sites.slug, input.slug))
         .limit(1);
       if (existing[0]) {
-        throw new ORPCError("CONFLICT", { message: "Slug already in use" });
+        throw new ORPCError("CONFLICT", {
+          message: existing[0].archivedAt
+            ? "Slug занят сайтом в архиве — восстановите его или удалите навсегда"
+            : "Slug уже используется",
+        });
       }
       const [created] = await db
         .insert(sites)
@@ -190,13 +203,52 @@ export const sitesRouter = {
       return { success: true };
     }),
 
-  delete: adminProcedure
+  archive: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const site = await db.query.sites.findFirst({ where: eq(sites.id, input.id) });
+      if (!site) throw new ORPCError("NOT_FOUND");
+      if (!canArchiveSite(site)) {
+        throw new ORPCError("BAD_REQUEST", {
+          message: site.isPrimary
+            ? "Нельзя архивировать главный сайт"
+            : "Сайт уже в архиве",
+        });
+      }
+      const [updated] = await db
+        .update(sites)
+        .set({ archivedAt: new Date() })
+        .where(eq(sites.id, input.id))
+        .returning();
+      return updated;
+    }),
+
+  restore: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .handler(async ({ input }) => {
+      const site = await db.query.sites.findFirst({ where: eq(sites.id, input.id) });
+      if (!site) throw new ORPCError("NOT_FOUND");
+      if (!canRestoreSite(site)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Сайт не в архиве" });
+      }
+      const [updated] = await db
+        .update(sites)
+        .set({ archivedAt: null, isActive: false })
+        .where(eq(sites.id, input.id))
+        .returning();
+      return updated;
+    }),
+
+  deletePermanent: adminProcedure
     .input(z.object({ id: z.string() }))
     .handler(async ({ input }) => {
       const site = await db.query.sites.findFirst({ where: eq(sites.id, input.id) });
       if (!site) throw new ORPCError("NOT_FOUND");
       if (site.isPrimary) {
-        throw new ORPCError("BAD_REQUEST", { message: "Cannot delete primary site" });
+        throw new ORPCError("BAD_REQUEST", { message: "Нельзя удалить главный сайт" });
+      }
+      if (!isSiteArchived(site)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Сначала отправьте сайт в архив" });
       }
       await db.delete(sites).where(eq(sites.id, input.id));
       return { success: true };
