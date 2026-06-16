@@ -7,6 +7,7 @@ import { adminProcedure, protectedProcedure } from "../index";
 import { duplicateSite } from "../services/site-duplication";
 import { resolveSiteFromHost } from "../utils/resolve-site";
 import { METRIKA_COUNTER_ID_REGEX } from "../shared/tracking";
+import { siteNavigationSchema } from "../shared/navigation";
 
 const slugSchema = z
   .string()
@@ -58,6 +59,7 @@ const settingsSchema = z
     contactsFooterIds: z.array(z.string()).optional(),
     analytics: analyticsSchema.optional(),
     seo: seoSchema.optional(),
+    navigation: siteNavigationSchema.optional(),
   })
   .partial();
 

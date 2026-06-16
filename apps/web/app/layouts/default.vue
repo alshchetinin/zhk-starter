@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { navItems } from "~/composables/useNavigation";
-
 const ModalProvider = defineAsyncComponent(() => import("~/components/ModalProvider.vue"));
 const { activeModalSlug } = useModalAction();
 const shouldMountModal = ref(false);
@@ -40,11 +38,11 @@ useHead(() => {
     class="min-h-svh flex flex-col max-w-[var(--web-site-max)] mx-auto"
   >
     <SiteJsonLd />
-    <WebHeader :nav-items="navItems" />
+    <WebHeader />
     <main class="flex-1 pt-[var(--web-header-height)]">
       <slot />
     </main>
-    <WebFooter :nav-items="navItems" />
+    <WebFooter />
     <ModalProvider v-if="shouldMountModal" />
   </div>
 </template>

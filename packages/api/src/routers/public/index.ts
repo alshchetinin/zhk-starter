@@ -11,6 +11,7 @@ import { publicConstructionProgressRouter } from "./construction-progress";
 import { publicTicketsRouter } from "./tickets";
 import { publicModalsRouter } from "./modals";
 import { publicSiteRouter } from "./site";
+import { publicNavigationRouter } from "./navigation";
 
 export const publicRouter = {
   site: publicSiteRouter,
@@ -22,6 +23,7 @@ export const publicRouter = {
   mortgagePrograms: publicMortgageProgramsRouter,
   purchaseMethods: publicPurchaseMethodsRouter,
   contacts: publicContactsRouter,
+  navigation: publicNavigationRouter,
   homepage: publicHomepageRouter,
   constructionProgress: publicConstructionProgressRouter,
   tickets: publicTicketsRouter,

@@ -35,11 +35,39 @@ export interface SiteSeoSettings {
   organization?: SiteSeoOrganizationSettings;
 }
 
+export type NavTarget =
+  | { kind: "page"; pageId: string }
+  | { kind: "category"; categoryId: string }
+  | { kind: "url"; href: string; external?: boolean }
+  | { kind: "action"; modal: string };
+
+export interface NavItem {
+  /** Стабильный id для key/реордера в UI */
+  id: string;
+  /** Подпись; для page/category опц. — фолбэк на title сущности */
+  label?: string;
+  target: NavTarget;
+  /** Выпадашка в хедере (1 уровень вложения) */
+  children?: NavItem[];
+}
+
+export interface FooterColumn {
+  id: string;
+  title?: string;
+  items: NavItem[];
+}
+
+export interface SiteNavigation {
+  header: NavItem[];
+  footer: FooterColumn[];
+}
+
 export interface SiteSettings {
   contactsHeaderIds?: string[];
   contactsFooterIds?: string[];
   analytics?: SiteAnalyticsSettings;
   seo?: SiteSeoSettings;
+  navigation?: SiteNavigation;
 }
 
 export const sites = pgTable("sites", {

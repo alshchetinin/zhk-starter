@@ -4,14 +4,10 @@ import {
   isMessengerSocial,
   type SocialLinkType,
 } from "@zhk/api/shared/socials";
-import type { NavItem } from "~/composables/useNavigation";
 import { telHref } from "~/utils/phone";
 
-defineProps<{
-  navItems: NavItem[];
-}>();
-
 const { footer: footerContacts, socials: siteSocials } = useSiteContacts();
+const { footer: footerColumns } = useSiteNavigation();
 const currentYear = new Date().getFullYear();
 const { trackPhoneClick, trackMessengerClick } = useTracking();
 
@@ -27,9 +23,9 @@ function onSocialClick(type: SocialLinkType) {
 <template>
   <footer class="bg-[var(--web-bg-muted)] border-t border-[var(--web-border)]">
     <div class="container-web py-12 md:py-16">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="flex flex-wrap gap-8">
         <!-- Brand -->
-        <div>
+        <div class="min-w-[200px] flex-1">
           <NuxtLink
             to="/"
             class="text-lg font-bold text-[var(--web-text-primary)]"
@@ -41,25 +37,38 @@ function onSocialClick(type: SocialLinkType) {
           </p>
         </div>
 
-        <!-- Navigation -->
-        <div>
-          <h3 class="text-sm font-semibold text-[var(--web-text-primary)] mb-4">
-            Навигация
-          </h3>
+        <!-- Navigation columns (dynamic) -->
+        <div
+          v-for="col in footerColumns"
+          :key="col.id"
+          class="min-w-[140px]"
+        >
+          <h3 v-if="col.title" class="text-sm font-semibold text-[var(--web-text-primary)] mb-4">{{ col.title }}</h3>
           <nav class="flex flex-col gap-2">
-            <NuxtLink
-              v-for="item in navItems"
-              :key="item.to"
-              :to="item.to"
-              class="text-sm text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
-            >
-              {{ item.label }}
-            </NuxtLink>
+            <template v-for="item in col.items" :key="item.id">
+              <a
+                v-if="item.external"
+                :href="item.href"
+                target="_blank"
+                rel="noopener"
+                class="text-sm text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+              >
+                {{ item.label }}
+              </a>
+              <NuxtLink
+                v-else-if="item.href"
+                :to="item.href"
+                class="text-sm text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+              >
+                {{ item.label }}
+              </NuxtLink>
+              <span v-else class="text-sm text-[var(--web-text-secondary)]">{{ item.label }}</span>
+            </template>
           </nav>
         </div>
 
         <!-- Contacts -->
-        <div v-if="footerContacts.length" class="flex flex-col gap-6">
+        <div v-if="footerContacts.length" class="min-w-[180px] flex flex-col gap-6">
           <div v-for="c in footerContacts" :key="c.id">
             <h3 class="text-sm font-semibold text-[var(--web-text-primary)] mb-3">
               {{ c.label }}
