@@ -1,6 +1,6 @@
 import { db } from "@zhk/db";
 import { sites } from "@zhk/db/schema";
-import { eq, or } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 
 /**
  * Resolve a site by host header:
@@ -17,9 +17,12 @@ export async function resolveSiteFromHost(host: string | null | undefined) {
   const subdomain = parts.length > (isLocalhost ? 1 : 2) ? parts[0] : null;
 
   const match = await db.query.sites.findFirst({
-    where: or(
-      eq(sites.customDomain, hostname),
-      subdomain ? eq(sites.slug, subdomain) : undefined,
+    where: and(
+      isNull(sites.archivedAt),
+      or(
+        eq(sites.customDomain, hostname),
+        subdomain ? eq(sites.slug, subdomain) : undefined,
+      ),
     ),
   });
   if (match) return match;
@@ -28,5 +31,7 @@ export async function resolveSiteFromHost(host: string | null | undefined) {
 }
 
 function findPrimarySite() {
-  return db.query.sites.findFirst({ where: eq(sites.isPrimary, true) });
+  return db.query.sites.findFirst({
+    where: and(eq(sites.isPrimary, true), isNull(sites.archivedAt)),
+  });
 }
