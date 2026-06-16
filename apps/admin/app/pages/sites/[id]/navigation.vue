@@ -36,7 +36,7 @@ watchEffect(() => {
 });
 
 function newNavItem(): NavItem {
-  return { id: crypto.randomUUID(), label: "", target: { kind: "route", route: "/" } };
+  return { id: crypto.randomUUID(), label: "", target: { kind: "url", href: "", external: false } };
 }
 function newColumn(): FooterColumn {
   return { id: crypto.randomUUID(), title: "", items: [] };

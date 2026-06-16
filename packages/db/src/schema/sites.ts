@@ -35,16 +35,8 @@ export interface SiteSeoSettings {
   organization?: SiteSeoOrganizationSettings;
 }
 
-export type NavRoute =
-  | "/"
-  | "/projects"
-  | "/news"
-  | "/documents"
-  | "/promotions";
-
 export type NavTarget =
   | { kind: "page"; pageId: string }
-  | { kind: "route"; route: NavRoute }
   | { kind: "category"; categoryId: string }
   | { kind: "url"; href: string; external?: boolean }
   | { kind: "action"; modal: string };

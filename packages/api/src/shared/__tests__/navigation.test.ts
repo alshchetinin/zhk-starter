@@ -6,14 +6,12 @@ import {
   remapNavigationReferences,
   collectNavReferences,
   resolveNavigation,
-  NAV_ROUTE_LABELS,
   type NavResolveContext,
 } from "../navigation";
 
 const nav: SiteNavigation = {
   header: [
     { id: "a", label: "О нас", target: { kind: "page", pageId: "p1" } },
-    { id: "b", target: { kind: "route", route: "/projects" } },
     { id: "c", target: { kind: "category", categoryId: "cat1" } },
     { id: "d", label: "VK", target: { kind: "url", href: "https://vk.com", external: true } },
     { id: "e", label: "Звонок", target: { kind: "action", modal: "zakazat-zvonok" } },
@@ -35,15 +33,6 @@ describe("siteNavigationSchema", () => {
   it("отклоняет неизвестный kind", () => {
     expect(() =>
       siteNavigationSchema.parse({ header: [{ id: "x", target: { kind: "foo" } }], footer: [] }),
-    ).toThrow();
-  });
-
-  it("отклоняет невалидный route", () => {
-    expect(() =>
-      siteNavigationSchema.parse({
-        header: [{ id: "x", target: { kind: "route", route: "/nope" } }],
-        footer: [],
-      }),
     ).toThrow();
   });
 });
@@ -68,19 +57,18 @@ describe("remapNavigationReferences", () => {
   const pageMap = new Map([["p1", "P1"]]);
   const catMap = new Map([["cat1", "CAT1"]]);
 
-  it("ремапит page и category, не трогает route/url/action", () => {
+  it("ремапит page и category, не трогает url/action", () => {
     const out = remapNavigationReferences(nav, pageMap, catMap)!;
     expect(out.header[0]!.target).toEqual({ kind: "page", pageId: "P1" });
-    expect(out.header[1]!.target).toEqual({ kind: "route", route: "/projects" });
-    expect(out.header[2]!.target).toEqual({ kind: "category", categoryId: "CAT1" });
-    expect(out.header[3]!.target).toEqual({ kind: "url", href: "https://vk.com", external: true });
-    expect(out.header[4]!.target).toEqual({ kind: "action", modal: "zakazat-zvonok" });
+    expect(out.header[1]!.target).toEqual({ kind: "category", categoryId: "CAT1" });
+    expect(out.header[2]!.target).toEqual({ kind: "url", href: "https://vk.com", external: true });
+    expect(out.header[3]!.target).toEqual({ kind: "action", modal: "zakazat-zvonok" });
     expect(out.footer[0]!.items[0]!.target).toEqual({ kind: "page", pageId: "P1" });
   });
 
   it("рекурсивно ремапит children", () => {
     const withChild: SiteNavigation = {
-      header: [{ id: "a", target: { kind: "route", route: "/" }, children: [
+      header: [{ id: "a", target: { kind: "url", href: "/" }, children: [
         { id: "a1", target: { kind: "page", pageId: "p1" } },
       ] }],
       footer: [],
@@ -128,13 +116,6 @@ describe("resolveNavigation", () => {
       { header: [{ id: "a", target: { kind: "page", pageId: "missing" } }], footer: [] }, ctx,
     );
     expect(out.header).toHaveLength(0);
-  });
-
-  it("route → href + дефолтный лейбл", () => {
-    const out = resolveNavigation(
-      { header: [{ id: "a", target: { kind: "route", route: "/projects" } }], footer: [] }, ctx,
-    );
-    expect(out.header[0]).toMatchObject({ href: "/projects", label: NAV_ROUTE_LABELS["/projects"] });
   });
 
   it("category → подпункты-страницы без href у родителя", () => {

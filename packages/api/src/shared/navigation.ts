@@ -1,33 +1,13 @@
 import { z } from "zod";
 import type {
   NavItem,
-  NavRoute,
   FooterColumn,
   SiteNavigation,
 } from "@zhk/db/schema";
 
 // Ре-экспорт типов данных навигации — единая точка импорта для admin/web,
 // чтобы не тянуть @zhk/db/schema напрямую во фронтовые бандлы.
-export type { NavItem, NavRoute, NavTarget, FooterColumn, SiteNavigation } from "@zhk/db/schema";
-
-// --- Системные роуты ---------------------------------------------------------
-
-export const NAV_ROUTES = [
-  "/",
-  "/projects",
-  "/news",
-  "/documents",
-  "/promotions",
-] as const satisfies readonly NavRoute[];
-
-/** Дефолтные подписи системных разделов (Record по union → растёт вместе с NavRoute). */
-export const NAV_ROUTE_LABELS: Record<NavRoute, string> = {
-  "/": "Главная",
-  "/projects": "Проекты",
-  "/news": "Новости",
-  "/documents": "Документы",
-  "/promotions": "Акции",
-};
+export type { NavItem, NavTarget, FooterColumn, SiteNavigation } from "@zhk/db/schema";
 
 // --- Zod-схема ---------------------------------------------------------------
 
@@ -36,7 +16,6 @@ export const NAV_ROUTE_LABELS: Record<NavRoute, string> = {
 // navItemSchema аннотирован z.ZodType<NavItem> и содержит это поле target.
 const navTargetSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("page"), pageId: z.string() }),
-  z.object({ kind: z.literal("route"), route: z.enum(NAV_ROUTES) }),
   z.object({ kind: z.literal("category"), categoryId: z.string() }),
   z.object({ kind: z.literal("url"), href: z.string(), external: z.boolean().optional() }),
   z.object({ kind: z.literal("action"), modal: z.string() }),
@@ -66,20 +45,20 @@ export const siteNavigationSchema: z.ZodType<SiteNavigation> = z.object({
 
 export const defaultSiteNavigation: SiteNavigation = {
   header: [
-    { id: "projects", target: { kind: "route", route: "/projects" } },
-    { id: "news", target: { kind: "route", route: "/news" } },
-    { id: "documents", target: { kind: "route", route: "/documents" } },
-    { id: "promotions", target: { kind: "route", route: "/promotions" } },
+    { id: "projects", label: "Проекты", target: { kind: "url", href: "/projects" } },
+    { id: "news", label: "Новости", target: { kind: "url", href: "/news" } },
+    { id: "documents", label: "Документы", target: { kind: "url", href: "/documents" } },
+    { id: "promotions", label: "Акции", target: { kind: "url", href: "/promotions" } },
   ],
   footer: [
     {
       id: "nav",
       title: "Навигация",
       items: [
-        { id: "f-projects", target: { kind: "route", route: "/projects" } },
-        { id: "f-news", target: { kind: "route", route: "/news" } },
-        { id: "f-documents", target: { kind: "route", route: "/documents" } },
-        { id: "f-promotions", target: { kind: "route", route: "/promotions" } },
+        { id: "f-projects", label: "Проекты", target: { kind: "url", href: "/projects" } },
+        { id: "f-news", label: "Новости", target: { kind: "url", href: "/news" } },
+        { id: "f-documents", label: "Документы", target: { kind: "url", href: "/documents" } },
+        { id: "f-promotions", label: "Акции", target: { kind: "url", href: "/promotions" } },
       ],
     },
   ],
@@ -181,13 +160,6 @@ export function resolveNavigation(
         if (!p) return null;
         return { id: item.id, label: item.label || p.title, href: `/pages/${p.slug}`, children };
       }
-      case "route":
-        return {
-          id: item.id,
-          label: item.label || NAV_ROUTE_LABELS[t.route],
-          href: t.route,
-          children,
-        };
       case "category": {
         const c = ctx.categories.get(t.categoryId);
         if (!c) return null;
