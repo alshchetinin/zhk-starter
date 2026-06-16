@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import type { NavItem } from "~/composables/useNavigation";
 import { telHref } from "~/utils/phone";
-
-defineProps<{
-  navItems: NavItem[];
-}>();
 
 const SCROLL_THRESHOLD_PX = 20;
 const isScrolled = ref(false);
@@ -18,6 +13,8 @@ if (import.meta.client) {
 
 const isMobileMenuOpen = ref(false);
 const route = useRoute();
+
+const { header: navItems } = useSiteNavigation();
 
 const { header: headerContacts } = useSiteContacts();
 const primaryContact = computed(() => headerContacts.value[0]);
@@ -55,15 +52,54 @@ const { trackPhoneClick } = useTracking();
 
       <!-- Desktop navigation -->
       <nav class="hidden md:flex items-center gap-8">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
-          active-class="!text-[var(--web-accent)]"
-        >
-          {{ item.label }}
-        </NuxtLink>
+        <template v-for="item in navItems" :key="item.id">
+          <!-- выпадашка -->
+          <div v-if="item.children?.length" class="relative group">
+            <button type="button" class="text-sm font-medium text-[var(--web-text-secondary)] group-hover:text-[var(--web-text-primary)] transition-colors cursor-default">
+              {{ item.label }}
+            </button>
+            <div class="absolute left-0 top-full pt-2 hidden group-hover:block group-focus-within:block min-w-48 z-50">
+              <div class="rounded-lg border border-[var(--web-border)] bg-[var(--web-bg)] py-2 shadow-lg">
+                <NuxtLink
+                  v-for="child in item.children"
+                  :key="child.id"
+                  :to="child.href ?? '#'"
+                  class="block px-4 py-2 text-sm text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] transition-colors"
+                >
+                  {{ child.label }}
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+          <!-- действие/модалка -->
+          <button
+            v-else-if="item.action"
+            type="button"
+            class="text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+            @click="openModal(item.action)"
+          >
+            {{ item.label }}
+          </button>
+          <!-- внешняя ссылка -->
+          <a
+            v-else-if="item.external"
+            :href="item.href"
+            target="_blank"
+            rel="noopener"
+            class="text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+          >
+            {{ item.label }}
+          </a>
+          <!-- внутренняя ссылка -->
+          <NuxtLink
+            v-else
+            :to="item.href ?? '#'"
+            class="text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
+            active-class="!text-[var(--web-accent)]"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </template>
       </nav>
 
       <!-- CTA + mobile toggle -->
@@ -116,15 +152,47 @@ const { trackPhoneClick } = useTracking();
         class="md:hidden bg-white border-b border-[var(--web-border)] shadow-lg"
       >
         <nav class="container-web py-4 flex flex-col gap-1">
-          <NuxtLink
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            class="px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] rounded-lg transition-colors"
-            active-class="!text-[var(--web-accent)] !bg-[var(--web-accent-light)]"
-          >
-            {{ item.label }}
-          </NuxtLink>
+          <template v-for="item in navItems" :key="item.id">
+            <div v-if="item.children?.length">
+              <div class="px-1 py-2 text-sm font-semibold text-[var(--web-text-primary)]">{{ item.label }}</div>
+              <NuxtLink
+                v-for="child in item.children"
+                :key="child.id"
+                :to="child.href ?? '#'"
+                class="block px-4 py-2 text-sm text-[var(--web-text-secondary)]"
+                @click="isMobileMenuOpen = false"
+              >
+                {{ child.label }}
+              </NuxtLink>
+            </div>
+            <button
+              v-else-if="item.action"
+              type="button"
+              class="block w-full text-left px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] rounded-lg transition-colors"
+              @click="openModal(item.action); isMobileMenuOpen = false"
+            >
+              {{ item.label }}
+            </button>
+            <a
+              v-else-if="item.external"
+              :href="item.href"
+              target="_blank"
+              rel="noopener"
+              class="block px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] rounded-lg transition-colors"
+              @click="isMobileMenuOpen = false"
+            >
+              {{ item.label }}
+            </a>
+            <NuxtLink
+              v-else
+              :to="item.href ?? '#'"
+              class="px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] rounded-lg transition-colors"
+              active-class="!text-[var(--web-accent)] !bg-[var(--web-accent-light)]"
+              @click="isMobileMenuOpen = false"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </template>
           <UiButton as-child variant="primary" class="mt-2 w-full justify-center">
             <NuxtLink to="/projects">
               Выбрать квартиру
