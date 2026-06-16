@@ -20,3 +20,10 @@ export function formatPercent(value: string | number | null | undefined) {
   if (!Number.isFinite(num)) return "—";
   return `${num.toFixed(2).replace(/\.00$/, "")}%`;
 }
+
+export function formatFileSize(bytes: number | null | undefined): string {
+  if (!bytes) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}

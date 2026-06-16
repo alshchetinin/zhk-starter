@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE, uploadToS3 } from "~/utils/upload";
 import type { AllowedImageType } from "~/utils/upload";
+import { formatFileSize } from "~/utils/format";
 
 const { $orpc, $orpcClient } = useNuxtApp();
 const toast = useToast();
@@ -42,36 +43,12 @@ const deleteMutation = useMutation({
   },
 });
 
-// Инлайн-редактирование центрального alt (media.alt по url)
-const updateAltMutation = useMutation({
-  mutationFn: (input: { url: string; alt: string }) =>
-    $orpcClient.media.update(input),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: $orpc.media.list.key() });
-  },
-  onError: () => {
-    toast.add({ title: "Ошибка сохранения alt", color: "error" });
-  },
+// Модалка-превью: индекс выбранного элемента в текущей странице (null → закрыто)
+const selectedIndex = ref<number | null>(null);
+// закрывать модалку при смене страницы (индексы перестают совпадать)
+watch(page, () => {
+  selectedIndex.value = null;
 });
-
-// локальные черновики alt по id (плавный ввод, коммит на blur)
-const altDrafts = ref<Record<string, string>>({});
-watch(
-  items,
-  (list) => {
-    for (const it of list) {
-      const source = it.alt ?? "";
-      if (!(it.id in altDrafts.value) || (altDrafts.value[it.id] === "" && source !== "")) {
-        altDrafts.value[it.id] = source;
-      }
-    }
-  },
-  { immediate: true },
-);
-
-function commitAlt(item: { id: string; url: string }) {
-  updateAltMutation.mutate({ url: item.url, alt: altDrafts.value[item.id] ?? "" });
-}
 
 const uploading = ref(false);
 const uploadProgress = ref(0);
@@ -139,12 +116,6 @@ function handleFileInput(event: Event) {
   input.value = "";
 }
 
-function formatFileSize(bytes: number | null | undefined): string {
-  if (!bytes) return "--";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
 </script>
 
 <template>
@@ -239,53 +210,46 @@ function formatFileSize(bytes: number | null | undefined): string {
       class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
     >
       <div
-        v-for="item in items"
+        v-for="(item, i) in items"
         :key="item.id"
-        class="group relative border border-(--ui-border) overflow-hidden bg-(--ui-bg-elevated)"
+        class="group relative overflow-hidden rounded-lg border border-(--ui-border) bg-(--ui-bg-elevated)"
       >
-        <div class="aspect-square overflow-hidden">
+        <button
+          v-if="item.contentType?.startsWith('image/')"
+          type="button"
+          class="block aspect-square w-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-(--ui-primary)"
+          @click="selectedIndex = i"
+        >
           <img
-            v-if="item.contentType?.startsWith('image/')"
             :src="item.url"
             :alt="item.fileName ?? ''"
             class="h-full w-full object-cover transition-transform group-hover:scale-105"
           />
-          <div
-            v-else
-            class="h-full w-full flex items-center justify-center bg-(--ui-bg-muted)"
-          >
-            <UIcon name="i-solar-file-linear" class="size-10 text-(--ui-text-dimmed)" />
-          </div>
+        </button>
+        <div
+          v-else
+          class="aspect-square flex items-center justify-center bg-(--ui-bg-muted)"
+        >
+          <UIcon name="i-solar-file-linear" class="size-10 text-(--ui-text-dimmed)" />
         </div>
 
         <div class="p-3 space-y-1">
           <p class="text-sm font-medium text-(--ui-text-highlighted) truncate">
             {{ item.fileName ?? "Без имени" }}
           </p>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between gap-2">
             <span class="text-xs text-(--ui-text-dimmed)">
               {{ formatFileSize(item.fileSize) }}
             </span>
             <UBadge
-              v-if="item.folder"
+              v-if="item.contentType?.startsWith('image/') && !item.alt"
               variant="subtle"
-              color="neutral"
+              color="warning"
               size="xs"
             >
-              {{ item.folder }}
+              без alt
             </UBadge>
           </div>
-
-          <UInput
-            v-if="item.contentType?.startsWith('image/')"
-            :model-value="altDrafts[item.id] ?? ''"
-            placeholder="alt-текст"
-            size="xs"
-            class="w-full"
-            icon="i-solar-text-field-linear"
-            @update:model-value="(v: string | number) => (altDrafts[item.id] = String(v))"
-            @change="commitAlt(item)"
-          />
         </div>
 
         <button
@@ -304,5 +268,7 @@ function formatFileSize(bytes: number | null | undefined): string {
         :items-per-page="pageSize"
       />
     </div>
+
+    <MediaDetailModal :items="items" v-model:index="selectedIndex" />
   </PageContainer>
 </template>
