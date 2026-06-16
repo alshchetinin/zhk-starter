@@ -12,7 +12,7 @@ export const floorLayouts = pgTable("floor_layouts", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   layout: text("layout").notNull(),
   sectionId: text("section_id").references(() => sections.id),
   externalId: text("external_id"),
@@ -48,7 +48,7 @@ export const floors = pgTable("floors", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   sectionId: text("section_id").references(() => sections.id, {
     onDelete: "cascade",
   }),

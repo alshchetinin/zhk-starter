@@ -10,7 +10,7 @@ export const decorations = pgTable("decorations", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   title: text("title"),
   titleAdmin: text("title_admin"),
   description: text("description"),

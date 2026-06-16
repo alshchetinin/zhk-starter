@@ -21,7 +21,7 @@ export const parking = pgTable("parking", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name"),
   area: numeric("area", { precision: 10, scale: 2 }),
   price: numeric("price", { precision: 12, scale: 2 }),

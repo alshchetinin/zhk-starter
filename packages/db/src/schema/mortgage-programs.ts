@@ -19,7 +19,7 @@ export const mortgagePrograms = pgTable("mortgage_programs", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
   rate: numeric("rate", { precision: 5, scale: 2 }).notNull(),

@@ -12,7 +12,7 @@ export const nonResidentialFloors = pgTable("non_residential_floors", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   floorNumber: integer("floor_number"),
   floorImage: text("floor_image"),
   svgScheme: text("svg_scheme"),

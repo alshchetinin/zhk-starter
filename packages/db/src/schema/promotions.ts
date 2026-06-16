@@ -20,7 +20,7 @@ export const promotions = pgTable("promotions", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   slug: text("slug"),
   description: text("description"),

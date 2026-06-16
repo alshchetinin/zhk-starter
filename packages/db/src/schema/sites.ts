@@ -81,6 +81,7 @@ export const sites = pgTable("sites", {
   accessPassword: text("access_password"),
   cityId: text("city_id"),
   customDomain: text("custom_domain").unique(),
+  archivedAt: timestamp("archived_at", { withTimezone: true }),
   settings: jsonb("settings").$type<SiteSettings>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()

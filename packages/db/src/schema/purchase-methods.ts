@@ -19,7 +19,7 @@ export const purchaseMethods = pgTable("purchase_methods", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   kind: purchaseMethodKindEnum("kind").notNull(),
   title: text("title").notNull(),
   description: text("description"),

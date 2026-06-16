@@ -12,7 +12,7 @@ export const tags = pgTable("tags", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
   imageUrl: text("image_url"),

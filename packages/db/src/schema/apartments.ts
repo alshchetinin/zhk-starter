@@ -28,7 +28,7 @@ export const apartments = pgTable("apartments", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   apartmentNumber: text("apartment_number").notNull(),
   area: numeric("area", { precision: 10, scale: 2 }).notNull(),

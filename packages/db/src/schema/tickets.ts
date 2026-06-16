@@ -13,7 +13,7 @@ export const tickets = pgTable("tickets", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name"),
   phone: text("phone"),
   email: text("email"),
