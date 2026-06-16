@@ -17,6 +17,7 @@ import {
 } from "@zhk/db/schema";
 import { eq } from "drizzle-orm";
 import { allBlocks } from "../shared/blocks";
+import { remapNavigationReferences } from "../shared/navigation";
 
 /**
  * Индекс: тип блока → (имя поля → тип поля).
@@ -177,7 +178,7 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   const remap = (blocks: ContentBlock[] | null | undefined) =>
     remapBlockReferences(blocks, contactsMap, fieldIndex);
 
-  await copyRows(tx, pages, input.sourceSiteId, newSiteId, (row) => ({
+  const pagesMap = await copyRows(tx, pages, input.sourceSiteId, newSiteId, (row) => ({
     ...row,
     categoryId: row.categoryId
       ? (categoriesMap.get(row.categoryId) ?? null)
@@ -217,6 +218,14 @@ export async function duplicateSite(tx: Tx, input: DuplicateSiteInput) {
   const orgContactId = newSettings.seo?.organization?.contactId;
   if (orgContactId && newSettings.seo?.organization) {
     newSettings.seo.organization.contactId = contactsMap.get(orgContactId) ?? orgContactId;
+  }
+  // navigation — ссылки на страницы/категории ремапим под новый сайт
+  if (newSettings.navigation) {
+    newSettings.navigation = remapNavigationReferences(
+      newSettings.navigation,
+      pagesMap,
+      categoriesMap,
+    );
   }
   await tx
     .update(sites)
