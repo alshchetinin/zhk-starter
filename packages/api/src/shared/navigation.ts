@@ -2,7 +2,6 @@ import { z } from "zod";
 import type {
   NavItem,
   NavRoute,
-  NavTarget,
   FooterColumn,
   SiteNavigation,
 } from "@zhk/db/schema";
