@@ -169,25 +169,25 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
   <UModal
     v-model:open="open"
     :title="item?.fileName ?? 'Медиа'"
-    :ui="{ width: 'sm:max-w-4xl' }"
+    :ui="{ content: 'sm:max-w-6xl' }"
   >
     <template #body>
-      <div v-if="item" class="grid gap-4 md:grid-cols-[1fr_260px]">
+      <div v-if="item" class="grid gap-6 md:grid-cols-[minmax(0,1fr)_320px]">
         <div
-          class="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-lg bg-(--ui-bg-elevated)"
+          class="relative flex h-[44vh] items-center justify-center overflow-hidden rounded-lg bg-(--ui-bg-elevated) md:h-[72vh]"
         >
           <img
             :src="item.url"
             :alt="item.alt ?? item.fileName ?? ''"
-            class="max-h-[70vh] w-full object-contain"
+            class="max-h-full max-w-full object-contain"
             @load="onImageLoad"
           />
           <UButton
             v-if="hasPrev"
             icon="i-solar-alt-arrow-left-linear"
             color="neutral"
-            variant="solid"
-            class="absolute left-2 top-1/2 -translate-y-1/2 rounded-full"
+            size="lg"
+            class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full shadow-sm"
             aria-label="Предыдущая"
             @click="prev"
           />
@@ -195,39 +195,46 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
             v-if="hasNext"
             icon="i-solar-alt-arrow-right-linear"
             color="neutral"
-            variant="solid"
-            class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full"
+            size="lg"
+            class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full shadow-sm"
             aria-label="Следующая"
             @click="next"
           />
         </div>
 
-        <div class="space-y-4">
-          <dl class="space-y-1.5 text-xs">
-            <div class="flex justify-between gap-2">
+        <div class="flex flex-col gap-5">
+          <dl class="space-y-2.5 text-sm">
+            <div class="flex items-center justify-between gap-3">
               <dt class="text-(--ui-text-muted)">Тип</dt>
               <dd class="text-(--ui-text-highlighted)">{{ item.contentType ?? "—" }}</dd>
             </div>
-            <div class="flex justify-between gap-2">
+            <div class="flex items-center justify-between gap-3">
               <dt class="text-(--ui-text-muted)">Размер</dt>
               <dd class="text-(--ui-text-highlighted)">{{ formatFileSize(item.fileSize) }}</dd>
             </div>
-            <div class="flex justify-between gap-2">
+            <div class="flex items-center justify-between gap-3">
               <dt class="text-(--ui-text-muted)">Размеры</dt>
               <dd class="text-(--ui-text-highlighted)">{{ dimensions ?? "…" }}</dd>
             </div>
-            <div v-if="item.folder" class="flex justify-between gap-2">
+            <div v-if="item.folder" class="flex items-center justify-between gap-3">
               <dt class="text-(--ui-text-muted)">Папка</dt>
-              <dd><UBadge variant="subtle" color="neutral" size="xs">{{ item.folder }}</UBadge></dd>
+              <dd
+                class="max-w-[60%] truncate text-(--ui-text-highlighted)"
+                :title="item.folder"
+              >
+                {{ item.folder }}
+              </dd>
             </div>
-            <div class="flex justify-between gap-2">
+            <div class="flex items-center justify-between gap-3">
               <dt class="text-(--ui-text-muted)">Загружен</dt>
               <dd class="text-(--ui-text-highlighted)">{{ formatDate(item.createdAt) ?? "—" }}</dd>
             </div>
           </dl>
 
-          <div class="flex items-center gap-1.5">
-            <span class="flex-1 truncate font-mono text-xs text-(--ui-text-dimmed)">{{ item.url }}</span>
+          <div
+            class="flex items-center gap-2 rounded-md bg-(--ui-bg-elevated) px-2.5 py-1.5"
+          >
+            <span class="flex-1 truncate font-mono text-xs text-(--ui-text-muted)">{{ item.url }}</span>
             <UButton
               icon="i-solar-copy-linear"
               color="neutral"
@@ -241,7 +248,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
           <UFormField label="Alt-текст">
             <UTextarea
               v-model="altDraft"
-              :rows="3"
+              :rows="4"
               :maxlength="500"
               placeholder="Опишите изображение…"
               class="w-full"
@@ -249,14 +256,14 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
             />
           </UFormField>
 
-          <div class="flex gap-2 pt-1">
+          <div class="mt-auto flex gap-2 pt-1">
             <UButton
               icon="i-solar-download-linear"
               color="neutral"
               variant="outline"
-              size="sm"
+              block
               :loading="downloading"
-              class="flex-1 justify-center"
+              class="flex-1"
               @click="downloadFile"
             >
               Скачать
@@ -265,9 +272,9 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
               :icon="confirmDelete ? 'i-solar-trash-bin-trash-bold' : 'i-solar-trash-bin-trash-linear'"
               :color="confirmDelete ? 'error' : 'neutral'"
               variant="outline"
-              size="sm"
+              block
               :loading="deleteMutation.isPending.value"
-              class="flex-1 justify-center"
+              class="flex-1"
               @click="onDelete"
             >
               {{ confirmDelete ? "Точно удалить?" : "Удалить" }}

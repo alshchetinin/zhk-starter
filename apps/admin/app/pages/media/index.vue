@@ -212,7 +212,7 @@ function handleFileInput(event: Event) {
       <div
         v-for="(item, i) in items"
         :key="item.id"
-        class="group relative border border-(--ui-border) overflow-hidden bg-(--ui-bg-elevated)"
+        class="group relative overflow-hidden rounded-lg border border-(--ui-border) bg-(--ui-bg-elevated)"
       >
         <button
           v-if="item.contentType?.startsWith('image/')"
@@ -237,24 +237,15 @@ function handleFileInput(event: Event) {
           <p class="text-sm font-medium text-(--ui-text-highlighted) truncate">
             {{ item.fileName ?? "Без имени" }}
           </p>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between gap-2">
             <span class="text-xs text-(--ui-text-dimmed)">
               {{ formatFileSize(item.fileSize) }}
             </span>
-            <UBadge
-              v-if="item.folder"
-              variant="subtle"
-              color="neutral"
-              size="xs"
-            >
-              {{ item.folder }}
-            </UBadge>
             <UBadge
               v-if="item.contentType?.startsWith('image/') && !item.alt"
               variant="subtle"
               color="warning"
               size="xs"
-              class="ml-auto"
             >
               без alt
             </UBadge>
