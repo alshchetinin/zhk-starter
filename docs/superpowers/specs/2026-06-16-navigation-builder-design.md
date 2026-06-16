@@ -97,7 +97,7 @@ interface SiteNavigation {
 | `target.kind` | Резолв |
 | --- | --- |
 | `page` | href `/pages/{slug}`; label-фолбэк на `page.title`; пункт скрывается, если страница не найдена или не `published` |
-| `category` | `children` = опубликованные страницы категории (по `sortOrder`), каждая → href+title |
+| `category` | `children` = опубликованные страницы категории (по `title`, т.к. у `pages` нет `sortOrder`), каждая → href+title |
 | `route` | href = сам роут |
 | `url` | href + `external` как есть |
 | `action` | маркер `{ kind: "action", modal }` — вёрстка вешает обработчик открытия модалки |
@@ -163,6 +163,6 @@ interface SiteNavigation {
 - **Unit** (vitest, чистые функции из `shared/navigation.ts`): Zod-валидация, дефолт, ремап `pageId`/
   `categoryId` (page/category ремапятся, route/url/action — нет).
 - **Резолв**: page→href+title, снятая с публикации/удалённая страница отфильтрована, category→подпункты
-  в порядке `sortOrder`, удалённая категория отфильтрована.
+  в порядке `title`, удалённая категория отфильтрована.
 - **E2E через UI** (preview-стек): редактор навигации сохраняет дерево; web рендерит пункты всех 5 типов;
   дубликат города не получает dangling-ссылок.
