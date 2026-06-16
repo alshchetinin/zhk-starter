@@ -92,13 +92,20 @@ const { trackPhoneClick } = useTracking();
           </a>
           <!-- внутренняя ссылка -->
           <NuxtLink
-            v-else
-            :to="item.href ?? '#'"
+            v-else-if="item.href"
+            :to="item.href"
             class="text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] transition-colors"
             active-class="!text-[var(--web-accent)]"
           >
             {{ item.label }}
           </NuxtLink>
+          <!-- категория без страниц — инертный лейбл -->
+          <span
+            v-else
+            class="text-sm font-medium text-[var(--web-text-secondary)]"
+          >
+            {{ item.label }}
+          </span>
         </template>
       </nav>
 
@@ -184,14 +191,21 @@ const { trackPhoneClick } = useTracking();
               {{ item.label }}
             </a>
             <NuxtLink
-              v-else
-              :to="item.href ?? '#'"
+              v-else-if="item.href"
+              :to="item.href"
               class="px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)] hover:text-[var(--web-text-primary)] hover:bg-[var(--web-bg-muted)] rounded-lg transition-colors"
               active-class="!text-[var(--web-accent)] !bg-[var(--web-accent-light)]"
               @click="isMobileMenuOpen = false"
             >
               {{ item.label }}
             </NuxtLink>
+            <!-- категория без страниц — инертный лейбл -->
+            <span
+              v-else
+              class="px-4 py-3 text-sm font-medium text-[var(--web-text-secondary)]"
+            >
+              {{ item.label }}
+            </span>
           </template>
           <UiButton as-child variant="primary" class="mt-2 w-full justify-center">
             <NuxtLink to="/projects">
