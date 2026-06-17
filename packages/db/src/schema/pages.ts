@@ -1,7 +1,8 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { pageStatusEnum } from "./_enums";
-import type { ContentBlock } from "./_shared";
+import type { ContentBlock, BreadcrumbsConfig } from "./_shared";
+import { defaultBreadcrumbsValue } from "./_shared";
 import { sites } from "./sites";
 import { pageCategories } from "./page-categories";
 
@@ -21,6 +22,10 @@ export const pages = pgTable("pages", {
   metaDescription: text("meta_description"),
   categoryId: text("category_id").references(() => pageCategories.id, { onDelete: "set null" }),
   ogImage: text("og_image"),
+  breadcrumbs: jsonb("breadcrumbs")
+    .$type<BreadcrumbsConfig>()
+    .notNull()
+    .default(defaultBreadcrumbsValue),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

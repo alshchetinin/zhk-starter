@@ -62,12 +62,22 @@ export interface SiteNavigation {
   footer: FooterColumn[];
 }
 
+export interface SiteBreadcrumbsSettings {
+  /** undefined → включено */
+  enabled?: boolean;
+  /** undefined → «Главная» */
+  homeLabel?: string;
+  /** undefined → false */
+  showOnHome?: boolean;
+}
+
 export interface SiteSettings {
   contactsHeaderIds?: string[];
   contactsFooterIds?: string[];
   analytics?: SiteAnalyticsSettings;
   seo?: SiteSeoSettings;
   navigation?: SiteNavigation;
+  breadcrumbs?: SiteBreadcrumbsSettings;
 }
 
 export const sites = pgTable("sites", {

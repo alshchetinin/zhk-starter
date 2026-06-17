@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import type { InfraCategory, InfraPin } from "./_shared";
+import type { InfraCategory, InfraPin, BreadcrumbsConfig } from "./_shared";
+import { defaultBreadcrumbsValue } from "./_shared";
 import { projectStatusEnum } from "./_enums";
 import { sites } from "./sites";
 import { integrations } from "./integrations";
@@ -29,6 +30,10 @@ export const projects = pgTable("projects", {
   cameraUrl: text("camera_url"),
   infrastructureCategories: jsonb("infrastructure_categories").$type<InfraCategory[]>().default([]),
   infrastructurePins: jsonb("infrastructure_pins").$type<InfraPin[]>().default([]),
+  breadcrumbs: jsonb("breadcrumbs")
+    .$type<BreadcrumbsConfig>()
+    .notNull()
+    .default(defaultBreadcrumbsValue),
   cityId: text("city_id").references(() => cities.id),
   externalId: text("external_id"),
   integrationId: text("integration_id").references(() => integrations.id),
