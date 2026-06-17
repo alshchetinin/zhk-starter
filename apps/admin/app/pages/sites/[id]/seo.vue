@@ -35,6 +35,9 @@ const form = ref({
   seoOrgLegalName: "",
   seoOrgLogo: null as string | null,
   seoOrgContactId: null as string | null,
+  bcEnabled: true,
+  bcHomeLabel: "",
+  bcShowOnHome: false,
 });
 
 watchEffect(() => {
@@ -53,6 +56,9 @@ watchEffect(() => {
       seoOrgLegalName: seo?.organization?.legalName ?? "",
       seoOrgLogo: seo?.organization?.logo ?? null,
       seoOrgContactId: seo?.organization?.contactId ?? null,
+      bcEnabled: data.value.settings?.breadcrumbs?.enabled ?? true,
+      bcHomeLabel: data.value.settings?.breadcrumbs?.homeLabel ?? "",
+      bcShowOnHome: data.value.settings?.breadcrumbs?.showOnHome ?? false,
     };
   }
 });
@@ -81,6 +87,11 @@ const updateMutation = useMutation({
             logo: form.value.seoOrgLogo || undefined,
             contactId: form.value.seoOrgContactId || undefined,
           },
+        },
+        breadcrumbs: {
+          enabled: form.value.bcEnabled,
+          homeLabel: form.value.bcHomeLabel.trim() || undefined,
+          showOnHome: form.value.bcShowOnHome,
         },
       },
     }),
@@ -185,6 +196,20 @@ const updateMutation = useMutation({
                 />
               </UFormField>
             </div>
+          </div>
+        </AppDataCard>
+
+        <AppDataCard title="Хлебные крошки">
+          <div class="space-y-3">
+            <UFormField label="Показывать крошки" description="Глобальный выключатель для всего сайта">
+              <USwitch v-model="form.bcEnabled" />
+            </UFormField>
+            <UFormField label="Подпись «домой»" description="Первое звено цепочки">
+              <UInput v-model="form.bcHomeLabel" placeholder="Главная" size="sm" />
+            </UFormField>
+            <UFormField label="Показывать на главной" description="Обычно на главной странице крошки не нужны">
+              <USwitch v-model="form.bcShowOnHome" />
+            </UFormField>
           </div>
         </AppDataCard>
 

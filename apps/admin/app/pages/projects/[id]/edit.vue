@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { BreadcrumbsConfig } from "@zhk/api/shared/breadcrumbs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 
 const props = defineProps<{ project: any }>();
@@ -24,6 +25,7 @@ const form = reactive({
   coordinates: props.project.coordinates ?? "",
   gallery: [...(props.project.gallery ?? [])] as string[],
   cameraUrl: props.project.cameraUrl ?? "",
+  breadcrumbs: (props.project.breadcrumbs ?? emptyBreadcrumbs()) as BreadcrumbsConfig,
 });
 
 const canSave = computed(() => form.name.trim().length > 0);
@@ -41,6 +43,7 @@ const saveMutation = useMutation({
       coordinates: form.coordinates || null,
       gallery: form.gallery.length > 0 ? form.gallery : null,
       cameraUrl: form.cameraUrl.trim() || null,
+      breadcrumbs: cleanBreadcrumbs(form.breadcrumbs),
     }),
   onMutate: async () => {
     const key = $orpc.projects.getById.queryKey({
@@ -62,6 +65,7 @@ const saveMutation = useMutation({
           coordinates: form.coordinates || null,
           gallery: form.gallery.length > 0 ? form.gallery : null,
           cameraUrl: form.cameraUrl.trim() || null,
+          breadcrumbs: cleanBreadcrumbs(form.breadcrumbs),
         },
     );
     return { prev, key };
@@ -150,6 +154,10 @@ const saveMutation = useMutation({
           size="sm"
         />
       </UFormField>
+    </AppDataCard>
+
+    <AppDataCard title="Хлебные крошки">
+      <BreadcrumbsField v-model="form.breadcrumbs" />
     </AppDataCard>
 
     <div class="flex items-center gap-2 pt-2">
