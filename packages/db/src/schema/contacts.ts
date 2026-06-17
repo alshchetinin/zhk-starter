@@ -13,7 +13,7 @@ export const contacts = pgTable("contacts", {
     .$defaultFn(() => crypto.randomUUID()),
   siteId: text("site_id")
     .notNull()
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
   phone: text("phone"),
   email: text("email"),

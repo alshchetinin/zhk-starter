@@ -9,7 +9,7 @@ export const banks = pgTable("banks", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   logo: text("logo"),
   description: text("description"),

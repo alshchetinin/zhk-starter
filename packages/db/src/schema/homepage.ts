@@ -10,7 +10,7 @@ export const homepage = pgTable("homepage", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   contentBlocks: jsonb("content_blocks").$type<ContentBlock[]>().default([]),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),

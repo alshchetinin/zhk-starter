@@ -14,7 +14,7 @@ export const projects = pgTable("projects", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   address: text("address").notNull(),
   imageUrl: text("image_url"),

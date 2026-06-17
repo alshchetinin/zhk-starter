@@ -11,7 +11,7 @@ export const documents = pgTable("documents", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   slug: text("slug").notNull(),
   status: documentStatusEnum("status").notNull().default("draft"),

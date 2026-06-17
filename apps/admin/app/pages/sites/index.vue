@@ -33,11 +33,16 @@ const createMutation = useMutation({
   },
 });
 
-const deleteMutation = useMutation({
-  mutationFn: (id: string) => $orpcClient.sites.delete({ id }),
+const archiveTarget = ref<{ id: string; name: string } | null>(null);
+const archiveMutation = useMutation({
+  mutationFn: (id: string) => $orpcClient.sites.archive({ id }),
   onSuccess: () => {
-    toast.add({ title: "Сайт удалён", color: "success" });
+    toast.add({ title: "Сайт отправлен в архив", color: "success" });
     queryClient.invalidateQueries({ queryKey: $orpc.sites.key() });
+    archiveTarget.value = null;
+  },
+  onError: () => {
+    toast.add({ title: "Не удалось архивировать", color: "error" });
   },
 });
 
@@ -95,6 +100,13 @@ const duplicateMutation = useMutation({
       subtitle="Главный сайт отдаётся на голом домене, остальные — по поддоменам"
     >
       <template #actions>
+        <UButton
+          to="/sites/archive"
+          variant="outline"
+          icon="i-solar-archive-linear"
+        >
+          Архив
+        </UButton>
         <UButton
           icon="i-solar-add-square-linear"
           color="primary"
@@ -189,10 +201,9 @@ const duplicateMutation = useMutation({
             <UButton
               v-if="!item.isPrimary"
               variant="ghost"
-              icon="i-solar-trash-bin-trash-linear"
-              title="Удалить"
-              :loading="deleteMutation.isPending.value"
-              @click="deleteMutation.mutate(item.id)"
+              icon="i-solar-archive-down-linear"
+              title="В архив"
+              @click="archiveTarget = { id: item.id, name: item.name }"
             />
           </div>
         </div>
@@ -281,6 +292,30 @@ const duplicateMutation = useMutation({
             @click="createMutation.mutate()"
           >
             Создать
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+    <UModal
+      :open="!!archiveTarget"
+      title="Отправить сайт в архив?"
+      @update:open="(v) => { if (!v) archiveTarget = null }"
+    >
+      <template #body>
+        <p class="text-sm text-(--ui-text-muted)">
+          Сайт «{{ archiveTarget?.name }}» перестанет открываться в вебе и пропадёт
+          из этого списка. Его можно восстановить из раздела «Архив».
+        </p>
+      </template>
+      <template #footer>
+        <div class="flex gap-2 justify-end w-full">
+          <UButton variant="outline" @click="archiveTarget = null">Отмена</UButton>
+          <UButton
+            color="warning"
+            :loading="archiveMutation.isPending.value"
+            @click="archiveMutation.mutate(archiveTarget!.id)"
+          >
+            В архив
           </UButton>
         </div>
       </template>

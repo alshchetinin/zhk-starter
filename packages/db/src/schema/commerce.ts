@@ -21,7 +21,7 @@ export const commerce = pgTable("commerce", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name"),
   category: text("category"),
   area: numeric("area", { precision: 10, scale: 2 }),

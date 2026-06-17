@@ -12,7 +12,7 @@ export const entrances = pgTable("entrances", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   floorsCount: integer("floors_count"),
   sectionId: text("section_id").references(() => sections.id, {

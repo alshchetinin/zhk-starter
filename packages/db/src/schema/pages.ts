@@ -12,7 +12,7 @@ export const pages = pgTable("pages", {
   siteId: text("site_id")
     .notNull()
     .default("default")
-    .references(() => sites.id),
+    .references(() => sites.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   slug: text("slug").notNull(),
   status: pageStatusEnum("status").notNull().default("draft"),
