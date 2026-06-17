@@ -7,6 +7,8 @@ const { data, isPending, error, suspense } = useQuery(orpc.public.promotions.lis
 onServerPrefetch(suspense);
 
 usePageSeo({ title: "Акции" });
+
+useBreadcrumbs(() => ({ current: "Акции" }));
 </script>
 
 <template>

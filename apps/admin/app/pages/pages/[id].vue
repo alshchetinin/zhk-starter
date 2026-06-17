@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ContentBlock } from "@zhk/api/shared/blocks";
+import type { BreadcrumbsConfig } from "@zhk/api/shared/breadcrumbs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
 const route = useRoute();
@@ -30,6 +31,7 @@ const form = reactive({
   metaTitle: "",
   metaDescription: "",
   ogImage: null as string | null,
+  breadcrumbs: emptyBreadcrumbs() as BreadcrumbsConfig,
 });
 
 const slugManuallyEdited = ref(true);
@@ -43,6 +45,7 @@ whenever(pageData, (val) => {
   form.metaTitle = val.metaTitle ?? "";
   form.metaDescription = val.metaDescription ?? "";
   form.ogImage = val.ogImage ?? null;
+  form.breadcrumbs = (val.breadcrumbs as BreadcrumbsConfig) ?? emptyBreadcrumbs();
 }, { once: true, immediate: true });
 
 watch(
@@ -66,6 +69,7 @@ const updateMutation = useMutation({
       metaTitle: form.metaTitle || null,
       metaDescription: form.metaDescription || null,
       ogImage: form.ogImage,
+      breadcrumbs: cleanBreadcrumbs(form.breadcrumbs),
     }),
   onMutate: async () => {
     const key = $orpc.pages.getById.queryKey({ input: { id: id.value } });
@@ -82,6 +86,7 @@ const updateMutation = useMutation({
         metaTitle: form.metaTitle || null,
         metaDescription: form.metaDescription || null,
         ogImage: form.ogImage,
+        breadcrumbs: cleanBreadcrumbs(form.breadcrumbs),
       },
     );
     return { prev, key };
@@ -191,6 +196,11 @@ const deleteMutation = useMutation({
             <UFormField label="Статус">
               <USelect v-model="form.status" :items="pageStatusOptions" />
             </UFormField>
+          </div>
+
+          <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4">
+            <h3 class="text-sm font-semibold">Хлебные крошки</h3>
+            <BreadcrumbsField v-model="form.breadcrumbs" />
           </div>
 
           <SeoSidebar

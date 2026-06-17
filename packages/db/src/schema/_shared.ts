@@ -23,6 +23,19 @@ export interface InfraPin {
   description?: string;
 }
 
+/** Loose-зеркало BreadcrumbsConfig (строгая Zod-схема — в @zhk/api/shared/breadcrumbs). */
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface BreadcrumbsConfig {
+  mode: "auto" | "custom" | "hidden";
+  items: BreadcrumbItem[];
+}
+
+export const defaultBreadcrumbsValue: BreadcrumbsConfig = { mode: "auto", items: [] };
+
 export const baseColumns = {
   id: text("id")
     .primaryKey()

@@ -13,6 +13,8 @@ usePageSeo({
   description: () => data.value?.metaDescription,
   ogImage: () => data.value?.ogImage,
 });
+
+useBreadcrumbs(() => ({ current: "Главная", isHome: true }));
 </script>
 
 <template>

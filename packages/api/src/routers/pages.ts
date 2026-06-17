@@ -6,6 +6,7 @@ import { appErrors } from "@zhk/observability/errors";
 import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
+import { breadcrumbsConfigSchema, defaultBreadcrumbsConfig } from "../shared/breadcrumbs";
 
 export const pagesRouter = {
   list: siteProcedure
@@ -64,6 +65,7 @@ export const pagesRouter = {
         metaTitle: z.string().optional(),
         metaDescription: z.string().optional(),
         ogImage: z.string().optional(),
+        breadcrumbs: breadcrumbsConfigSchema.optional(),
       }),
     )
     .handler(async ({ input, context }) => {
@@ -79,6 +81,7 @@ export const pagesRouter = {
           metaTitle: input.metaTitle ?? null,
           metaDescription: input.metaDescription ?? null,
           ogImage: input.ogImage ?? null,
+          breadcrumbs: input.breadcrumbs ?? defaultBreadcrumbsConfig,
         })
         .returning();
       return created;
@@ -96,6 +99,7 @@ export const pagesRouter = {
         metaTitle: z.string().nullable().optional(),
         metaDescription: z.string().nullable().optional(),
         ogImage: z.string().nullable().optional(),
+        breadcrumbs: breadcrumbsConfigSchema.optional(),
       }),
     )
     .handler(async ({ input, context }) => {

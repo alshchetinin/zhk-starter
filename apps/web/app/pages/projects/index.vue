@@ -7,6 +7,8 @@ const { data, isPending, error, suspense } = useQuery(orpc.public.projects.list.
 onServerPrefetch(suspense);
 
 usePageSeo({ title: "Проекты" });
+
+useBreadcrumbs(() => ({ current: "Проекты" }));
 </script>
 
 <template>

@@ -1,7 +1,8 @@
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { newsStatusEnum } from "./_enums";
-import type { ContentBlock } from "./_shared";
+import type { ContentBlock, BreadcrumbsConfig } from "./_shared";
+import { defaultBreadcrumbsValue } from "./_shared";
 import { sites } from "./sites";
 
 export const news = pgTable("news", {
@@ -22,6 +23,10 @@ export const news = pgTable("news", {
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
   ogImage: text("og_image"),
+  breadcrumbs: jsonb("breadcrumbs")
+    .$type<BreadcrumbsConfig>()
+    .notNull()
+    .default(defaultBreadcrumbsValue),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

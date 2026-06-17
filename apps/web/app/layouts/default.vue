@@ -8,6 +8,16 @@ watch(activeModalSlug, (slug) => {
 
 const gate = useSiteGate();
 
+const route = useRoute();
+const breadcrumbs = useBreadcrumbsState();
+watch(
+  () => route.fullPath,
+  () => {
+    breadcrumbs.value = null;
+  },
+  { flush: "pre" },
+);
+
 useHead(() => {
   const seo = gate.value?.seo;
   return {
@@ -40,6 +50,7 @@ useHead(() => {
     <SiteJsonLd />
     <WebHeader />
     <main class="flex-1 pt-[var(--web-header-height)]">
+      <WebBreadcrumbs />
       <slot />
     </main>
     <WebFooter />

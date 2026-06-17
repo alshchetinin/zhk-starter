@@ -22,6 +22,7 @@ import { ORPCError } from "@orpc/server";
 import { protectedProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { decrypt } from "../utils/encryption";
+import { breadcrumbsConfigSchema } from "../shared/breadcrumbs";
 
 export const projectsRouter = {
   list: protectedProcedure
@@ -192,6 +193,7 @@ export const projectsRouter = {
           categoryId: z.string(),
           description: z.string().optional(),
         })).optional(),
+        breadcrumbs: breadcrumbsConfigSchema.optional(),
       }),
     )
     .handler(async ({ input }) => {

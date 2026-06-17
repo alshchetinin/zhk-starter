@@ -81,6 +81,7 @@ export const publicSiteRouter = {
       status,
       requiresPassword,
       analytics: site.settings?.analytics ?? null,
+      breadcrumbs: site.settings?.breadcrumbs ?? null,
       seo: await buildPublicSeo(site),
     };
   }),

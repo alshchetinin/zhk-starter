@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ContentBlock } from "@zhk/api/shared/blocks";
+import type { BreadcrumbsConfig } from "@zhk/api/shared/breadcrumbs";
 import { useMutation } from "@tanstack/vue-query";
 
 const { $orpcClient } = useNuxtApp();
@@ -17,6 +18,7 @@ const form = reactive({
   metaTitle: "",
   metaDescription: "",
   ogImage: null as string | null,
+  breadcrumbs: emptyBreadcrumbs() as BreadcrumbsConfig,
 });
 
 const slugManuallyEdited = ref(false);
@@ -41,6 +43,7 @@ const createMutation = useMutation({
       metaTitle: form.metaTitle || undefined,
       metaDescription: form.metaDescription || undefined,
       ogImage: form.ogImage ?? undefined,
+      breadcrumbs: cleanBreadcrumbs(form.breadcrumbs),
     }),
   onSuccess: () => {
     toast.add({ title: "Страница создана", color: "success" });
@@ -112,6 +115,11 @@ const createMutation = useMutation({
           <UFormField label="Статус">
             <USelect v-model="form.status" :items="pageStatusOptions" />
           </UFormField>
+        </div>
+
+        <div class="rounded-lg border border-(--ui-border) bg-(--ui-bg) p-6 space-y-4">
+          <h3 class="text-sm font-semibold">Хлебные крошки</h3>
+          <BreadcrumbsField v-model="form.breadcrumbs" />
         </div>
 
         <SeoSidebar
