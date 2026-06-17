@@ -35,15 +35,11 @@ useJsonLd(() => {
   });
 });
 
-useJsonLd(() =>
-  data.value
-    ? buildBreadcrumbJsonLd([
-        { name: "Главная", url: `${url.origin}/` },
-        { name: "Новости", url: `${url.origin}/news` },
-        { name: data.value.title, url: `${url.origin}${route.path}` },
-      ])
-    : null,
-);
+useBreadcrumbs(() => ({
+  current: data.value?.title ?? "",
+  parent: { label: "Новости", href: "/news" },
+  config: data.value?.breadcrumbs,
+}));
 
 const formattedDate = computed(() => {
   if (!data.value?.publishedAt) return "";

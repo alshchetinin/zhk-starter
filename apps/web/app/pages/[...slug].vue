@@ -25,6 +25,14 @@ usePageSeo({
   ogImage: () => data.value?.ogImage,
 });
 
+useBreadcrumbs(() => ({
+  current: data.value?.title ?? "",
+  parent: data.value?.category?.title
+    ? { label: data.value.category.title }
+    : undefined,
+  config: data.value?.breadcrumbs,
+}));
+
 watch(
   [data, isPending],
   ([d, loading]) => {

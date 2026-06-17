@@ -7,6 +7,8 @@ const { data, isPending, error, suspense } = useQuery(orpc.public.documents.list
 onServerPrefetch(suspense);
 
 usePageSeo({ title: "Документы" });
+
+useBreadcrumbs(() => ({ current: "Документы" }));
 </script>
 
 <template>

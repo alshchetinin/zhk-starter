@@ -25,15 +25,11 @@ useJsonLd(() => {
   });
 });
 
-useJsonLd(() =>
-  data.value
-    ? buildBreadcrumbJsonLd([
-        { name: "Главная", url: `${url.origin}/` },
-        { name: "Проекты", url: `${url.origin}/projects` },
-        { name: data.value.name, url: `${url.origin}${route.path}` },
-      ])
-    : null,
-);
+useBreadcrumbs(() => ({
+  current: data.value?.name ?? "",
+  parent: { label: "Проекты", href: "/projects" },
+  config: data.value?.breadcrumbs,
+}));
 </script>
 
 <template>
