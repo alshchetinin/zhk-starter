@@ -3,7 +3,7 @@ import { ORPCError } from "@orpc/server";
 import { db } from "@zhk/db";
 import { contacts, news, pages, projects, sites } from "@zhk/db/schema";
 import { and, eq, ne } from "drizzle-orm";
-import { publicSiteProcedure } from "../../index";
+import { publicProcedure, publicSiteProcedure } from "../../index";
 import { rateLimit } from "../../middleware/rate-limit";
 import { isSiteIndexable, type PublicSiteSeo } from "../../shared/seo";
 import { SITE_GATE_ERROR } from "../../utils/site-gate-errors";
@@ -56,7 +56,7 @@ async function buildPublicSeo(site: SiteRow): Promise<PublicSiteSeo> {
 }
 
 export const publicSiteRouter = {
-  status: publicSiteProcedure.handler(async ({ context }) => {
+  status: publicProcedure.handler(async ({ context }) => {
     const site = context.site;
     if (!site) throw new ORPCError("NOT_FOUND");
 

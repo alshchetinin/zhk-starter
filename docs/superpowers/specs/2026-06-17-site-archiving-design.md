@@ -94,10 +94,19 @@
 
 - `resolveSiteFromHost`
   ([`packages/api/src/utils/resolve-site.ts`](../../../packages/api/src/utils/resolve-site.ts))
-  **исключает архивные** (`archivedAt IS NULL` во всех ветках выборки —
-  customDomain, slug, primary-фолбэк). Архивный сайт по своему поддомену/домену
-  больше не резолвится → Host падает на primary-фолбэк. Архив реально исчезает из
-  веба; отдельная проверка в `requireActiveSite` не нужна.
+  возвращает **`null`** для хоста, который явно адресует конкретный сайт, которого
+  нет среди активных:
+  - реальный поддомен (≠ `www`), не совпадающий ни с одним активным slug;
+  - хост, совпадающий с `customDomain` **архивного** сайта.
+  Веб при `null` рендерит страницу 404 «Сайт не найден» (`apps/web/app/error.vue`)
+  через `fatal: true` в плагине `site-gate`. **Primary-сайт не подставляется.**
+- Главный сайт отдаётся по умолчанию **только** для «дефолтных» хостов: апекс,
+  `www`, голый `localhost`, пустой хост, а также по своему `customDomain`.
+- Сайт, лишь деактивированный (`isActive: false`, не архивный), **продолжает
+  резолвиться** → показывается существующий экран «скоро открытие» (`SiteSoonOpening`).
+- Механизм: `public.site.status` переведён с `publicSiteProcedure` на
+  `publicProcedure` — плагин `site-gate` получает `NOT_FOUND` при `null`-сайте,
+  а не `BAD_REQUEST` из middleware `requireSite`.
 - `slug` и `customDomain` остаются занятыми, пока сайт в архиве (уникальные
   ограничения держатся) — чтобы restore был чистым. **Освобождаются только при
   `deletePermanent`.**
@@ -126,11 +135,17 @@
   `delete`).
 - **Дублирование сайта:** `duplicateSite` не затрагивается — создаёт сайт с
   `archivedAt: null`.
-- **`public.site.sitemap` / robots / sitemap-роуты:** не active-gated, резолвят
-  сайт; для архивного `resolveSiteFromHost` вернёт primary-фолбэк (контент чужого
-  архива не утечёт). Приемлемо.
+- **`public.site.sitemap` / robots / sitemap-роуты:** остаются на
+  `publicSiteProcedure`; для архивного хоста `resolveSiteFromHost` вернёт `null`
+  → middleware `requireSite` кинет `BAD_REQUEST` (ответит 400, не 200 с чужим
+  контентом). Приемлемо — поисковик получит ошибку, не контент другого сайта.
 - **Custom domain архивного сайта**, всё ещё указывающий DNS на приложение →
-  резолв падает на primary. Инфраструктурный нюанс, в скоупе не правим.
+  `resolveSiteFromHost` находит строку по `customDomain`, видит `archivedAt != null`,
+  возвращает `null` → веб отдаёт 404 «Сайт не найден».
+- **Custom domain навсегда удалённого сайта** (строка удалена из БД) →
+  `resolveSiteFromHost` не находит запись → падает на primary-фолбэк. Минор:
+  поддомены удалённых сайтов правильно дают 404 (slug не совпадает ни с чем),
+  custom domain — не обнаруживаем без строки в БД.
 
 ## Вне скоупа (YAGNI)
 
