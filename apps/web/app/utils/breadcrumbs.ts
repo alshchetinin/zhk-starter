@@ -40,6 +40,8 @@ export function resolveBreadcrumbs(input: ResolveInput): BreadcrumbItem[] | null
   }
 
   // auto (включая custom с пустым items)
+  // Пустой current (страница ещё грузится) → крошек нет, чтобы не мигало пустое звено.
+  if (!auto.current) return null;
   const trail: BreadcrumbItem[] = [home];
   if (auto.parent) trail.push(auto.parent);
   trail.push({ label: auto.current });

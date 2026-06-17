@@ -60,4 +60,8 @@ describe("resolveBreadcrumbs", () => {
       resolveBreadcrumbs({ auto: { current: "О нас" }, settings: { homeLabel: "Home" } }),
     ).toEqual([{ label: "Home", href: "/" }, { label: "О нас" }]);
   });
+
+  it("пустой current (загрузка) → null", () => {
+    expect(resolveBreadcrumbs({ auto: { current: "" } })).toBeNull();
+  });
 });
