@@ -32,6 +32,12 @@ describe("breadcrumbsConfigSchema", () => {
     expect(() => breadcrumbsConfigSchema.parse({ mode: "weird" })).toThrow();
   });
 
+  it("пустой href отбраковывается", () => {
+    expect(() =>
+      breadcrumbsConfigSchema.parse({ mode: "custom", items: [{ label: "X", href: "" }] }),
+    ).toThrow();
+  });
+
   it("defaultBreadcrumbsConfig валиден и равен auto/[]", () => {
     expect(breadcrumbsConfigSchema.parse(defaultBreadcrumbsConfig)).toEqual({
       mode: "auto",

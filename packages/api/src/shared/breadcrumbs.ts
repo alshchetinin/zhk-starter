@@ -3,7 +3,7 @@ import { z } from "zod";
 /** Одно звено цепочки. href нет → звено-текст без ссылки. */
 export const breadcrumbItemSchema = z.object({
   label: z.string().min(1),
-  href: z.string().optional(),
+  href: z.string().min(1).optional(),
 });
 export type BreadcrumbItem = z.infer<typeof breadcrumbItemSchema>;
 
