@@ -6,6 +6,7 @@ import { ORPCError } from "@orpc/server";
 import { siteProcedure } from "../index";
 import { paginationInput, calcOffset } from "../shared/pagination";
 import { contentBlocksSchema } from "../shared/blocks";
+import { breadcrumbsConfigSchema } from "../shared/breadcrumbs";
 
 export const newsRouter = {
   list: siteProcedure
@@ -97,6 +98,7 @@ export const newsRouter = {
         metaTitle: z.string().nullable().optional(),
         metaDescription: z.string().nullable().optional(),
         ogImage: z.string().nullable().optional(),
+        breadcrumbs: breadcrumbsConfigSchema.optional(),
       }),
     )
     .handler(async ({ input, context }) => {

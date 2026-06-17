@@ -40,6 +40,7 @@ export const publicPagesRouter = {
           eq(pages.slug, input.slug),
           eq(pages.status, "published"),
         ),
+        with: { category: { columns: { title: true } } },
       });
       if (!item) {
         throw new ORPCError("NOT_FOUND", { message: "Page not found" });

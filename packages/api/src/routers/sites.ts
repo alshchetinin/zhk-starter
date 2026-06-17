@@ -8,6 +8,7 @@ import { duplicateSite } from "../services/site-duplication";
 import { resolveSiteFromHost } from "../utils/resolve-site";
 import { METRIKA_COUNTER_ID_REGEX } from "../shared/tracking";
 import { siteNavigationSchema } from "../shared/navigation";
+import { siteBreadcrumbsSettingsSchema } from "../shared/breadcrumbs";
 import { isSiteArchived, canArchiveSite, canRestoreSite } from "../shared/site-archive";
 
 const slugSchema = z
@@ -61,6 +62,7 @@ const settingsSchema = z
     analytics: analyticsSchema.optional(),
     seo: seoSchema.optional(),
     navigation: siteNavigationSchema.optional(),
+    breadcrumbs: siteBreadcrumbsSettingsSchema.optional(),
   })
   .partial();
 
